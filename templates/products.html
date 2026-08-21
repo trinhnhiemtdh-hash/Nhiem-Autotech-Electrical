@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Thiết bị điện & tự động hóa{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">PRODUCTS</p>
+      <h1>Thiết bị điện & tự động hóa</h1>
+    </div>
+    <a class="btn primary" href="{{ url_for('quote') }}">Yêu cầu báo giá</a>
+  </div>
+
+  <div class="product-hero-bar">
+    <div>
+      <strong>Hỗ trợ kỹ thuật chuyên nghiệp</strong>
+      <span>CB, MCB, MCCB, contactor, relay, tủ điện, phụ kiện và thư viện CAD.</span>
+    </div>
+  </div>
+
+  <form class="searchbar" method="get" role="search">
+    <label class="sr-only" for="product-search">Tìm kiếm sản phẩm</label>
+    <input id="product-search" type="search" name="q" value="{{ q }}" placeholder="Tìm theo tên, mã SKU, hãng, thông số..." autocomplete="off">
+    <button class="btn primary">Tìm kiếm</button>
+  </form>
+
+  <div class="filter">
+    <a class="{{ 'active' if not selected_category }}" href="{{ url_for('products') }}">Tất cả</a>
+    {% for c in categories %}
+      <a class="{{ 'active' if selected_category==c.slug }}" href="{{ url_for('products', category=c.slug) }}">{{ c.name }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="product-grid">
+    {% for p in products %}
+      {% include "_product_card.html" %}
+    {% else %}
+      <p>Không tìm thấy sản phẩm phù hợp.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

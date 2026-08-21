@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} | Nhiệm Autotech{% endblock %}
+{% block meta_description %}{{ seo_description }}{% endblock %}
+{% block og_title %}{{ product.name }} | Nhiệm Autotech{% endblock %}
+{% block og_description %}{{ seo_description }}{% endblock %}
+{% block og_image %}{% if product.image %}<meta property="og:image" content="{{ site_url }}{{ url_for('static', filename='uploads/images/' + product.image) }}">{% endif %}{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="detail">
+    <div class="detail-image">{% if product.image %}<img src="{{ url_for('static', filename='uploads/images/' + product.image) }}" alt="{{ product.name }}">{% else %}⚡{% endif %}</div>
+    <div>
+      <p class="eyebrow">{{ product.category.name if product.category else 'THIẾT BỊ' }}</p>
+      <h1>{{ product.name }}</h1>
+      <p class="sku">SKU: {{ product.sku or 'N/A' }}</p>
+      <div class="big-price">{{ "{:,.0f}".format(product.price) }} đ</div>
+      <p>{{ product.description }}</p>
+      <div class="detail-actions">
+        <form method="post" action="{{ url_for('cart_add', product_id=product.id) }}"><button class="btn primary">+ Thêm vào giỏ hàng</button></form>
+        <a class="btn secondary" href="{{ url_for('quote', product=product.name) }}">Yêu cầu báo giá</a>
+        {% if product.cad_file %}<a class="btn ghost" href="{{ url_for('cad_download', product_id=product.id) }}">⬇ Tải file CAD</a>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <section class="spec-box">
+    <h2>Thông số kỹ thuật</h2>
+    <pre>{{ product.specifications or 'Chưa cập nhật thông số.' }}</pre>
+  </section>
+
+  <section class="quote-box">
+    <h2>Báo giá nhanh cho sản phẩm này</h2>
+    <form method="post" action="{{ url_for('quote') }}" class="form-card quote-inline-form">
+      <input type="hidden" name="product_name" value="{{ product.name }}">
+      <label>Họ tên<input required name="name" placeholder="Nguyễn Văn A"></label>
+      <label>Email<input required type="email" name="email" placeholder="email@domain.com"></label>
+      <label>Điện thoại<input name="phone" placeholder="09xx xxx xxx"></label>
+      <label>Số lượng<input type="number" min="1" name="quantity" value="1"></label>
+      <label>Nội dung yêu cầu<textarea name="message" placeholder="Ví dụ: cần báo giá 20 bộ MCB 3 pha, cần file CAD và thời gian giao hàng..."></textarea></label>
+      <button class="btn primary">Gửi yêu cầu báo giá</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": {{ product.name|tojson }},
+  "sku": {{ (product.sku or '')|tojson }},
+  "description": {{ seo_description|tojson }},
+  "url": {{ canonical_url|tojson }},
+  {% if product.image %}"image": [{{ (site_url ~ url_for('static', filename='uploads/images/' + product.image))|tojson }}],{% endif %}
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "VND",
+    "price": {{ product.price|tojson }},
+    "availability": "https://schema.org/{{ 'InStock' if product.stock > 0 else 'OutOfStock' }}",
+    "url": {{ canonical_url|tojson }}
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Thư viện AutoCAD thiết bị điện CB MCB MCCB ACB các hãng | Nhiệm Autotech{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">AUTO CAD LIBRARY</p>
+      <h1>Thư viện AutoCAD thiết bị điện CB, MCB, MCCB, ACB các hãng</h1>
+    </div>
+    <a class="btn primary" href="{{ url_for('cad_library') }}">Xem thư viện CAD</a>
+  </div>
+
+  <p class="lead">
+    Nhiệm Autotech cung cấp thư viện AutoCAD thiết bị điện cho các thiết bị điện công nghiệp như
+    CB, MCB, MCCB, ACB, rơle nhiệt, contactor, relay, tủ điện, form tủ điện và sơ đồ mạch điều khiển.
+    Tài liệu được thiết kế để hỗ trợ kỹ sư điện, nhà thầu điện, kỹ thuật viên, và người thiết kế tủ điện.
+  </p>
+
+  <div class="library-shell">
+    <div class="library-card">
+      <div class="library-badge">CB</div>
+      <h3>CB - Circuit Breaker</h3>
+      <p>Block CAD và sơ đồ bố trí CB cho tủ điện, tủ phân phối, tủ tổng và panel công nghiệp.</p>
+    </div>
+    <div class="library-card">
+      <div class="library-badge">MCB</div>
+      <h3>MCB - Miniature Circuit Breaker</h3>
+      <p>Thư viện MCB chuẩn các hãng ABB, Schneider, LS, Chint, Hyundai, Siemens, Mitsubishi.</p>
+    </div>
+    <div class="library-card">
+      <div class="library-badge">MCCB</div>
+      <h3>MCCB - Molded Case Circuit Breaker</h3>
+      <p>File CAD, sơ đồ, bố trí thiết bị và các dạng tủ phân phối sử dụng MCCB công suất lớn.</p>
+    </div>
+    <div class="library-card">
+      <div class="library-badge">ACB</div>
+      <h3>ACB - Air Circuit Breaker</h3>
+      <p>Thư viện ACB cho hệ thống điện trung áp, tủ tổng, nguồn chính và panel điện công nghiệp.</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">CÁC HÃNG PHỔ BIẾN</p>
+        <h2>Thiết bị điện và block CAD theo hãng</h2>
+      </div>
+    </div>
+
+    <div class="brand-grid">
+      <div class="brand-card">
+        <div class="brand-icon">A</div>
+        <h3>ABB</h3>
+        <ul>
+          <li>CB ABB</li>
+          <li>MCB ABB</li>
+          <li>MCCB ABB</li>
+          <li>ACB ABB</li>
+        </ul>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon">S</div>
+        <h3>Schneider</h3>
+        <ul>
+          <li>Schneider MCB</li>
+          <li>Schneider MCCB</li>
+          <li>Contactor Schneider</li>
+          <li>Thermal relay</li>
+        </ul>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon">L</div>
+        <h3>LS</h3>
+        <ul>
+          <li>MCB LS</li>
+          <li>MCCB LS</li>
+          <li>Contactor LS</li>
+          <li>Relay LS</li>
+        </ul>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon">C</div>
+        <h3>Chint</h3>
+        <ul>
+          <li>MCB Chint</li>
+          <li>MCCB Chint</li>
+          <li>RCCB Chint</li>
+          <li>Block tủ điện Chint</li>
+        </ul>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon">M</div>
+        <h3>Mitsubishi</h3>
+        <ul>
+          <li>PLC Mitsubishi</li>
+          <li>Contactor Mitsubishi</li>
+          <li>Relay Mitsubishi</li>
+          <li>Sơ đồ điều khiển Mitsubishi</li>
+        </ul>
+      </div>
+      <div class="brand-card">
+        <div class="brand-icon">S</div>
+        <h3>Siemens</h3>
+        <ul>
+          <li>Siemens MCB</li>
+          <li>Siemens breaker</li>
+          <li>Contactor Siemens</li>
+          <li>Panel automation Siemens</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">NỘI DUNG TÌM KIẾM</p>
+        <h2>Những từ khóa Google quan trọng cho website thiết bị điện</h2>
+      </div>
+    </div>
+    <div class="tool-card">
+      <p>
+        Các từ khóa mục tiêu bao gồm: thư viện AutoCAD thiết bị điện, file CAD CB, file CAD MCB,
+        file CAD MCCB, file CAD ACB, sơ đồ điện công nghiệp, tủ điện, contactor, relay, rơle nhiệt,
+        mạch điều khiển PLC, sơ đồ điện tủ điện, block CAD thiết bị điện các hãng, AutoCAD điện công nghiệp.
+      </p>
+    </div>
+  </section>
+</div>
+{% endblock %}

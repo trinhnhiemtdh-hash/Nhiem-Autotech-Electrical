@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Đặt hàng{% endblock %}
+{% block content %}
+<div class="container page"><p class="eyebrow">CHECKOUT</p><h1>Thông tin đặt hàng</h1>
+<form method="post" class="form-card"><label>Họ tên<input required name="customer_name" value="{{ user.name }}"></label><label>Số điện thoại<input required name="phone"></label><label>Email nhận file<input required type="email" name="email" value="{{ user.email }}"></label><input type="hidden" name="address" value="Tài liệu số"><label>Ghi chú<textarea name="note" placeholder="Nội dung cần hỗ trợ về file CAD"></textarea></label><div class="order-summary"><h3>Tổng đơn: {{ "{:,.0f}".format(total) }} đ</h3><p>Sau khi đặt đơn, bạn sẽ quét mã QR để chuyển khoản. File CAD chỉ được mở tải khi quản trị viên xác nhận thanh toán.</p></div><button class="btn primary">Tạo đơn và thanh toán QR</button></form></div>
+{% endblock %}

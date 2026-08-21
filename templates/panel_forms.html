@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Form tủ điện chuẩn công nghiệp{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">PANEL FORMS</p>
+      <h1>Form tủ điện chuẩn công nghiệp</h1>
+    </div>
+    <a class="btn primary" href="{{ url_for('quote') }}">Yêu cầu báo giá</a>
+  </div>
+
+  <div class="form-panel-grid">
+    <div class="panel-card">
+      <div class="panel-badge">01</div>
+      <h3>Tủ điện tổng (MSB)</h3>
+      <p>Thiết kế sơ đồ tổng, phân phối nguồn, NH, MCCB, ACB, cách ly, đo lường và cấp điện cho hệ thống.</p>
+      <ul>
+        <li>MSB – Main Switchboard</li>
+        <li>DB – Distribution Board</li>
+        <li>Panel nguồn / panel phụ</li>
+      </ul>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-badge">02</div>
+      <h3>Tủ điều khiển PLC</h3>
+      <p>Sơ đồ điều khiển, panel PLC, I/O, relay, module, terminal, mạch tín hiệu và bảo vệ.</p>
+      <ul>
+        <li>PLC control panel</li>
+        <li>Module I/O</li>
+        <li>Contactors / Relays</li>
+      </ul>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-badge">03</div>
+      <h3>VFD Panel</h3>
+      <p>Panel điều khiển biến tần, mạch khởi động mềm, bảo vệ quá tải, lọc điện, cầu dao và UPS.</p>
+      <ul>
+        <li>VFD panel</li>
+        <li>Drive, overload</li>
+        <li>MCB, contactor</li>
+      </ul>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-badge">04</div>
+      <h3>Panel MCC</h3>
+      <p>Panel motor control center, kỹ thuật điều khiển động cơ, điều khiển tự động theo trạm và hệ thống công nghiệp.</p>
+      <ul>
+        <li>Motor control center</li>
+        <li>Starter / overload</li>
+        <li>Automation control</li>
+      </ul>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-badge">05</div>
+      <h3>Panel SCADA</h3>
+      <p>Thiết kế hệ thống giám sát, PLC SCADA, signal, remote, điều khiển từ xa và báo trạng thái.</p>
+      <ul>
+        <li>SCADA panel</li>
+        <li>Remote monitoring</li>
+        <li>Operator panels</li>
+      </ul>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-badge">06</div>
+      <h3>Panel đo lường</h3>
+      <p>Panel năng lượng, meter, đo lường, điều khiển hiển thị, báo động, dữ liệu công suất và điện năng.</p>
+      <ul>
+        <li>Metering panel</li>
+        <li>Energy meter</li>
+        <li>Power monitoring</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

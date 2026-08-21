@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Thanh toán QR cho đơn #{{ order.id }}{% endblock %}
+{% block content %}
+<div class="container page payment-page">
+  <p class="eyebrow">THANH TOÁN QR</p>
+  <h1>Hoàn tất thanh toán đơn #{{ order.id }}</h1>
+  <p class="lead">Chuyển đúng số tiền và nội dung bên dưới. Quản trị viên sẽ kiểm tra giao dịch rồi mở quyền tải file CAD cho đơn hàng của bạn.</p>
+
+  <div class="payment-grid">
+    <section class="payment-card">
+      <h2>{{ "{:,.0f}".format(order.total) }} đ</h2>
+      <dl class="payment-details">
+        <div><dt>Ngân hàng</dt><dd>{{ bank_id or 'Chưa cấu hình' }}</dd></div>
+        <div><dt>Số tài khoản</dt><dd>{{ bank_account or 'Chưa cấu hình' }}</dd></div>
+        <div><dt>Chủ tài khoản</dt><dd>{{ bank_account_name or 'Chưa cấu hình' }}</dd></div>
+        <div><dt>Nội dung chuyển khoản</dt><dd class="transfer-note">{{ transfer_note }}</dd></div>
+      </dl>
+      <p><strong>Lưu ý:</strong> Không thay đổi nội dung chuyển khoản để chúng tôi xác nhận đơn nhanh hơn.</p>
+    </section>
+    <section class="payment-card qr-card">
+      {% if qr_url %}
+        <img src="{{ qr_url }}" alt="Mã QR thanh toán cho đơn {{ order.id }}">
+        <p>Quét mã QR bằng ứng dụng ngân hàng.</p>
+      {% else %}
+        <p>Thông tin QR chưa được cấu hình. Vui lòng liên hệ quản trị viên để nhận thông tin chuyển khoản.</p>
+      {% endif %}
+    </section>
+  </div>
+  <div class="library-cta"><a class="btn ghost" href="{{ url_for('account_orders') }}">Xem trạng thái đơn hàng</a></div>
+</div>
+{% endblock %}

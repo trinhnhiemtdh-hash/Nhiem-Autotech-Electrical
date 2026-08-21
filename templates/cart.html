@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Giỏ hàng{% endblock %}
+{% block content %}
+<div class="container page"><p class="eyebrow">CART</p><h1>Giỏ hàng</h1>
+{% if items %}<form method="post" action="{{ url_for('cart_update') }}"><div class="cart-list">{% for p,qty,subtotal in items %}<div class="cart-row"><div><h3>{{ p.name }}</h3><small>{{ "{:,.0f}".format(p.price) }} đ / sản phẩm</small></div><input type="number" min="1" name="qty_{{ p.id }}" value="{{ qty }}"><strong>{{ "{:,.0f}".format(subtotal) }} đ</strong><button type="submit" formaction="{{ url_for('cart_remove', product_id=p.id) }}" class="link-danger">Xóa</button></div>{% endfor %}</div><button class="btn ghost">Cập nhật</button></form><div class="cart-total"><h2>Tổng: {{ "{:,.0f}".format(total) }} đ</h2><a class="btn primary" href="{{ url_for('checkout') }}">Tiến hành đặt hàng</a></div>
+{% else %}<div class="empty"><h2>Giỏ hàng đang trống</h2><a class="btn primary" href="{{ url_for('products') }}">Xem sản phẩm</a></div>{% endif %}</div>
+{% endblock %}

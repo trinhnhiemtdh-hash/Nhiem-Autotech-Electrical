@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Thư viện CAD tủ điện theo hãng | ABB, Schneider, Mitsubishi, LS{% endblock %}
+{% block meta_description %}Thư viện CAD thiết kế tủ điện theo hãng: ABB, Schneider Electric, Mitsubishi Electric, LS Electric, Chint, Hyundai và các hãng khác khi được cập nhật.{% endblock %}
+{% block og_title %}Thư viện CAD thiết kế tủ điện theo hãng{% endblock %}
+{% block og_description %}Tìm block CAD, sơ đồ điện và tài liệu thiết bị theo từng hãng.{% endblock %}
+{% block content %}
+<div class="container page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">LIBRARY BY BRAND</p>
+      <h1>Thư viện thiết bị điện theo hãng</h1>
+    </div>
+    <a class="btn primary" href="{{ url_for('cad_library') }}">Về thư viện CAD</a>
+  </div>
+
+  <div class="brand-grid">
+    <div class="brand-card">
+      <div class="brand-icon">A</div>
+      <h3>ABB Library</h3>
+      <ul>
+        <li>CB, MCB, MCCB</li>
+        <li>Contactor ABB</li>
+        <li>Block tủ điện ABB</li>
+        <li>Đồ án cấp điện ABB</li>
+      </ul>
+      <a class="btn ghost" href="{{ url_for('cad_library') }}">Xem tài liệu</a>
+    </div>
+
+    <div class="brand-card">
+      <div class="brand-icon">M</div>
+      <h3>Mitsubishi Library</h3>
+      <ul>
+        <li>PLC Mitsubishi</li>
+        <li>Contactor / relay</li>
+        <li>Sơ đồ điều khiển</li>
+        <li>Block panel Mitsubishi</li>
+      </ul>
+      <a class="btn ghost" href="{{ url_for('cad_library') }}">Xem tài liệu</a>
+    </div>
+
+    <div class="brand-card">
+      <div class="brand-icon">L</div>
+      <h3>LS Library</h3>
+      <ul>
+        <li>MCB LS</li>
+        <li>MCCB LS</li>
+        <li>Contactors LS</li>
+        <li>Panel LS</li>
+      </ul>
+      <a class="btn ghost" href="{{ url_for('cad_library') }}">Xem tài liệu</a>
+    </div>
+
+    <div class="brand-card">
+      <div class="brand-icon">S</div>
+      <h3>Schneider Library</h3>
+      <ul>
+        <li>Schneider breaker</li>
+        <li>Load break switch</li>
+        <li>Thermal relay</li>
+        <li>Block tủ điện Schneider</li>
+      </ul>
+      <a class="btn ghost" href="{{ url_for('cad_library') }}">Xem tài liệu</a>
+    </div>
+
+    <div class="brand-card">
+      <div class="brand-icon">C</div>
+      <h3>Chint Library</h3>
+      <ul>
+        <li>MCB Chint</li>
+        <li>RCCB / RCBO</li>
+        <li>CB Chint</li>
+        <li>Panel & thiết kế tủ</li>
+      </ul>
+      <a class="btn ghost" href="{{ url_for('cad_library') }}">Xem tài liệu</a>
+    </div>
+
+    <div class="brand-card">
+      <div class="brand-icon">H</div>
+      <h3>Hyundai Library</h3>
+      <ul>
+        <li>Hyundai breakers</li>
+        <li>Relay / contactor</li>
+        <li>Form panel</li>
+        <li>CAD block công nghiệp</li>
+      </ul>
+      <a class="btn ghost" href="{{ url_for('cad_library') }}">Xem tài liệu</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

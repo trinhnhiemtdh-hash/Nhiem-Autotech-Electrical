@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Thư viện CAD thiết kế tủ điện | Nhiệm Autotech{% endblock %}
+{% block meta_description %}Thư viện CAD thiết kế tủ điện: block DWG, sơ đồ điều khiển, CB, MCB, MCCB, PLC, contactor và form tủ điện từ nhiều hãng thiết bị điện.{% endblock %}
+{% block og_title %}Thư viện CAD thiết kế tủ điện | Nhiệm Autotech{% endblock %}
+{% block og_description %}Tìm block CAD, sơ đồ và tài liệu thiết kế tủ điện cho ABB, Schneider, Mitsubishi, LS, Chint, Hyundai và nhiều hãng khác.{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <div>
+      <p class="eyebrow">ELECTRICAL · AUTOMATION · CAD</p>
+      <h1>Thư viện CAD thiết kế tủ điện cho nhiều hãng thiết bị điện.</h1>
+      <p class="lead">CB, MCB, MCCB, contactor, relay, rơle nhiệt, tủ điện công nghiệp, form tủ điện chuẩn và mạch điều khiển theo tiêu chuẩn kỹ thuật.</p>
+      <div class="actions">
+        <a class="btn primary" href="{{ url_for('products') }}">Xem thư viện</a>
+        <a class="btn ghost" href="{{ url_for('cad_library') }}">Tải CAD</a>
+      </div>
+      <div class="hero-meta">
+        <div><strong>500+</strong><span>Thiết bị / block</span></div>
+        <div><strong>24/7</strong><span>Tư vấn kỹ thuật</span></div>
+        <div><strong>DWG</strong><span>File chuẩn</span></div>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="tech-card main-card">
+        <div class="tech-badge">⚡ PANEL DESIGN</div>
+        <h3>Electrical Library</h3>
+        <ul>
+          <li>CB / MCB / MCCB</li>
+          <li>Contactor / Relay / Rơle nhiệt</li>
+          <li>Form tủ điện công nghiệp</li>
+          <li>Mạch điều khiển & sơ đồ</li>
+        </ul>
+      </div>
+      <div class="tech-mini mini-top">Form tủ điện chuẩn</div>
+      <div class="tech-mini mini-bottom">Mạch điều khiển</div>
+    </div>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">DANH MỤC CHÍNH</p>
+      <h2>Ba nhóm sản phẩm chính</h2>
+    </div>
+  </div>
+
+  <div class="library-shell">
+    <div class="library-card">
+      <div class="library-badge">01</div>
+      <h3>Thư viện thiết bị điện</h3>
+      <ul class="library-list">
+        <li>CB, MCB, MCCB</li>
+        <li>Contactor</li>
+        <li>Rơle nhiệt</li>
+        <li>Relay / thiết bị đóng cắt</li>
+      </ul>
+      <div class="library-cta">
+        <a class="btn primary" href="{{ url_for('products') }}">Xem thiết bị</a>
+      </div>
+    </div>
+
+    <div class="library-card">
+      <div class="library-badge">02</div>
+      <h3>Form tủ điện</h3>
+      <ul class="library-list">
+        <li>MSB / DB / Panel phân phối</li>
+        <li>Panel điều khiển PLC</li>
+        <li>VFD Panel</li>
+        <li>SCADA / MCC / Control Panel</li>
+      </ul>
+      <div class="library-cta">
+        <a class="btn primary" href="{{ url_for('cad_library') }}">Xem form tủ</a>
+      </div>
+    </div>
+
+    <div class="library-card">
+      <div class="library-badge">03</div>
+      <h3>Mạch điều khiển</h3>
+      <ul class="library-list">
+        <li>Sơ đồ điều khiển tự động</li>
+        <li>Sơ đồ PLC / MCC</li>
+        <li>Vị trí cảm biến và relay</li>
+        <li>File DWG / PDF kỹ thuật</li>
+      </ul>
+      <div class="library-cta">
+        <a class="btn primary" href="{{ url_for('quote') }}">Yêu cầu báo giá</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container section">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">THƯ VIỆN NỔI BẬT</p>
+      <h2>Thiết bị và dụng cụ phổ biến</h2>
+    </div>
+    <a href="{{ url_for('products') }}">Xem tất cả →</a>
+  </div>
+  <div class="product-grid">
+    {% for p in featured %}
+      {% include "_product_card.html" %}
+    {% else %}
+      <p>Chưa có sản phẩm. Vào Admin để thêm sản phẩm.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="container section">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">TAI LIỆU / HỖ TRỢ</p>
+      <h2>Phụ trợ cho kỹ sư lắp đặt và thiết kế</h2>
+    </div>
+  </div>
+  <div class="library-grid">
+    <div class="tool-card">
+      <span>📐</span>
+      <h4>Form tủ điện</h4>
+      <p>Form tủ, panel, bố trí thiết bị theo chuẩn công nghiệp và hệ thống phân phối.</p>
+    </div>
+    <div class="tool-card">
+      <span>🧠</span>
+      <h4>Mạch điều khiển</h4>
+      <p>Sơ đồ PLC, relay, contactor, khoá điện, mạch khởi động, điều khiển tự động.</p>
+    </div>
+    <div class="tool-card">
+      <span>📦</span>
+      <h4>CAD library</h4>
+      <p>File DWG, block, bản vẽ kỹ thuật cho thiết kế nhanh và chuẩn hóa dự án.</p>
+    </div>
+  </div>
+</section>
+
+<section class="dark-section">
+  <div class="container split">
+    <div>
+      <p class="eyebrow">CAD LIBRARY</p>
+      <h2>Khám phá bộ sưu tập thiết kế tủ điện, PLC và sơ đồ điều khiển</h2>
+      <p>Phù hợp với kỹ sư điện, thiết kế tủ điện, nhà thầu điện, thi công công nghiệp và các dự án tự động hóa.</p>
+    </div>
+    <a class="btn primary" href="{{ url_for('cad_library') }}">Mở thư viện CAD</a>
+  </div>
+</section>
+{% endblock %}

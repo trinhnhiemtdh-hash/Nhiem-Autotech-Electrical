@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Báo giá thiết bị điện{% endblock %}
+{% block content %}
+<div class="container page narrow">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">QUOTE</p>
+      <h1>Yêu cầu báo giá thiết bị điện</h1>
+    </div>
+  </div>
+
+  <div class="form-card quote-form-wrap">
+    <p class="lead-small">Nhập thông tin và Nhiệm sẽ tư vấn chi tiết về sản phẩm, giá cả, thời gian giao hàng và hỗ trợ thiết kế tủ điện.</p>
+
+    <form method="post" class="form-grid">
+      <label>Họ tên <input required name="name" placeholder="Nguyễn Văn A"></label>
+      <label>Email <input required type="email" name="email" placeholder="email@domain.com"></label>
+      <label>Điện thoại <input name="phone" placeholder="09xx xxx xxx"></label>
+      <label>Sản phẩm quan tâm <input name="product_name" value="{{ default_product or '' }}" placeholder="CB, MCB, MCCB, Contactor..."></label>
+      <label>Số lượng <input type="number" min="1" name="quantity" value="1"></label>
+      <label>Loại dự án <select name="project_type">
+        <option value="Công nghiệp">Công nghiệp</option>
+        <option value="Dân dụng">Dân dụng</option>
+        <option value="Tủ điện">Tủ điện</option>
+        <option value="Thiết kế AutoCAD">Thiết kế AutoCAD</option>
+      </select></label>
+      <label class="full-width">Yêu cầu chi tiết <textarea required name="message" rows="6" placeholder="Ví dụ: cần báo giá 30 bộ MCB 3 pha, cần file CAD và tư vấn chọn thiết bị phù hợp cho tủ điện phân phối..."></textarea></label>
+      <button class="btn primary full-width-btn">Gửi yêu cầu báo giá</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

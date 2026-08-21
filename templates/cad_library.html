@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Thư viện CAD thiết kế tủ điện | Block DWG thiết bị điện{% endblock %}
+{% block meta_description %}Tải thư viện CAD thiết kế tủ điện: block DWG/DXF, sơ đồ điện và tài liệu cho CB, MCCB, PLC, contactor, relay và thiết bị từ nhiều hãng.{% endblock %}
+{% block og_title %}Thư viện CAD thiết kế tủ điện{% endblock %}
+{% block og_description %}Block DWG, DXF và tài liệu kỹ thuật thiết kế tủ điện theo hãng và nhóm thiết bị.{% endblock %}
+{% block content %}
+<div class="container page">
+  <p class="eyebrow">CAD LIBRARY</p><h1>Thư viện CAD thiết kế tủ điện</h1>
+  <p class="lead">Block DWG/DXF và tài liệu kỹ thuật cho thiết kế tủ điện được sắp xếp theo thiết bị và hãng.</p>
+  <p>Thư viện hỗ trợ kỹ sư triển khai bản vẽ tủ điện, tủ phân phối, tủ điều khiển PLC, MCC và VFD Panel. Bạn có thể tìm file CAD theo tên thiết bị, mã SKU hoặc hãng ở trang thiết bị; chỉ các file đã được quản trị viên cập nhật mới hiển thị để tải.</p>
+  <div class="library-cta"><a class="btn primary" href="{{ url_for('library_by_brand') }}">Xem thư viện theo hãng</a><a class="btn ghost" href="{{ url_for('products') }}">Tìm thiết bị và block CAD</a></div>
+  <div class="cad-list">{% for p in products %}<div class="cad-row"><div class="cad-icon">DWG</div><div><h3>{{ p.name }}</h3><p>{{ p.description|truncate(130) }}</p><strong>{{ "{:,.0f}".format(p.price) }} đ</strong></div><div class="cad-actions"><form method="post" action="{{ url_for('cart_add', product_id=p.id) }}"><button class="btn primary">Mua file CAD</button></form><a class="btn ghost" href="{{ url_for('cad_download', product_id=p.id) }}">Tải sau thanh toán</a></div></div>{% else %}<p>Chưa có file CAD. Admin có thể upload khi thêm sản phẩm.</p>{% endfor %}</div>
+  <section class="section-compact">
+    <h2>Các hãng và nhóm thiết bị</h2>
+    <p>Thư viện đang được tổ chức cho ABB, Schneider Electric, Mitsubishi Electric, LS Electric, Chint, Hyundai và các hãng khác khi có tài liệu chính thức. Nội dung gồm CB/MCB/MCCB, contactor, relay, PLC, biến tần, phụ kiện tủ điện và sơ đồ điều khiển.</p>
+  </section>
+</div>
+{% endblock %}

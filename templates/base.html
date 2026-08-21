@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}Nhiệm Autotech Electrical | Thiết bị điện, tủ điện & AutoCAD{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Nhiệm Autotech chuyên cung cấp thiết bị điện, tủ điện công nghiệp, thư viện AutoCAD, mạch điều khiển, sơ đồ PLC và giải pháp tự động hóa.{% endblock %}">
+  <meta name="keywords" content="thiết bị điện, mcb, mccb, cb, contactor, relay, rơle nhiệt, tủ điện, form tủ điện, AutoCAD, PLC, mạch điều khiển, kỹ thuật điện">
+  <meta name="robots" content="{{ robots or 'index,follow' }}">
+  {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}">{% endif %}
+  <meta property="og:title" content="{% block og_title %}Nhiệm Autotech Electrical | Thiết bị điện & thư viện CAD{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Nhiệm Autotech cung cấp thiết bị điện, tủ điện, thư viện AutoCAD và giải pháp tự động hóa.{% endblock %}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ canonical_url or site_url ~ request.path }}">
+  {% block og_image %}{% endblock %}
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="{{ canonical_url or site_url ~ request.path }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/electrical.css') }}">
+</head>
+<body>
+<header class="top">
+  <div class="container nav">
+    <a class="brand" href="{{ url_for('index') }}"><span>NA</span> NHIỆM AUTOTECH</a>
+    <nav>
+      <a href="{{ url_for('index') }}">Trang chủ</a>
+      <a href="{{ url_for('products') }}">Thiết bị</a>
+      <a href="{{ url_for('cad_library') }}">Thư viện CAD</a>
+      <a href="{{ url_for('keyword_autocad') }}">CB/MCB/MCCB</a>
+      <a href="{{ url_for('keyword_plc') }}">PLC/Relay</a>
+      <a href="{{ url_for('library_by_brand') }}">Theo hãng</a>
+      <a href="{{ url_for('panel_forms') }}">Form tủ điện</a>
+      <a href="{{ url_for('quote') }}">Báo giá</a>
+      <a href="{{ url_for('contact') }}">Liên hệ</a>
+    </nav>
+    <div class="nav-right">
+      <a href="{{ url_for('cart') }}">🛒 Giỏ hàng <b>{{ cart_count }}</b></a>
+      {% if session.get('user_id') %}
+        <a href="{{ url_for('account_orders') }}">Tài khoản</a>
+        {% if session.get('is_admin') %}<a class="admin-link" href="{{ url_for('admin_dashboard') }}">Admin</a>{% endif %}
+        <a href="{{ url_for('logout') }}">Thoát</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Đăng nhập</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}<div class="container flashes">{% for category,msg in messages %}<div class="flash {{ category }}">{{ msg }}</div>{% endfor %}</div>{% endif %}
+{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer>
+  <div class="container footer-grid">
+    <div><h3>NHIỆM AUTOTECH ELECTRICAL</h3><p>Thiết bị điện · Tự động hóa · AutoCAD · Thiết kế tủ điện</p></div>
+    <div><h4>Dịch vụ</h4><p>Thiết kế tủ điện<br>Thư viện CAD<br>Tài liệu kỹ thuật</p></div>
+    <div><h4>Liên hệ</h4><p>Email: contact@nhiem-autotech.vn<br>Điện thoại: 09xx xxx xxx</p></div>
+  </div>
+  <div class="copyright">© 2026 Nhiệm Autotech Electrical</div>
+</footer>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {"@type": "Organization", "name": "Nhiệm Autotech Electrical", "url": {{ site_url|tojson }}},
+    {"@type": "WebSite", "name": "Nhiệm Autotech Electrical", "url": {{ site_url|tojson }}, "potentialAction": {"@type": "SearchAction", "target": {{ (site_url ~ url_for('products') ~ '?q={search_term_string}')|tojson }}, "query-input": "required name=search_term_string"}}
+  ]
+}
+</script>
+{% block structured_data %}{% endblock %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
