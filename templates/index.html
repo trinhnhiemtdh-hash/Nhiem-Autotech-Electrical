@@ -46,7 +46,17 @@
     </div>
   </div>
 
-  <div class="library-shell">
+  <div class="library-shell category-library-shell">
+    {% for category in categories %}
+    <article class="library-card category-library-card">
+      {% if category.image %}<img class="category-library-image" src="{{ url_for('static', filename='uploads/images/' + category.image) }}" alt="{{ category.name }}">{% endif %}
+      <h3>{{ category.name }}</h3>
+      <div class="library-cta"><a class="btn primary" href="{{ url_for('products', category=category.slug) }}">Xem danh mục</a></div>
+    </article>
+    {% endfor %}
+  </div>
+
+  <div class="library-shell legacy-library-shell">
     <div class="library-card">
       <div class="library-badge">01</div>
       <h3>Thư viện thiết bị điện</h3>

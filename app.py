@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, abort, Response
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from sqlalchemy import or_
+from sqlalchemy import or_, inspect, text
 from models import db, User, Category, Product, Order, OrderItem, Contact, Download
 from config import Config
 from functools import wraps
@@ -15,9 +15,29 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
-# Create the SQLite schema when the app starts under Gunicorn/Render.
-with app.app_context():
+def initialize_database():
+    """Create and safely upgrade the SQLite database on startup."""
     db.create_all()
+    columns = {column["name"] for column in inspect(db.engine).get_columns("category")}
+    if "image" not in columns:
+        db.session.execute(text("ALTER TABLE category ADD COLUMN image VARCHAR(255)"))
+    default_categories = [
+        ("Thiết bị điện", "thiet-bi-dien"),
+        ("Thiết bị tự động hóa", "thiet-bi-tu-dong-hoa"),
+        ("Tủ điện & phụ kiện", "tu-dien-phu-kien"),
+        ("Thư viện AutoCAD", "thu-vien-autocad"),
+        ("Tài liệu kỹ thuật", "tai-lieu-ky-thuat"),
+    ]
+    for name, slug in default_categories:
+        if not Category.query.filter_by(slug=slug).first():
+            db.session.add(Category(name=name, slug=slug))
+    if not User.query.filter_by(email=app.config["ADMIN_EMAIL"]).first():
+        db.session.add(User(name="Administrator", email=app.config["ADMIN_EMAIL"],
+                            password_hash=generate_password_hash(app.config["ADMIN_PASSWORD"]), is_admin=True))
+    db.session.commit()
+
+with app.app_context():
+    initialize_database()
 
 ALLOWED_DOCS = {"dwg", "dxf", "pdf", "zip", "rar", "xlsx", "docx"}
 
@@ -366,6 +386,29 @@ def admin_dashboard():
 def admin_products():
     return render_template("admin/products.html", products=Product.query.order_by(Product.created_at.desc()).all())
 
+@app.route("/admin/categories", methods=["GET", "POST"])
+@admin_required
+def admin_categories():
+    if request.method == "POST":
+        category = db.session.get(Category, request.form.get("category_id", type=int))
+        image = request.files.get("image")
+        if not category or not image or not image.filename:
+            flash("Vui lòng chọn ảnh cho danh mục.", "warning")
+            return redirect(url_for("admin_categories"))
+        ext = Path(secure_filename(image.filename)).suffix.lower()
+        if ext not in {".jpg", ".jpeg", ".png", ".webp", ".gif"}:
+            flash("Chỉ hỗ trợ ảnh JPG, PNG, WEBP hoặc GIF.", "danger")
+            return redirect(url_for("admin_categories"))
+        filename = f"category-{category.id}{ext}"
+        image_path = Path(app.config["UPLOAD_FOLDER"]) / "images"
+        image_path.mkdir(parents=True, exist_ok=True)
+        image.save(image_path / filename)
+        category.image = filename
+        db.session.commit()
+        flash("Đã cập nhật ảnh danh mục.", "success")
+        return redirect(url_for("admin_categories"))
+    return render_template("admin/categories.html", categories=Category.query.order_by(Category.name).all())
+
 @app.route("/admin/products/add", methods=["GET","POST"])
 @admin_required
 def admin_product_add():
@@ -384,7 +427,9 @@ def admin_product_add():
         if image and image.filename:
             ext = Path(secure_filename(image.filename)).suffix.lower()
             filename = f"{slug}{ext}"
-            image.save(Path(app.config["UPLOAD_FOLDER"]) / "images" / filename)
+            image_path = Path(app.config["UPLOAD_FOLDER"]) / "images"
+            image_path.mkdir(parents=True, exist_ok=True)
+            image.save(image_path / filename)
             product.image = filename
         if cad and cad.filename:
             ext = Path(secure_filename(cad.filename)).suffix.lower().lstrip(".")
@@ -392,7 +437,9 @@ def admin_product_add():
                 flash("Định dạng CAD/tài liệu chưa được cho phép.", "danger")
                 return render_template("admin/product_add.html", categories=categories)
             filename = f"{slug}-{secure_filename(cad.filename)}"
-            cad.save(Path(app.config["UPLOAD_FOLDER"]) / "cad" / filename)
+            cad_path = Path(app.config["UPLOAD_FOLDER"]) / "cad"
+            cad_path.mkdir(parents=True, exist_ok=True)
+            cad.save(cad_path / filename)
             product.cad_file = filename
         db.session.add(product); db.session.commit()
         flash("Đã thêm sản phẩm.", "success")

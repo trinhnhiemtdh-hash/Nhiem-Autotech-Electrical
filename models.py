@@ -15,6 +15,7 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     slug = db.Column(db.String(160), unique=True, nullable=False)
+    image = db.Column(db.String(255))
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
