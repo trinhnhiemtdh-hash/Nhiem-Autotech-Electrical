@@ -15,6 +15,10 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
+# Create the SQLite schema when the app starts under Gunicorn/Render.
+with app.app_context():
+    db.create_all()
+
 ALLOWED_DOCS = {"dwg", "dxf", "pdf", "zip", "rar", "xlsx", "docx"}
 
 def public_url(endpoint, **values):
