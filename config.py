@@ -12,8 +12,8 @@ class Config:
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@nhiem-autotech.local")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@123456")
     
-    # Domain công khai khi đưa lên Internet (ví dụ: https://nhiem-autotech.onrender.com hoặc https://nhiemautotech.vn)
-    SITE_URL = os.getenv("SITE_URL", "").rstrip("/")
+    # Domain công khai khi đưa lên Internet
+    SITE_URL = os.getenv("SITE_URL", "https://autotech-electrical.onrender.com").rstrip("/")
     
     # Mã xác minh Google Search Console
     GOOGLE_SITE_VERIFICATION = os.getenv("GOOGLE_SITE_VERIFICATION", "")
