@@ -11,11 +11,23 @@ class Config:
     UPLOAD_FOLDER = str(BASE_DIR / "static" / "uploads")
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@nhiem-autotech.local")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@123456")
-    # Set this to the public HTTPS domain when deploying, e.g. https://example.vn
+    
+    # Domain công khai khi đưa lên Internet (ví dụ: https://nhiem-autotech.onrender.com hoặc https://nhiemautotech.vn)
     SITE_URL = os.getenv("SITE_URL", "").rstrip("/")
-    # Optional token supplied by Google Search Console when verifying the domain.
+    
+    # Mã xác minh Google Search Console
     GOOGLE_SITE_VERIFICATION = os.getenv("GOOGLE_SITE_VERIFICATION", "")
-    # QR bank-transfer details. Example BANK_ID: MB, VCB, TCB, ACB.
-    BANK_ID = os.getenv("BANK_ID", "")
-    BANK_ACCOUNT = os.getenv("BANK_ACCOUNT", "")
-    BANK_ACCOUNT_NAME = os.getenv("BANK_ACCOUNT_NAME", "")
+    
+    # THÔNG TIN TÀI KHOẢN NGÂN HÀNG VIETCOMBANK & VIETQR
+    BANK_ID = os.getenv("BANK_ID", "VCB")
+    BANK_ACCOUNT = os.getenv("BANK_ACCOUNT", "1016703323")
+    BANK_ACCOUNT_NAME = os.getenv("BANK_ACCOUNT_NAME", "TRINH DUC NHIEM")
+    BANK_BRANCH = os.getenv("BANK_BRANCH", "PGD Ea Kar")
+    
+    # CẤU HÌNH GỬI EMAIL TỰ ĐỘNG (GMAIL SMTP)
+    MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+    MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
+    MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "true").lower() in ["true", "1", "yes"]
+    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")
+    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")  # Mật khẩu ứng dụng Gmail (App Password 16 ký tự)
+    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "Nhiệm Autotech Electrical <noreply@nhiem-autotech.vn>")

@@ -1,32 +1,115 @@
 {% extends "base.html" %}
-{% block title %}Báo giá thiết bị điện{% endblock %}
+{% block title %}Yêu cầu báo giá thiết bị điện & bản vẽ CAD | Nhiệm Autotech{% endblock %}
+{% block meta_description %}Gửi yêu cầu báo giá thiết bị điện, thiết bị tự động hóa, form tủ điện và file bản vẽ AutoCAD tại Nhiệm Autotech Electrical. Hotline/Zalo 0379 760 905.{% endblock %}
+
 {% block content %}
-<div class="container page narrow">
-  <div class="page-head">
-    <div>
-      <p class="eyebrow">QUOTE</p>
-      <h1>Yêu cầu báo giá thiết bị điện</h1>
+<div class="container page-contact-wrap">
+  <!-- TOP RETURN / BACK NAVIGATION BAR -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--border-line);">
+    <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.location.href='{{ url_for('index') }}'; }" class="btn-back-nav" style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:#fff;border:1.5px solid var(--border-line);border-radius:999px;font-size:13px;font-weight:700;color:#0f172a;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>← Quay Lại</span>
+    </button>
+    <div style="font-size:13px;color:#64748b;">
+      <a href="{{ url_for('index') }}" style="color:#0284c7;text-decoration:none;">🏠 Trang chủ</a> / 
+      <span style="color:#0f172a;font-weight:600;">Yêu cầu báo giá</span>
     </div>
   </div>
 
-  <div class="form-card quote-form-wrap">
-    <p class="lead-small">Nhập thông tin và Nhiệm sẽ tư vấn chi tiết về sản phẩm, giá cả, thời gian giao hàng và hỗ trợ thiết kế tủ điện.</p>
+  <div class="page-head-center">
+    <div class="section-eyebrow">BÁO GIÁ NHANH CHÓNG</div>
+    <h1 class="page-title">Yêu Cầu Báo Giá Thiết Bị Điện & Tủ Điện</h1>
+    <p class="page-subtitle">Nhận bảng báo giá chi tiết, chiết khấu hấp dẫn cho nhà thầu, thợ điện và dự án công nghiệp.</p>
+  </div>
 
-    <form method="post" class="form-grid">
-      <label>Họ tên <input required name="name" placeholder="Nguyễn Văn A"></label>
-      <label>Email <input required type="email" name="email" placeholder="email@domain.com"></label>
-      <label>Điện thoại <input name="phone" placeholder="09xx xxx xxx"></label>
-      <label>Sản phẩm quan tâm <input name="product_name" value="{{ default_product or '' }}" placeholder="CB, MCB, MCCB, Contactor..."></label>
-      <label>Số lượng <input type="number" min="1" name="quantity" value="1"></label>
-      <label>Loại dự án <select name="project_type">
-        <option value="Công nghiệp">Công nghiệp</option>
-        <option value="Dân dụng">Dân dụng</option>
-        <option value="Tủ điện">Tủ điện</option>
-        <option value="Thiết kế AutoCAD">Thiết kế AutoCAD</option>
-      </select></label>
-      <label class="full-width">Yêu cầu chi tiết <textarea required name="message" rows="6" placeholder="Ví dụ: cần báo giá 30 bộ MCB 3 pha, cần file CAD và tư vấn chọn thiết bị phù hợp cho tủ điện phân phối..."></textarea></label>
-      <button class="btn primary full-width-btn">Gửi yêu cầu báo giá</button>
-    </form>
+  <div class="contact-grid-layout">
+    <!-- Left Support Box -->
+    <div class="contact-cards-col">
+      <div class="quote-support-box">
+        <div class="q-badge">HỖ TRỢ TRỰC TIẾP</div>
+        <h3>Cần Báo Giá Gấp?</h3>
+        <p>Liên hệ trực tiếp qua số Hotline hoặc Zalo để được gửi bảng giá và danh mục thiết bị ngay trong 15 phút.</p>
+        
+        <div class="q-direct-links">
+          <a href="tel:0379760905" class="q-phone-btn">
+            <span class="q-icon">📞</span>
+            <div>
+              <small>Hotline gọi trực tiếp</small>
+              <strong>0379 760 905</strong>
+            </div>
+          </a>
+          <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" class="q-zalo-btn">
+            <span class="q-icon">💬</span>
+            <div>
+              <small>Chat Zalo báo giá</small>
+              <strong>0379 760 905</strong>
+            </div>
+          </a>
+        </div>
+
+        <div class="q-guarantees">
+          <div class="g-item">✓ Chiết khấu cao cho đơn hàng dự án</div>
+          <div class="g-item">✓ Đầy đủ CO/CQ và hóa đơn VAT</div>
+          <div class="g-item">✓ Hỗ trợ bản vẽ CAD lắp đặt kèm theo</div>
+          <div class="g-item">✓ Giao hàng tận nơi trên toàn quốc</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Quote Form -->
+    <div class="contact-form-col">
+      <div class="form-card-modern">
+        <h2>Thông Tin Yêu Cầu Báo Giá</h2>
+        <p class="form-card-sub">Vui lòng điền thông tin để chúng tôi liên hệ và gửi bảng giá chi tiết.</p>
+
+        <form method="post" class="styled-contact-form">
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Họ và tên *</label>
+              <input required name="name" type="text" placeholder="Nguyễn Văn A">
+            </div>
+            <div class="form-group">
+              <label>Số điện thoại / Zalo *</label>
+              <input required name="phone" type="tel" placeholder="0379 760 905">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Địa chỉ Email</label>
+            <input type="email" name="email" placeholder="email@domain.com">
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Sản phẩm / Thiết bị quan tâm</label>
+              <input name="product_name" value="{{ default_product or '' }}" placeholder="Ví dụ: MCB, MCCB, Contactor, PLC...">
+            </div>
+            <div class="form-group">
+              <label>Số lượng dự kiến</label>
+              <input type="number" min="1" name="quantity" value="1">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Loại công trình / Dự án</label>
+            <select name="project_type" class="styled-select">
+              <option value="Tủ điện công nghiệp">Tủ điện công nghiệp (MSB, DB, ATS, Bù)</option>
+              <option value="Tự động hóa nhà máy">Hệ thống tự động hóa PLC / SCADA</option>
+              <option value="Công trình dân dụng">Công trình dân dụng & thương mại</option>
+              <option value="Thư viện AutoCAD">Yêu cầu thiết kế bản vẽ AutoCAD</option>
+              <option value="Khác">Khác</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Yêu cầu kỹ thuật chi tiết *</label>
+            <textarea required name="message" rows="4" placeholder="Ví dụ: Cần báo giá 30 bộ MCB 3P 40A Schneider, 5 bộ khởi động từ LC1D25, yêu cầu kèm bản vẽ CAD và thời gian giao hàng..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit-quote">Gửi Yêu Cầu Báo Giá</button>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

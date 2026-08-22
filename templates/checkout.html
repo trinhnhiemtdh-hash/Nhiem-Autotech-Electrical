@@ -1,6 +1,151 @@
 {% extends "base.html" %}
-{% block title %}Đặt hàng{% endblock %}
+{% block title %}Đặt hàng & Nhận file CAD | Nhiệm Autotech{% endblock %}
+{% block meta_description %}Điền thông tin đặt mua thiết bị và tải file bản vẽ AutoCAD tại Nhiệm Autotech Electrical.{% endblock %}
+
 {% block content %}
-<div class="container page"><p class="eyebrow">CHECKOUT</p><h1>Thông tin đặt hàng</h1>
-<form method="post" class="form-card"><label>Họ tên<input required name="customer_name" value="{{ user.name }}"></label><label>Số điện thoại<input required name="phone"></label><label>Email nhận file<input required type="email" name="email" value="{{ user.email }}"></label><input type="hidden" name="address" value="Tài liệu số"><label>Ghi chú<textarea name="note" placeholder="Nội dung cần hỗ trợ về file CAD"></textarea></label><div class="order-summary"><h3>Tổng đơn: {{ "{:,.0f}".format(total) }} đ</h3><p>Sau khi đặt đơn, bạn sẽ quét mã QR để chuyển khoản. File CAD chỉ được mở tải khi quản trị viên xác nhận thanh toán.</p></div><button class="btn primary">Tạo đơn và thanh toán QR</button></form></div>
+<div class="container page checkout-page-wrap">
+  <!-- TOP RETURN / BACK NAVIGATION BAR -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--border-line);">
+    <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.location.href='{{ url_for('products') }}'; }" class="btn-back-nav" style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:#fff;border:1.5px solid var(--border-line);border-radius:999px;font-size:13px;font-weight:700;color:#0f172a;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>← Quay Lại Chọn Thêm Sản Phẩm</span>
+    </button>
+    <div style="font-size:13px;color:#64748b;">
+      <a href="{{ url_for('index') }}" style="color:#0284c7;text-decoration:none;">🏠 Trang chủ</a> / 
+      <a href="{{ url_for('products') }}" style="color:#0284c7;text-decoration:none;">Sản phẩm</a> /
+      <span style="color:#0f172a;font-weight:600;">Đặt hàng & Giao file</span>
+    </div>
+  </div>
+
+  <div class="page-head-center">
+    <div class="section-eyebrow">CHECKOUT & GIAO FILE CAD</div>
+    <h1 class="page-title">Thông Tin Đặt Hàng</h1>
+    <p class="page-subtitle">Điền thông tin để hoàn tất đơn hàng. Sau khi Admin duyệt chuyển khoản, file bản vẽ CAD sẽ được tự động gửi thẳng vào Gmail của bạn.</p>
+  </div>
+
+  <div class="checkout-grid">
+    <!-- Form Information -->
+    <div class="checkout-form-card">
+      <div class="c-card-header">
+        <span class="step-badge">1</span>
+        <h2>Thông Tin Người Nhận</h2>
+      </div>
+
+      <form method="post" action="{{ url_for('checkout') }}" class="checkout-main-form" id="checkoutForm">
+        <div class="form-group">
+          <label for="customer_name">Họ và tên của bạn <span class="req">*</span></label>
+          <div class="input-with-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" id="customer_name" name="customer_name" required placeholder="Ví dụ: Trịnh Đức Nhiệm" value="{{ user.name if user else '' }}">
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="email">Gmail nhận file bản vẽ CAD <span class="req">*</span></label>
+            <div class="input-with-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              <input type="email" id="email" name="email" required placeholder="nhanfile@gmail.com" value="{{ user.email if user else '' }}">
+            </div>
+            <small class="field-hint">📧 File CAD và link tải tốc độ cao sẽ được gửi về Gmail này.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Số điện thoại / Zalo <span class="req">*</span></label>
+            <div class="input-with-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <input type="tel" id="phone" name="phone" required placeholder="0379 760 905" value="">
+            </div>
+            <small class="field-hint">📞 Để hỗ trợ mở file và xác nhận giao dịch nhanh chóng.</small>
+          </div>
+        </div>
+
+        <input type="hidden" name="address" value="Tài liệu số / File AutoCAD">
+
+        <div class="form-group">
+          <label for="note">Ghi chú yêu cầu kỹ thuật (nếu có)</label>
+          <textarea id="note" name="note" rows="3" placeholder="Ví dụ: Gửi kèm file version AutoCAD 2007, hoặc cần tư vấn sơ đồ đấu nối..."></textarea>
+        </div>
+
+        <div class="checkout-policy-box">
+          <div class="policy-item">
+            <span class="policy-icon">✓</span>
+            <span>File chuẩn kỹ thuật (.DWG, .DXF, .PDF) mở được trên mọi phiên bản AutoCAD</span>
+          </div>
+          <div class="policy-item">
+            <span class="policy-icon">✓</span>
+            <span>Hỗ trợ kỹ thuật 24/7 qua Zalo <strong>0379 760 905</strong></span>
+          </div>
+          <div class="policy-item">
+            <span class="policy-icon">✓</span>
+            <span>Tải trực tiếp ngay sau khi Admin duyệt thanh toán</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-checkout-submit">
+          <span>TIẾP TỤC THANH TOÁN VIETCOMBANK QR</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Order Summary Column -->
+    <div class="checkout-summary-card">
+      <div class="c-card-header">
+        <span class="step-badge">2</span>
+        <h2>Đơn Hàng ({{ items|length }} mục)</h2>
+      </div>
+
+      <div class="checkout-items-list">
+        {% for p, qty, subtotal in items %}
+          <div class="c-item-row">
+            <div class="c-item-thumb">
+              {% if p.image %}
+                <img src="{{ url_for('static', filename='uploads/images/' + p.image) }}" alt="{{ p.name }}">
+              {% else %}
+                <div class="c-item-noimg">📐</div>
+              {% endif %}
+            </div>
+            <div class="c-item-info">
+              <h4 class="c-item-name">{{ p.name }}</h4>
+              {% if p.cad_file %}
+                <span class="c-cad-tag">⬇ Kèm File CAD DWG</span>
+              {% endif %}
+              <div class="c-item-meta">
+                <span>Số lượng: <strong>{{ qty }}</strong></span>
+                <span class="c-item-price">{{ "{:,.0f}".format(subtotal) }} đ</span>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="summary-totals-box">
+        <div class="s-total-row">
+          <span>Tạm tính:</span>
+          <strong>{{ "{:,.0f}".format(total) }} đ</strong>
+        </div>
+        <div class="s-total-row">
+          <span>Phí giao file Gmail:</span>
+          <strong class="free-badge">Miễn phí (0đ)</strong>
+        </div>
+        <div class="s-total-row grand-total-row">
+          <span>Tổng thanh toán:</span>
+          <strong class="grand-total-val">{{ "{:,.0f}".format(total) }} đ</strong>
+        </div>
+      </div>
+
+      <div class="payment-method-preview">
+        <h4>Phương thức thanh toán:</h4>
+        <div class="method-badge-vcb">
+          <span class="vcb-logo-text">Vietcombank</span>
+          <span>Chuyển khoản / Quét VietQR Napas247</span>
+        </div>
+        <p class="method-sub">Sau khi bấm tiếp tục, bạn sẽ thấy mã QR Vietcombank để quét chuyển tiền nhanh chóng.</p>
+      </div>
+
+      <a href="{{ url_for('cart') }}" class="back-to-cart-link">← Chỉnh sửa giỏ hàng</a>
+    </div>
+  </div>
+</div>
 {% endblock %}

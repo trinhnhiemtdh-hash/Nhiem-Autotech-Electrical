@@ -1,1 +1,128 @@
-{% extends "admin/base.html" %}{% block title %}Quản lý sản phẩm{% endblock %}{% block admin_content %}<div class="section-head"><h1>Sản phẩm</h1><a class="btn primary" href="{{ url_for('admin_product_add') }}">+ Thêm</a></div><div class="table-wrap"><table><tr><th>Tên</th><th>Danh mục</th><th>Giá</th><th>CAD</th><th>Trạng thái</th><th></th></tr>{% for p in products %}<tr><td>{{ p.name }}</td><td>{{ p.category.name if p.category else '-' }}</td><td>{{ "{:,.0f}".format(p.price) }}</td><td>{{ 'Có' if p.cad_file else 'Không' }}</td><td>{{ p.status }}</td><td><form method="post" action="{{ url_for('admin_product_delete', product_id=p.id) }}"><button class="link-danger">Ẩn</button></form></td></tr>{% endfor %}</table></div>{% endblock %}
+{% extends "admin/base.html" %}
+{% block title %}Quản lý tài nguyên & file bán | Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <h1>Quản lý Thư Viện CAD, Khóa Học & Đồ Án</h1>
+    <p>Quản lý toàn bộ các file bản vẽ AutoCAD bán lẻ, khóa học layout tủ điện và đồ án tự động hóa.</p>
+  </div>
+  <a class="btn primary" href="{{ url_for('admin_product_add') }}" style="font-size:14px;padding:10px 20px;">
+    + Đăng File / Khóa Học Mới
+  </a>
+</div>
+
+<!-- Category Filter Pills -->
+<div class="admin-filter-bar" style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;">
+  <a href="{{ url_for('admin_products') }}" class="btn {% if not selected_category %}primary{% else %}ghost{% endif %}" style="font-size:12.5px;padding:6px 14px;">
+    Tất cả ({{ products|length }})
+  </a>
+  {% for c in categories %}
+    <a href="{{ url_for('admin_products', category=c.slug) }}" class="btn {% if selected_category == c.slug %}primary{% else %}ghost{% endif %}" style="font-size:12.5px;padding:6px 14px;">
+      {% if c.slug == 'thu-vien-autocad' %}📐
+      {% elif c.slug == 'thiet-ke-tu-dien' %}⚡
+      {% else %}🤖{% endif %}
+      {{ c.name }}
+    </a>
+  {% endfor %}
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:70px;">Ảnh</th>
+        <th>Tên file / Khóa học / Đồ án</th>
+        <th style="width:170px;">Danh mục</th>
+        <th style="width:120px;">Giá bán</th>
+        <th style="width:140px;">File đính kèm</th>
+        <th style="width:100px;">Trạng thái</th>
+        <th style="width:180px;text-align:center;">Hành động</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+        <tr>
+          <td>
+            <div style="width:48px;height:48px;border-radius:6px;overflow:hidden;background:#f1f5f9;display:grid;place-items:center;border:1px solid #e2e8f0;">
+              {% if p.image %}
+                <img src="{{ url_for('static', filename='uploads/images/' + p.image) }}" alt="{{ p.name }}" style="width:100%;height:100%;object-fit:cover;">
+              {% else %}
+                <span style="font-size:20px;">
+                  {% if p.category and p.category.slug == 'thu-vien-autocad' %}📐
+                  {% elif p.category and p.category.slug == 'thiet-ke-tu-dien' %}⚡
+                  {% else %}🤖{% endif %}
+                </span>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+            <strong>
+              <a href="{{ url_for('product_detail', slug=p.slug) }}" target="_blank" style="color:#0f172a;text-decoration:underline;">
+                {{ p.name }}
+              </a>
+            </strong>
+            <div style="font-size:11.5px;color:#64748b;margin-top:2px;">
+              Mã: <strong>{{ p.sku or 'N/A' }}</strong> · Slug: <code>{{ p.slug }}</code>
+            </div>
+          </td>
+          <td>
+            {% if p.category %}
+              <span class="badge-cat" style="font-size:11px;padding:3px 8px;border-radius:4px;">
+                {{ p.category.name }}
+              </span>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+          <td>
+            <strong style="color:#ff7a00;font-size:14.5px;">{{ "{:,.0f}".format(p.price) }} đ</strong>
+          </td>
+          <td>
+            {% if p.cad_file %}
+              <div style="font-size:11.5px;color:#16a34a;font-weight:bold;">
+                ✓ Có file:
+                <a href="{{ url_for('cad_download', product_id=p.id) }}" style="color:#0284c7;display:block;word-break:break-all;" title="Tải thử file">
+                  {{ p.cad_file }}
+                </a>
+              </div>
+            {% else %}
+              <span style="color:#ef4444;font-size:11.5px;">✕ Chưa có file</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if p.status == 'active' %}
+              <span class="status-pill status-paid-pill" style="font-size:11px;">Hiển thị</span>
+            {% else %}
+              <span class="status-pill" style="font-size:11px;background:#fee2e2;color:#991b1b;">Đang ẩn</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;justify-content:center;align-items:center;">
+              <a href="{{ url_for('admin_product_edit', product_id=p.id) }}" class="btn ghost" style="padding:4px 10px;font-size:11.5px;">
+                ✏️ Sửa
+              </a>
+              <form method="post" action="{{ url_for('admin_product_toggle', product_id=p.id) }}" style="display:inline;">
+                <button type="submit" class="btn ghost" style="padding:4px 8px;font-size:11.5px;" title="Ẩn/Hiện">
+                  {% if p.status == 'active' %}👁️ Ẩn{% else %}✓ Hiện{% endif %}
+                </button>
+              </form>
+              <form method="post" action="{{ url_for('admin_product_delete', product_id=p.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn mục này?');" style="display:inline;">
+                <button type="submit" class="link-danger" style="background:none;border:none;color:#ef4444;font-size:11.5px;cursor:pointer;padding:4px;" title="Xóa">
+                  🗑️
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="7" style="text-align:center;padding:40px;color:#64748b;">
+            Chưa có tài nguyên nào trong danh mục này. Hãy bấm nút <strong>"+ Đăng File / Khóa Học Mới"</strong> ở góc trên.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

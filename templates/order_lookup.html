@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Tra cứu đơn hàng & Tải file CAD | Nhiệm Autotech{% endblock %}
+{% block meta_description %}Tra cứu trạng thái đơn hàng, kiểm tra tình trạng thanh toán và tải file bản vẽ AutoCAD tại Nhiệm Autotech.{% endblock %}
+
+{% block content %}
+<div class="container page" style="max-width:860px;">
+  <!-- TOP RETURN / BACK NAVIGATION BAR -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--border-line);">
+    <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.location.href='{{ url_for('index') }}'; }" class="btn-back-nav" style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:#fff;border:1.5px solid var(--border-line);border-radius:999px;font-size:13px;font-weight:700;color:#0f172a;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>← Quay Lại</span>
+    </button>
+    <div style="font-size:13px;color:#64748b;">
+      <a href="{{ url_for('index') }}" style="color:#0284c7;text-decoration:none;">🏠 Trang chủ</a> / 
+      <span style="color:#0f172a;font-weight:600;">Tra cứu đơn hàng</span>
+    </div>
+  </div>
+
+  <div class="page-head-center">
+    <div class="section-eyebrow">TRA CỨU TRẠNG THÁI & TẢI FILE</div>
+    <h1 class="page-title">Tra Cứu Đơn Hàng</h1>
+    <p class="page-subtitle">Nhập Mã đơn hàng (ví dụ: <code>1</code>), Số điện thoại hoặc Gmail để kiểm tra trạng thái thanh toán và tải file bản vẽ CAD.</p>
+  </div>
+
+  <div style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-xl);padding:30px;box-shadow:var(--shadow-md);margin-bottom:30px;">
+    <form method="get" action="{{ url_for('order_lookup') }}" style="display:flex;gap:12px;">
+      <input type="text" name="q" value="{{ q or '' }}" placeholder="Nhập mã đơn (VD: 1), SĐT (VD: 0379760905) hoặc Gmail..." required style="flex:1;padding:12px 18px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:15px;">
+      <button type="submit" class="btn primary" style="padding:12px 24px;font-size:15px;">Tra Cứu</button>
+    </form>
+  </div>
+
+  {% if orders is not none %}
+    <div style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-xl);padding:30px;box-shadow:var(--shadow-md);">
+      <h3 style="margin:0 0 20px;font-size:18px;">Kết quả tìm kiếm cho "{{ q }}":</h3>
+      
+      {% if orders %}
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          {% for o in orders %}
+            <div style="border:1px solid var(--border-line);border-radius:var(--radius-lg);padding:20px;background:#f8fafc;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;border-bottom:1px solid #e2e8f0;padding-bottom:12px;margin-bottom:12px;">
+                <div>
+                  <strong style="font-size:16px;color:#0f172a;">Đơn hàng #{{ o.id }}</strong>
+                  <span style="font-size:12.5px;color:#64748b;display:block;">Ngày đặt: {{ o.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                  <span style="font-size:12.5px;color:#0284c7;">Gmail nhận: <strong>{{ o.email or (o.user.email if o.user else '') }}</strong></span>
+                </div>
+                <div>
+                  {% if o.status == 'paid' %}
+                    <span style="background:#dcfce7;color:#15803d;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:13px;">✅ ĐÃ THANH TOÁN</span>
+                  {% elif o.status == 'awaiting_confirmation' %}
+                    <span style="background:#fef3c7;color:#b45309;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:13px;">⏳ CHỜ ADMIN DUYỆT</span>
+                  {% else %}
+                    <span style="background:#fee2e2;color:#b91c1c;padding:6px 14px;border-radius:20px;font-weight:bold;font-size:13px;">CHỜ THANH TOÁN</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div style="margin-bottom:14px;">
+                <h4 style="margin:0 0 6px;font-size:14px;color:#475569;">Sản phẩm trong đơn:</h4>
+                <ul style="margin:0;padding-left:18px;font-size:13.5px;">
+                  {% for item in o.items %}
+                    <li style="margin-bottom:6px;">
+                      <strong>{{ item.product_name }}</strong> (x{{ item.quantity }}) - {{ "{:,.0f}".format(item.subtotal) }}đ
+                      {% if o.status == 'paid' and item.product_id %}
+                        <div style="margin-top:4px;">
+                          <a href="{{ url_for('cad_download', product_id=item.product_id, order_id=o.id) }}" class="btn primary" style="padding:4px 12px;font-size:12px;">⬇ Tải file CAD ngay</a>
+                        </div>
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e2e8f0;padding-top:12px;">
+                <div style="font-size:15px;">Tổng tiền: <strong style="color:#ff7a00;font-size:17px;">{{ "{:,.0f}".format(o.total) }} đ</strong></div>
+                <a href="{{ url_for('payment', order_id=o.id) }}" class="btn ghost" style="padding:6px 14px;font-size:13px;">Xem chi tiết & QR chuyển khoản →</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color:#64748b;text-align:center;padding:20px 0;">Không tìm thấy đơn hàng nào khớp với thông tin "<strong>{{ q }}</strong>". Vui lòng kiểm tra lại mã đơn hoặc số điện thoại.</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

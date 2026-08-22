@@ -1,130 +1,164 @@
 {% extends "base.html" %}
-{% block title %}Thư viện AutoCAD thiết bị điện CB MCB MCCB ACB các hãng | Nhiệm Autotech{% endblock %}
+{% block title %}Thư Viện AutoCAD MCB, MCCB, ACB Các Hãng (Schneider, LS, ABB, Mitsubishi) | Nhiệm Autotech{% endblock %}
+{% block meta_description %}Tải thư viện AutoCAD (.DWG) MCB, MCCB, ACB, Contactor, Rơ le nhiệt của các hãng Schneider, LS, ABB, Mitsubishi, Chint, Siemens, Hyundai. File chuẩn tỷ lệ 1:1, tải nhanh.{% endblock %}
+
 {% block content %}
 <div class="container page">
+  <!-- Top Return Bar -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--border-line);">
+    <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.location.href='{{ url_for('index') }}'; }" class="btn-back-nav" style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:#fff;border:1.5px solid var(--border-line);border-radius:999px;font-size:13px;font-weight:700;color:#0f172a;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>← Quay Lại</span>
+    </button>
+    <div style="font-size:13px;color:#64748b;">
+      <a href="{{ url_for('index') }}" style="color:#0284c7;text-decoration:none;">🏠 Trang chủ</a> / 
+      <span style="color:#0f172a;font-weight:600;">Thư viện AutoCAD MCB & MCCB các hãng</span>
+    </div>
+  </div>
+
   <div class="page-head">
     <div>
-      <p class="eyebrow">AUTO CAD LIBRARY</p>
-      <h1>Thư viện AutoCAD thiết bị điện CB, MCB, MCCB, ACB các hãng</h1>
+      <p class="eyebrow">CHUYÊN MỤC SEO · THƯ VIỆN CAD CHUẨN</p>
+      <h1>Thư Viện AutoCAD Thiết Bị Điện MCB, MCCB, ACB Của Các Hãng</h1>
     </div>
-    <a class="btn primary" href="{{ url_for('cad_library') }}">Xem thư viện CAD</a>
+    <a class="btn primary" href="{{ url_for('products', category='thu-vien-autocad') }}">⚡ Xem 15 Gói Thư Viện AutoCAD</a>
   </div>
 
-  <p class="lead">
-    Nhiệm Autotech cung cấp thư viện AutoCAD thiết bị điện cho các thiết bị điện công nghiệp như
-    CB, MCB, MCCB, ACB, rơle nhiệt, contactor, relay, tủ điện, form tủ điện và sơ đồ mạch điều khiển.
-    Tài liệu được thiết kế để hỗ trợ kỹ sư điện, nhà thầu điện, kỹ thuật viên, và người thiết kế tủ điện.
+  <p class="lead" style="font-size:16px;line-height:1.7;color:#334155;margin-bottom:30px;">
+    <strong>Nhiệm Autotech Electrical</strong> cung cấp trọn bộ <strong>thư viện AutoCAD (.DWG)</strong> thiết bị đóng cắt và bảo vệ công nghiệp: <strong>MCB, MCCB, ACB, ELCB, RCBO, Contactor khởi động từ, Rơ le nhiệt, Biến tần, PLC</strong> từ các thương hiệu hàng đầu thế giới: <em>ABB, Schneider, LS Electric, Mitsubishi, Siemens, Chint, Hyundai, Omron, Panasonic, Hager, VMC, Etek</em>. Bản vẽ chuẩn tỷ lệ 1:1, bóc tách mặt cắt 2D, kích thước thực tế giúp kỹ sư thiết kế bố trí layout tủ điện chính xác 100%.
   </p>
 
-  <div class="library-shell">
-    <div class="library-card">
-      <div class="library-badge">CB</div>
-      <h3>CB - Circuit Breaker</h3>
-      <p>Block CAD và sơ đồ bố trí CB cho tủ điện, tủ phân phối, tủ tổng và panel công nghiệp.</p>
+  <!-- Highlight Box: 4 Core Breaker Types -->
+  <div class="library-shell" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;margin-bottom:36px;">
+    <div class="library-card" style="background:#fff;border:1.5px solid var(--border-line);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);">
+      <div class="library-badge" style="background:#0284c7;color:#fff;font-weight:900;display:inline-block;padding:4px 10px;border-radius:4px;font-size:12px;margin-bottom:10px;">MCB</div>
+      <h3 style="font-size:18px;margin-bottom:8px;">Thư Viện AutoCAD MCB (Aptomat Tép)</h3>
+      <p style="font-size:13.5px;color:#64748b;line-height:1.5;">Block CAD MCB 1P, 2P, 3P, 4P dòng định mức từ 6A đến 63A, 100A, 125A chuẩn Schneider Acti9, LS BKN/BKP, Mitsubishi BH-D, ABB SH200.</p>
     </div>
-    <div class="library-card">
-      <div class="library-badge">MCB</div>
-      <h3>MCB - Miniature Circuit Breaker</h3>
-      <p>Thư viện MCB chuẩn các hãng ABB, Schneider, LS, Chint, Hyundai, Siemens, Mitsubishi.</p>
+    <div class="library-card" style="background:#fff;border:1.5px solid var(--border-line);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);">
+      <div class="library-badge" style="background:#ea580c;color:#fff;font-weight:900;display:inline-block;padding:4px 10px;border-radius:4px;font-size:12px;margin-bottom:10px;">MCCB</div>
+      <h3 style="font-size:18px;margin-bottom:8px;">Thư Viện AutoCAD MCCB (Aptomat Khối)</h3>
+      <p style="font-size:13.5px;color:#64748b;line-height:1.5;">Block 2D mặt đứng, mặt cắt của MCCB 3P, 4P từ 30A đến 1600A các dòng Compact NSX Schneider, Metasol LS, NF Mitsubishi, Tmax ABB, Formula.</p>
     </div>
-    <div class="library-card">
-      <div class="library-badge">MCCB</div>
-      <h3>MCCB - Molded Case Circuit Breaker</h3>
-      <p>File CAD, sơ đồ, bố trí thiết bị và các dạng tủ phân phối sử dụng MCCB công suất lớn.</p>
+    <div class="library-card" style="background:#fff;border:1.5px solid var(--border-line);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);">
+      <div class="library-badge" style="background:#0f172a;color:#fff;font-weight:900;display:inline-block;padding:4px 10px;border-radius:4px;font-size:12px;margin-bottom:10px;">ACB</div>
+      <h3 style="font-size:18px;margin-bottom:8px;">Thư Viện AutoCAD Máy Cắt Không Khí ACB</h3>
+      <p style="font-size:13.5px;color:#64748b;line-height:1.5;">Bản vẽ chi tiết máy cắt ACB 3P/4P Fixed & Drawout (kéo rút) từ 630A đến 6300A Masterpact MTZ/NT/NW Schneider, Susol/Metasol LS, Emax ABB.</p>
     </div>
-    <div class="library-card">
-      <div class="library-badge">ACB</div>
-      <h3>ACB - Air Circuit Breaker</h3>
-      <p>Thư viện ACB cho hệ thống điện trung áp, tủ tổng, nguồn chính và panel điện công nghiệp.</p>
+    <div class="library-card" style="background:#fff;border:1.5px solid var(--border-line);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm);">
+      <div class="library-badge" style="background:#16a34a;color:#fff;font-weight:900;display:inline-block;padding:4px 10px;border-radius:4px;font-size:12px;margin-bottom:10px;">CONTACTOR</div>
+      <h3 style="font-size:18px;margin-bottom:8px;">Thư Viện Contactor & Rơ Le Nhiệt</h3>
+      <p style="font-size:13.5px;color:#64748b;line-height:1.5;">Khởi động từ Contactor 9A - 800A, Rơ le nhiệt bảo vệ động cơ, cuộn hút 220VAC, 24VDC, tiếp điểm phụ NO/NC chuẩn các hãng.</p>
     </div>
   </div>
 
-  <section class="section">
+  <!-- Brands List with Direct Links -->
+  <section class="section" style="margin-bottom:40px;">
     <div class="section-head">
       <div>
-        <p class="eyebrow">CÁC HÃNG PHỔ BIẾN</p>
-        <h2>Thiết bị điện và block CAD theo hãng</h2>
+        <p class="eyebrow">DANH MỤC THEO HÃNG</p>
+        <h2>Thư viện AutoCAD MCB & MCCB Phân Theo Từng Hãng (49.000 đ/Hãng)</h2>
       </div>
     </div>
 
-    <div class="brand-grid">
-      <div class="brand-card">
-        <div class="brand-icon">A</div>
-        <h3>ABB</h3>
-        <ul>
-          <li>CB ABB</li>
-          <li>MCB ABB</li>
-          <li>MCCB ABB</li>
-          <li>ACB ABB</li>
-        </ul>
+    <div class="brand-grid" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:20px;">
+      <div class="brand-card" style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-lg);padding:20px;">
+        <h3 style="color:#ff7a00;margin-bottom:8px;">1. Hãng SCHNEIDER</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:12px;">Acti9 iK60N/iC60N, EasyPact EZC, Compact NSX/CVS, Masterpact ACB, TeSys Contactor.</p>
+        <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="btn ghost" style="font-size:12.5px;padding:6px 14px;">Mua file Schneider (49k)</a>
       </div>
-      <div class="brand-card">
-        <div class="brand-icon">S</div>
-        <h3>Schneider</h3>
-        <ul>
-          <li>Schneider MCB</li>
-          <li>Schneider MCCB</li>
-          <li>Contactor Schneider</li>
-          <li>Thermal relay</li>
-        </ul>
+
+      <div class="brand-card" style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-lg);padding:20px;">
+        <h3 style="color:#ff7a00;margin-bottom:8px;">2. Hãng LS ELECTRIC</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:12px;">MCB BKN/BKP, MCCB Metasol ABN/ABS/ABH, Susol TS, ACB Metasol AS, Contactor MC series.</p>
+        <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="btn ghost" style="font-size:12.5px;padding:6px 14px;">Mua file LS (49k)</a>
       </div>
-      <div class="brand-card">
-        <div class="brand-icon">L</div>
-        <h3>LS</h3>
-        <ul>
-          <li>MCB LS</li>
-          <li>MCCB LS</li>
-          <li>Contactor LS</li>
-          <li>Relay LS</li>
-        </ul>
+
+      <div class="brand-card" style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-lg);padding:20px;">
+        <h3 style="color:#ff7a00;margin-bottom:8px;">3. Hãng MITSUBISHI</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:12px;">BH-D6, NF-C/NF-S, NV-S chống giật, ACB AE-SW, Contactor S-T/S-N, PLC FX5U/FX3U.</p>
+        <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="btn ghost" style="font-size:12.5px;padding:6px 14px;">Mua file Mitsubishi (49k)</a>
       </div>
-      <div class="brand-card">
-        <div class="brand-icon">C</div>
-        <h3>Chint</h3>
-        <ul>
-          <li>MCB Chint</li>
-          <li>MCCB Chint</li>
-          <li>RCCB Chint</li>
-          <li>Block tủ điện Chint</li>
-        </ul>
+
+      <div class="brand-card" style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-lg);padding:20px;">
+        <h3 style="color:#ff7a00;margin-bottom:8px;">4. Hãng ABB</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:12px;">MCB SH200/S200, MCCB Tmax XT, Formula, ACB Emax 2, Contactor AF series tiết kiệm điện.</p>
+        <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="btn ghost" style="font-size:12.5px;padding:6px 14px;">Mua file ABB (49k)</a>
       </div>
-      <div class="brand-card">
-        <div class="brand-icon">M</div>
-        <h3>Mitsubishi</h3>
-        <ul>
-          <li>PLC Mitsubishi</li>
-          <li>Contactor Mitsubishi</li>
-          <li>Relay Mitsubishi</li>
-          <li>Sơ đồ điều khiển Mitsubishi</li>
-        </ul>
+
+      <div class="brand-card" style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-lg);padding:20px;">
+        <h3 style="color:#ff7a00;margin-bottom:8px;">5. Hãng SIEMENS</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:12px;">Sentron 5SY/5SL MCB, 3VA MCCB, 3WL ACB, Sirius 3RT Contactor, PLC Siemens S7-1200/1500.</p>
+        <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="btn ghost" style="font-size:12.5px;padding:6px 14px;">Mua file Siemens (49k)</a>
       </div>
-      <div class="brand-card">
-        <div class="brand-icon">S</div>
-        <h3>Siemens</h3>
-        <ul>
-          <li>Siemens MCB</li>
-          <li>Siemens breaker</li>
-          <li>Contactor Siemens</li>
-          <li>Panel automation Siemens</li>
-        </ul>
+
+      <div class="brand-card" style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-lg);padding:20px;">
+        <h3 style="color:#ff7a00;margin-bottom:8px;">6. Hãng CHINT</h3>
+        <p style="font-size:13px;color:#64748b;margin-bottom:12px;">NXB-63 MCB, NM1/NM8N MCCB, NXA ACB, NXC Contactor kinh tế cho nhà xưởng dân dụng.</p>
+        <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="btn ghost" style="font-size:12.5px;padding:6px 14px;">Mua file Chint (49k)</a>
       </div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="section-head">
+  <!-- FAQ Section for Google Rich Snippets -->
+  <section class="section" style="background:#fff;border:1.5px solid var(--border-line);border-radius:var(--radius-xl);padding:32px;margin-bottom:40px;">
+    <h2 style="margin-bottom:20px;">❓ Các câu hỏi thường gặp về Thư Viện AutoCAD Thiết Bị Điện (FAQ)</h2>
+    <div style="display:flex;flex-direction:column;gap:18px;">
       <div>
-        <p class="eyebrow">NỘI DUNG TÌM KIẾM</p>
-        <h2>Những từ khóa Google quan trọng cho website thiết bị điện</h2>
+        <h4 style="font-size:16px;color:#0f172a;margin-bottom:6px;">1. File AutoCAD tải về có tương thích với phiên bản CAD nào?</h4>
+        <p style="font-size:14px;color:#475569;line-height:1.6;margin:0;">Tất cả file CAD (.DWG) tại Nhiệm Autotech được lưu ở định dạng <strong>AutoCAD 2007</strong>, tương thích 100% với mọi phiên bản AutoCAD từ 2007, 2010, 2015, 2018, 2020 đến 2024, 2025 cũng như GstarCAD, ZWCAD.</p>
+      </div>
+      <div>
+        <h4 style="font-size:16px;color:#0f172a;margin-bottom:6px;">2. Sau khi thanh toán, bao lâu tôi sẽ nhận được file?</h4>
+        <p style="font-size:14px;color:#475569;line-height:1.6;margin:0;">Hệ thống xác nhận thanh toán quét mã QR Vietcombank tự động. Ngay khi giao dịch thành công và Admin duyệt, file sẽ được gửi trực tiếp vào địa chỉ <strong>Gmail</strong> bạn đã điền lúc mua hàng, kèm link tải tốc độ cao.</p>
+      </div>
+      <div>
+        <h4 style="font-size:16px;color:#0f172a;margin-bottom:6px;">3. Gói Trọn Bộ 199k khác gì so với mua từng hãng 49k?</h4>
+        <p style="font-size:14px;color:#475569;line-height:1.6;margin:0;">Gói <strong>Trọn Bộ Thư Viện All-In-One 199k</strong> bao gồm toàn bộ file của cả 12 hãng (tiết kiệm hơn 60% so với mua lẻ), kèm theo bộ thư viện thiết bị điện công nghiệp tổng hợp, sơ đồ mạch điều khiển và bộ khung tên form vỏ tủ chuẩn.</p>
       </div>
     </div>
-    <div class="tool-card">
-      <p>
-        Các từ khóa mục tiêu bao gồm: thư viện AutoCAD thiết bị điện, file CAD CB, file CAD MCB,
-        file CAD MCCB, file CAD ACB, sơ đồ điện công nghiệp, tủ điện, contactor, relay, rơle nhiệt,
-        mạch điều khiển PLC, sơ đồ điện tủ điện, block CAD thiết bị điện các hãng, AutoCAD điện công nghiệp.
-      </p>
-    </div>
   </section>
+
+  <!-- CTA Box -->
+  <div style="background:linear-gradient(135deg, #0f172a, #1e293b);color:#fff;border-radius:var(--radius-xl);padding:36px;text-align:center;box-shadow:var(--shadow-lg);">
+    <h2 style="color:#fff;margin-bottom:12px;">Cần Tư Vấn Thư Viện Hoặc Yêu Cầu Vẽ Layout Theo Dự Án?</h2>
+    <p style="color:#94a3b8;max-width:600px;margin:0 auto 24px;font-size:14.5px;">Liên hệ ngay kỹ sư Nhiệm Autotech qua Hotline / Zalo để được hỗ trợ gửi file mẫu và tư vấn thiết kế tủ điện theo yêu cầu.</p>
+    <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" class="btn primary" style="font-size:16px;padding:12px 30px;">💬 Chat Zalo 0379 760 905</a>
+  </div>
 </div>
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "File AutoCAD tải về có tương thích với phiên bản CAD nào?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Tất cả file CAD (.DWG) tại Nhiệm Autotech được lưu ở định dạng AutoCAD 2007, tương thích 100% với mọi phiên bản AutoCAD từ 2007 đến 2025 cũng như GstarCAD, ZWCAD."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Sau khi thanh toán, bao lâu tôi sẽ nhận được file?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Ngay khi giao dịch thanh toán quét mã VietQR được Admin duyệt, file sẽ được tự động gửi trực tiếp vào Gmail của bạn."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Gói Trọn Bộ 199k khác gì so với mua từng hãng 49k?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Gói Trọn Bộ Thư Viện All-In-One 199k bao gồm toàn bộ file của cả 12 hãng (tiết kiệm hơn 60% so với mua lẻ), kèm sơ đồ mạch điều khiển và bộ khung tên form vỏ tủ chuẩn."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
 {% endblock %}

@@ -2,70 +2,407 @@
 <html lang="vi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>{% block title %}Nhiệm Autotech Electrical | Thiết bị điện, tủ điện & AutoCAD{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}Nhiệm Autotech chuyên cung cấp thiết bị điện, tủ điện công nghiệp, thư viện AutoCAD, mạch điều khiển, sơ đồ PLC và giải pháp tự động hóa.{% endblock %}">
-  <meta name="keywords" content="thiết bị điện, mcb, mccb, cb, contactor, relay, rơle nhiệt, tủ điện, form tủ điện, AutoCAD, PLC, mạch điều khiển, kỹ thuật điện">
-  <meta name="robots" content="{{ robots or 'index,follow' }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Nhiệm Autotech Electrical | Thư Viện AutoCAD MCB MCCB Các Hãng & Layout Tủ Điện{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Nhiệm Autotech chuyên cung cấp thư viện AutoCAD MCB, MCCB, ACB của các hãng (Schneider, LS, Mitsubishi, ABB, Chint, Siemens, Omron), khóa học thiết kế layout tủ điện công nghiệp MSB DB ATS và đồ án tự động hóa PLC SolidWorks 3D.{% endblock %}">
+  <meta name="keywords" content="thư viện autocad mcb, thư viện autocad mccb, block cad mcb các hãng, thư viện autocad schneider, thư viện autocad ls, thư viện autocad mitsubishi, thư viện autocad abb, thư viện autocad siemens, thiết kế layout tủ điện, layout tủ điện msb, layout tủ db, layout tủ ats, khóa học thiết kế tủ điện, đồ án tự động hóa plc, lập trình plc s7-1200, vẽ 3d solidworks cơ khí, Nhiệm Autotech">
+  <meta name="robots" content="{{ robots or 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' }}">
   {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}">{% endif %}
-  <meta property="og:title" content="{% block og_title %}Nhiệm Autotech Electrical | Thiết bị điện & thư viện CAD{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}Nhiệm Autotech cung cấp thiết bị điện, tủ điện, thư viện AutoCAD và giải pháp tự động hóa.{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}Thư Viện AutoCAD MCB, MCCB Các Hãng & Thiết Kế Layout Tủ Điện | Nhiệm Autotech{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Mua file thư viện AutoCAD DWG thiết bị điện MCB MCCB chuẩn hãng, layout tủ điện MSB DB và đồ án PLC 3D SolidWorks.{% endblock %}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{ canonical_url or site_url ~ request.path }}">
   {% block og_image %}{% endblock %}
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="{{ canonical_url or site_url ~ request.path }}">
+  
+  <!-- Google Fonts Inter / Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/electrical.css') }}">
 </head>
 <body>
-<header class="top">
-  <div class="container nav">
-    <a class="brand" href="{{ url_for('index') }}"><span>NA</span> NHIỆM AUTOTECH</a>
-    <nav>
-      <a href="{{ url_for('index') }}">Trang chủ</a>
-      <a href="{{ url_for('products') }}">Thiết bị</a>
-      <a href="{{ url_for('cad_library') }}">Thư viện CAD</a>
-      <a href="{{ url_for('keyword_autocad') }}">CB/MCB/MCCB</a>
-      <a href="{{ url_for('keyword_plc') }}">PLC/Relay</a>
-      <a href="{{ url_for('library_by_brand') }}">Theo hãng</a>
-      <a href="{{ url_for('panel_forms') }}">Form tủ điện</a>
-      <a href="{{ url_for('quote') }}">Báo giá</a>
-      <a href="{{ url_for('contact') }}">Liên hệ</a>
-    </nav>
-    <div class="nav-right">
-      <a href="{{ url_for('cart') }}">🛒 Giỏ hàng <b>{{ cart_count }}</b></a>
-      {% if session.get('user_id') %}
-        <a href="{{ url_for('account_orders') }}">Tài khoản</a>
-        {% if session.get('is_admin') %}<a class="admin-link" href="{{ url_for('admin_dashboard') }}">Admin</a>{% endif %}
-        <a href="{{ url_for('logout') }}">Thoát</a>
-      {% else %}
-        <a href="{{ url_for('login') }}">Đăng nhập</a>
-      {% endif %}
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <div class="container top-bar-inner">
+    <div class="top-bar-left">
+      <span class="top-tag">⚡ UY TÍN HÀNG ĐẦU</span>
+      <span class="top-text">Nhiệm Autotech Electrical - Thiết bị điện công nghiệp, Tủ điện & Thư viện AutoCAD chuẩn</span>
+    </div>
+    <div class="top-bar-right">
+      <a href="tel:0379760905" class="top-contact-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Hotline/Zalo: <strong>0379 760 905</strong>
+      </a>
+      <div class="top-social-links">
+        <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" title="Chat Zalo">Zalo</a>
+        <a href="https://www.facebook.com/kois.nhims.1/" target="_blank" rel="noopener noreferrer" title="Facebook">Facebook</a>
+        <a href="https://www.tiktok.com/@nhim.autotech" target="_blank" rel="noopener noreferrer" title="TikTok">TikTok</a>
+      </div>
     </div>
   </div>
+</div>
+
+<!-- MAIN HEADER -->
+<header class="header-main">
+  <div class="container header-inner">
+    <!-- Brand Logo -->
+    <a class="brand-logo" href="{{ url_for('index') }}">
+      <div class="brand-badge">NA</div>
+      <div class="brand-text">
+        <span class="brand-name">NHIỆM AUTOTECH</span>
+        <span class="brand-sub">ELECTRICAL & AUTOMATION</span>
+      </div>
+    </a>
+
+    <!-- Search Form -->
+    <div class="header-search">
+      <form action="{{ url_for('products') }}" method="get" class="search-box">
+        <input type="text" name="q" placeholder="Tìm thiết bị điện, mã CAD, PLC, MCB..." value="{{ request.args.get('q', '') }}">
+        <button type="submit" aria-label="Tìm kiếm">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+      </form>
+    </div>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <!-- Consultation CTA -->
+      <button class="btn-consultation" onclick="openConsultationModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Liên hệ tư vấn</span>
+      </button>
+
+      <!-- Cart Button -->
+      <a href="{{ url_for('cart') }}" class="btn-cart-nav" title="Giỏ hàng">
+        <div class="cart-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          <span class="cart-badge-count">{{ cart_count }}</span>
+        </div>
+        <div class="cart-info-text">
+          <small>Giỏ hàng</small>
+          <strong>{{ "{:,.0f}".format(cart_total) }}đ</strong>
+        </div>
+      </a>
+
+      <!-- User Account -->
+      {% if session.get('user_id') %}
+        <div class="user-menu-wrap">
+          <a href="{{ url_for('account_orders') }}" class="user-nav-link">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>Tài khoản</span>
+          </a>
+          {% if session.get('is_admin') %}
+            <a href="{{ url_for('admin_dashboard') }}" class="admin-badge-link">Admin</a>
+          {% endif %}
+          <a href="{{ url_for('logout') }}" class="logout-link" title="Đăng xuất">Thoát</a>
+        </div>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn-login-nav">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span>Đăng nhập</span>
+        </a>
+      {% endif %}
+
+      <!-- Hamburger Button (Mobile) -->
+      <button class="mobile-toggle" id="mobileMenuBtn" aria-label="Mở menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- NAVIGATION BAR (DESKTOP) -->
+  <nav class="nav-bar-desktop">
+    <div class="container">
+      <ul class="main-menu">
+        <li class="menu-item"><a href="{{ url_for('index') }}" class="menu-link {% if request.endpoint == 'index' %}active{% endif %}">🏠 Trang chủ</a></li>
+        
+        <li class="menu-item">
+          <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="menu-link {% if request.args.get('category') == 'thu-vien-autocad' or request.endpoint == 'cad_library' %}active{% endif %}">
+            📐 Thư Viện AutoCAD
+          </a>
+        </li>
+
+        <li class="menu-item">
+          <a href="{{ url_for('products', category='thiet-ke-tu-dien') }}" class="menu-link {% if request.args.get('category') == 'thiet-ke-tu-dien' %}active{% endif %}">
+            ⚡ Khóa Học & Layout Tủ Điện
+          </a>
+        </li>
+
+        <li class="menu-item">
+          <a href="{{ url_for('products', category='do-an-tu-dong-hoa') }}" class="menu-link {% if request.args.get('category') == 'do-an-tu-dong-hoa' %}active{% endif %}">
+            🤖 Đồ Án Tự Động Hóa & 3D
+          </a>
+        </li>
+
+        <li class="menu-item"><a href="{{ url_for('order_lookup') }}" class="menu-link {% if request.endpoint == 'order_lookup' %}active{% endif %}">🔍 Tra cứu đơn hàng</a></li>
+        <li class="menu-item"><a href="{{ url_for('quote') }}" class="menu-link {% if request.endpoint == 'quote' %}active{% endif %}">Yêu cầu báo giá</a></li>
+        <li class="menu-item"><a href="{{ url_for('contact') }}" class="menu-link {% if request.endpoint == 'contact' %}active{% endif %}">Liên hệ</a></li>
+      </ul>
+    </div>
+  </nav>
 </header>
 
+<!-- MOBILE DRAWER MENU -->
+<div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="drawer-header">
+    <div class="brand-logo">
+      <div class="brand-badge">NA</div>
+      <div class="brand-text">
+        <span class="brand-name">NHIỆM AUTOTECH</span>
+        <span class="brand-sub">ELECTRICAL</span>
+      </div>
+    </div>
+    <button class="drawer-close" id="drawerCloseBtn" aria-label="Đóng menu">✕</button>
+  </div>
+  
+  <div class="drawer-search">
+    <form action="{{ url_for('products') }}" method="get">
+      <input type="text" name="q" placeholder="Tìm file AutoCAD, Layout tủ điện, đồ án PLC...">
+      <button type="submit">🔍</button>
+    </form>
+  </div>
+
+  <div class="drawer-nav">
+    <a href="{{ url_for('index') }}" class="drawer-link">🏠 Trang chủ</a>
+    <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="drawer-link">📐 1. Thư viện AutoCAD (.DWG)</a>
+    <a href="{{ url_for('products', category='thiet-ke-tu-dien') }}" class="drawer-link">⚡ 2. Khóa học & Layout Tủ Điện</a>
+    <a href="{{ url_for('products', category='do-an-tu-dong-hoa') }}" class="drawer-link">🤖 3. Mô hình & Đồ án Tự động hóa</a>
+    <a href="{{ url_for('order_lookup') }}" class="drawer-link">🔍 Tra cứu đơn hàng & Tải file</a>
+    <a href="{{ url_for('quote') }}" class="drawer-link">📝 Yêu cầu báo giá & Tư vấn</a>
+    <a href="{{ url_for('contact') }}" class="drawer-link">📞 Liên hệ trực tiếp</a>
+  </div>
+
+  <div class="drawer-contact-box">
+    <h4>HỖ TRỢ TRỰC TIẾP 24/7</h4>
+    <p>Hotline/Zalo: <a href="tel:0379760905"><strong>0379 760 905</strong></a></p>
+    <div class="drawer-socials">
+      <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer">Zalo</a>
+      <a href="https://www.facebook.com/kois.nhims.1/" target="_blank" rel="noopener noreferrer">Facebook</a>
+      <a href="https://www.tiktok.com/@nhim.autotech" target="_blank" rel="noopener noreferrer">TikTok</a>
+    </div>
+  </div>
+</div>
+
+<!-- FLASH MESSAGES -->
 {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}<div class="container flashes">{% for category,msg in messages %}<div class="flash {{ category }}">{{ msg }}</div>{% endfor %}</div>{% endif %}
+  {% if messages %}
+    <div class="container flashes">
+      {% for category, msg in messages %}
+        <div class="flash flash-{{ category }}">
+          <span class="flash-icon">{% if category == 'success' %}✓{% elif category == 'danger' %}✕{% else %}ℹ{% endif %}</span>
+          <span>{{ msg }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
 {% endwith %}
 
+<!-- MAIN CONTENT -->
 <main>{% block content %}{% endblock %}</main>
 
-<footer>
-  <div class="container footer-grid">
-    <div><h3>NHIỆM AUTOTECH ELECTRICAL</h3><p>Thiết bị điện · Tự động hóa · AutoCAD · Thiết kế tủ điện</p></div>
-    <div><h4>Dịch vụ</h4><p>Thiết kế tủ điện<br>Thư viện CAD<br>Tài liệu kỹ thuật</p></div>
-    <div><h4>Liên hệ</h4><p><a href="tel:0379760905">Điện thoại / Zalo: 0379 760 905</a><br><a href="https://www.tiktok.com/@nhim.autotech" target="_blank" rel="noopener noreferrer">TikTok: @nhim.autotech</a><br><a href="https://www.facebook.com/kois.nhims.1/" target="_blank" rel="noopener noreferrer">Facebook</a></p></div>
+<!-- FLOATING CONTACT WIDGETS (HOTLINE, ZALO, FACEBOOK, TIKTOK) -->
+<div class="floating-contact-wrap">
+  <!-- Hotline Call Button -->
+  <a href="tel:0379760905" class="floating-btn btn-call" title="Gọi Hotline: 0379 760 905" aria-label="Gọi điện">
+    <div class="btn-ripple"></div>
+    <div class="floating-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    </div>
+    <span class="floating-tooltip">Hotline: 0379 760 905</span>
+  </a>
+
+  <!-- Zalo Chat Button -->
+  <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" class="floating-btn btn-zalo" title="Chat Zalo: 0379 760 905" aria-label="Chat Zalo">
+    <div class="btn-ripple"></div>
+    <div class="floating-icon">
+      <span class="zalo-text-icon">Zalo</span>
+    </div>
+    <span class="floating-tooltip">Chat Zalo</span>
+  </a>
+
+  <!-- Facebook Messenger / Page Button -->
+  <a href="https://www.facebook.com/kois.nhims.1/" target="_blank" rel="noopener noreferrer" class="floating-btn btn-facebook" title="Facebook Nhiệm Autotech" aria-label="Facebook">
+    <div class="floating-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    </div>
+    <span class="floating-tooltip">Facebook</span>
+  </a>
+
+  <!-- TikTok Channel Button -->
+  <a href="https://www.tiktok.com/@nhim.autotech" target="_blank" rel="noopener noreferrer" class="floating-btn btn-tiktok" title="TikTok @nhim.autotech" aria-label="TikTok">
+    <div class="floating-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-1.01-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.27 1.76-.23 1.04-.03 2.19.57 3.07.6.87 1.62 1.41 2.68 1.43 1.07.05 2.14-.38 2.85-1.18.66-.75.98-1.74.96-2.73V.02h-.83z"/></svg>
+    </div>
+    <span class="floating-tooltip">TikTok</span>
+  </a>
+</div>
+
+<!-- CONSULTATION MODAL POPUP -->
+<div class="modal-overlay" id="consultationModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeConsultationModal()">✕</button>
+    <div class="modal-head">
+      <div class="modal-badge">TƯ VẤN MIỄN PHÍ</div>
+      <h3>Đăng Ký Tư Vấn & Báo Giá Thiết Bị</h3>
+      <p>Nhiệm Autotech sẽ liên hệ ngay qua Điện thoại / Zalo để tư vấn kỹ thuật & gửi bảng giá tốt nhất.</p>
+    </div>
+    <form action="{{ url_for('quote') }}" method="post" class="modal-form">
+      <div class="form-group">
+        <label>Họ và tên *</label>
+        <input type="text" name="name" required placeholder="Ví dụ: Nguyễn Văn A">
+      </div>
+      <div class="form-group">
+        <label>Số điện thoại / Zalo *</label>
+        <input type="tel" name="phone" required placeholder="0379 760 905">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="email@domain.com">
+      </div>
+      <div class="form-group">
+        <label>Thiết bị hoặc dịch vụ cần tư vấn</label>
+        <input type="text" name="product_name" placeholder="Ví dụ: MCB 3P, Biến tần, Thư viện AutoCAD, Báo giá tủ điện...">
+      </div>
+      <div class="form-group">
+        <label>Nội dung yêu cầu</label>
+        <textarea name="message" rows="3" placeholder="Ghi chú thêm về yêu cầu kỹ thuật hoặc số lượng..."></textarea>
+      </div>
+      <button type="submit" class="btn-modal-submit">Gửi Yêu Cầu Tư Vấn Ngay</button>
+    </form>
   </div>
-  <div class="copyright">© 2026 Nhiệm Autotech Electrical</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer-main">
+  <div class="container footer-top-grid">
+    <!-- Col 1: Brand Info -->
+    <div class="footer-col brand-col">
+      <div class="brand-logo footer-logo">
+        <div class="brand-badge">NA</div>
+        <div class="brand-text">
+          <span class="brand-name">NHIỆM AUTOTECH</span>
+          <span class="brand-sub">ELECTRICAL</span>
+        </div>
+      </div>
+      <p class="footer-desc">
+        Đơn vị chuyên cung cấp thiết bị điện công nghiệp, giải pháp tự động hóa, thiết kế tủ điện và chia sẻ kho thư viện bản vẽ AutoCAD DWG chuẩn kỹ thuật hàng đầu.
+      </p>
+      <div class="footer-trust-badges">
+        <span class="trust-pill">✓ Hàng chính hãng</span>
+        <span class="trust-pill">✓ Bản vẽ DWG chuẩn</span>
+        <span class="trust-pill">✓ Hỗ trợ 24/7</span>
+      </div>
+    </div>
+
+    <!-- Col 2: Contact Info -->
+    <div class="footer-col contact-col">
+      <h4 class="footer-title">Thông Tin Liên Hệ</h4>
+      <ul class="footer-contact-list">
+        <li>
+          <span class="contact-icon">📞</span>
+          <div>
+            <strong>Hotline / Điện thoại:</strong>
+            <a href="tel:0379760905">0379 760 905</a>
+          </div>
+        </li>
+        <li>
+          <span class="contact-icon">💬</span>
+          <div>
+            <strong>Zalo hỗ trợ kỹ thuật:</strong>
+            <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer">0379 760 905 (Nhiệm Autotech)</a>
+          </div>
+        </li>
+        <li>
+          <span class="contact-icon">🌐</span>
+          <div>
+            <strong>Facebook:</strong>
+            <a href="https://www.facebook.com/kois.nhims.1/" target="_blank" rel="noopener noreferrer">fb.com/kois.nhims.1</a>
+          </div>
+        </li>
+        <li>
+          <span class="contact-icon">🎵</span>
+          <div>
+            <strong>Kênh TikTok:</strong>
+            <a href="https://www.tiktok.com/@nhim.autotech" target="_blank" rel="noopener noreferrer">@nhim.autotech</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Col 3: Categories & Services -->
+    <div class="footer-col links-col">
+      <h4 class="footer-title">Dịch Vụ & Danh Mục</h4>
+      <ul class="footer-links">
+        <li><a href="{{ url_for('products', category='thiet-bi-dien') }}">Thiết bị điện đóng cắt (CB, MCB, MCCB)</a></li>
+        <li><a href="{{ url_for('products', category='thiet-bi-tu-dong-hoa') }}">Thiết bị tự động hóa (PLC, HMI, VFD)</a></li>
+        <li><a href="{{ url_for('cad_library') }}">Thư viện AutoCAD & File DWG</a></li>
+        <li><a href="{{ url_for('panel_forms') }}">Thiết kế & Form tủ điện</a></li>
+        <li><a href="{{ url_for('keyword_plc') }}">Mạch điều khiển & Sơ đồ PLC</a></li>
+        <li><a href="{{ url_for('quote') }}">Yêu cầu báo giá thiết bị</a></li>
+      </ul>
+    </div>
+
+    <!-- Col 4: Policy & Support -->
+    <div class="footer-col links-col">
+      <h4 class="footer-title">Hỗ Trợ & Chính Sách</h4>
+      <ul class="footer-links">
+        <li><a href="{{ url_for('cad_library') }}">Hướng dẫn tải file CAD</a></li>
+        <li><a href="{{ url_for('contact') }}">Chính sách bảo hành & Đổi trả</a></li>
+        <li><a href="{{ url_for('contact') }}">Hướng dẫn thanh toán VietQR</a></li>
+        <li><a href="{{ url_for('contact') }}">Hỗ trợ kỹ thuật & Tư vấn 24/7</a></li>
+        <li><a href="{{ url_for('contact') }}">Gửi ý kiến đóng góp</a></li>
+      </ul>
+      <div class="footer-social-box">
+        <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" class="soc-btn zalo-btn">Zalo</a>
+        <a href="https://www.facebook.com/kois.nhims.1/" target="_blank" rel="noopener noreferrer" class="soc-btn fb-btn">Facebook</a>
+        <a href="https://www.tiktok.com/@nhim.autotech" target="_blank" rel="noopener noreferrer" class="soc-btn tt-btn">TikTok</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p>© 2026 <strong>Nhiệm Autotech Electrical</strong>. All rights reserved. Thiết bị điện - Tự động hóa - Thư viện CAD.</p>
+      <div class="footer-bottom-links">
+        <a href="{{ url_for('index') }}">Trang chủ</a>
+        <a href="{{ url_for('products') }}">Sản phẩm</a>
+        <a href="{{ url_for('cad_library') }}">Thư viện CAD</a>
+        <a href="{{ url_for('contact') }}">Liên hệ</a>
+      </div>
+    </div>
+  </div>
 </footer>
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@graph": [
-    {"@type": "Organization", "name": "Nhiệm Autotech Electrical", "url": {{ site_url|tojson }}},
-    {"@type": "WebSite", "name": "Nhiệm Autotech Electrical", "url": {{ site_url|tojson }}, "potentialAction": {"@type": "SearchAction", "target": {{ (site_url ~ url_for('products') ~ '?q={search_term_string}')|tojson }}, "query-input": "required name=search_term_string"}}
+    {
+      "@type": "Organization",
+      "name": "Nhiệm Autotech Electrical",
+      "url": {{ site_url|tojson }},
+      "telephone": "0379760905",
+      "sameAs": [
+        "https://www.facebook.com/kois.nhims.1/",
+        "https://www.tiktok.com/@nhim.autotech"
+      ]
+    },
+    {
+      "@type": "WebSite",
+      "name": "Nhiệm Autotech Electrical",
+      "url": {{ site_url|tojson }},
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {{ (site_url ~ url_for('products') ~ '?q={search_term_string}')|tojson }},
+        "query-input": "required name=search_term_string"
+      }
+    }
   ]
 }
 </script>

@@ -1,11 +1,48 @@
 <article class="product-card">
-  <a href="{{ url_for('product_detail', slug=p.slug) }}" class="product-image">
-    {% if p.image %}<img src="{{ url_for('static', filename='uploads/images/' + p.image) }}" alt="{{ p.name }}">{% else %}<span>⚡</span>{% endif %}
-  </a>
+  <div class="product-thumb-wrap">
+    <a href="{{ url_for('product_detail', slug=p.slug) }}" class="product-image-link scale-img">
+      {% if p.image %}
+        <img src="{{ url_for('static', filename='uploads/images/' + p.image) }}" alt="{{ p.name }}" loading="lazy">
+      {% else %}
+        <div class="no-img-placeholder">⚡</div>
+      {% endif %}
+    </a>
+    
+    <div class="product-badges">
+      {% if p.cad_file %}
+        <span class="badge-cad" title="Có file bản vẽ AutoCAD DWG">📐 CAD DWG</span>
+      {% endif %}
+      {% if p.category %}
+        <span class="badge-cat">{{ p.category.name }}</span>
+      {% endif %}
+    </div>
+  </div>
+
   <div class="product-body">
-    <small>{{ p.category.name if p.category else 'Thiết bị điện' }}</small>
-    <h3><a href="{{ url_for('product_detail', slug=p.slug) }}">{{ p.name }}</a></h3>
-    <p class="price">{{ "{:,.0f}".format(p.price) }} đ</p>
-    <form method="post" action="{{ url_for('cart_add', product_id=p.id) }}"><button class="btn primary full">+ Thêm vào giỏ</button></form>
+    {% if p.sku %}
+      <div class="product-sku">Mã: {{ p.sku }}</div>
+    {% endif %}
+    <h3 class="product-title">
+      <a href="{{ url_for('product_detail', slug=p.slug) }}" title="{{ p.name }}">{{ p.name }}</a>
+    </h3>
+
+    <div class="product-price-row">
+      {% if p.price and p.price > 0 %}
+        <div class="product-price">
+          <span class="price-val">{{ "{:,.0f}".format(p.price) }}</span>
+          <span class="price-unit">₫</span>
+        </div>
+      {% else %}
+        <div class="product-price price-contact">Liên hệ báo giá</div>
+      {% endif %}
+    </div>
+
+    <div class="product-actions-row">
+      <a href="{{ url_for('buy_now', product_id=p.id) }}" class="btn-add-cart" title="Mua ngay sản phẩm">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span>Mua ngay</span>
+      </a>
+      <a href="{{ url_for('product_detail', slug=p.slug) }}" class="btn-view-detail" title="Xem chi tiết">Chi tiết</a>
+    </div>
   </div>
 </article>

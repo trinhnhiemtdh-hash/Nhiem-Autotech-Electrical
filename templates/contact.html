@@ -1,6 +1,96 @@
 {% extends "base.html" %}
-{% block title %}Liên hệ{% endblock %}
+{% block title %}Liên hệ Nhiệm Autotech Electrical | Hotline 0379 760 905{% endblock %}
+{% block meta_description %}Liên hệ Nhiệm Autotech Electrical - Tư vấn thiết bị điện công nghiệp, thiết kế tủ điện, chia sẻ thư viện AutoCAD DWG và hỗ trợ kỹ thuật qua Hotline/Zalo 0379 760 905.{% endblock %}
+
 {% block content %}
-<div class="container page narrow"><p class="eyebrow">CONTACT</p><h1>Liên hệ Nhiệm Autotech</h1><p class="lead">Tư vấn thiết bị, thiết kế tủ điện, AutoCAD và tài liệu kỹ thuật.</p>
-<form method="post" class="form-card"><label>Họ tên<input required name="name"></label><label>Email<input required type="email" name="email"></label><label>Điện thoại<input name="phone"></label><label>Nội dung<textarea required name="message"></textarea></label><button class="btn primary">Gửi liên hệ</button></form></div>
+<div class="container page-contact-wrap">
+  <!-- TOP RETURN / BACK NAVIGATION BAR -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--border-line);">
+    <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.location.href='{{ url_for('index') }}'; }" class="btn-back-nav" style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:#fff;border:1.5px solid var(--border-line);border-radius:999px;font-size:13px;font-weight:700;color:#0f172a;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>← Quay Lại</span>
+    </button>
+    <div style="font-size:13px;color:#64748b;">
+      <a href="{{ url_for('index') }}" style="color:#0284c7;text-decoration:none;">🏠 Trang chủ</a> / 
+      <span style="color:#0f172a;font-weight:600;">Liên hệ tư vấn</span>
+    </div>
+  </div>
+
+  <div class="page-head-center">
+    <div class="section-eyebrow">LIÊN HỆ & TƯ VẤN</div>
+    <h1 class="page-title">Liên Hệ Nhiệm Autotech Electrical</h1>
+    <p class="page-subtitle">Chúng tôi luôn sẵn sàng hỗ trợ tư vấn thiết bị, giải pháp tự động hóa, thiết kế tủ điện và chia sẻ file CAD.</p>
+  </div>
+
+  <div class="contact-grid-layout">
+    <!-- Left Info Cards -->
+    <div class="contact-cards-col">
+      <div class="contact-info-card">
+        <div class="info-icon-box">📞</div>
+        <div class="info-content-box">
+          <h3>Điện thoại / Hotline</h3>
+          <p>Tư vấn kỹ thuật & báo giá trực tiếp 24/7</p>
+          <a href="tel:0379760905" class="info-link">0379 760 905</a>
+        </div>
+      </div>
+
+      <div class="contact-info-card">
+        <div class="info-icon-box">💬</div>
+        <div class="info-content-box">
+          <h3>Zalo Kỹ Thuật</h3>
+          <p>Gửi bản vẽ, yêu cầu sơ đồ mạch & báo giá nhanh</p>
+          <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" class="info-link">0379 760 905 (Nhiệm Autotech)</a>
+        </div>
+      </div>
+
+      <div class="contact-info-card">
+        <div class="info-icon-box">🌐</div>
+        <div class="info-content-box">
+          <h3>Facebook Cá Nhân / Trang</h3>
+          <p>Kết nối trao đổi kiến thức điện công nghiệp</p>
+          <a href="https://www.facebook.com/kois.nhims.1/" target="_blank" rel="noopener noreferrer" class="info-link">fb.com/kois.nhims.1</a>
+        </div>
+      </div>
+
+      <div class="contact-info-card">
+        <div class="info-icon-box">🎵</div>
+        <div class="info-content-box">
+          <h3>Kênh TikTok</h3>
+          <p>Xem video hướng dẫn thiết kế tủ điện & PLC</p>
+          <a href="https://www.tiktok.com/@nhim.autotech" target="_blank" rel="noopener noreferrer" class="info-link">@nhim.autotech</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Contact Form -->
+    <div class="contact-form-col">
+      <div class="form-card-modern">
+        <h2>Gửi Tin Nhắn Cho Nhiệm Autotech</h2>
+        <p class="form-card-sub">Điền biểu mẫu bên dưới và chúng tôi sẽ liên hệ lại với bạn trong thời gian sớm nhất.</p>
+
+        <form method="post" class="styled-contact-form">
+          <div class="form-group">
+            <label>Họ và tên của bạn *</label>
+            <input type="text" required name="name" placeholder="Nguyễn Văn A">
+          </div>
+          <div class="form-row-2">
+            <div class="form-group">
+              <label>Điện thoại / Zalo *</label>
+              <input type="tel" required name="phone" placeholder="0379 760 905">
+            </div>
+            <div class="form-group">
+              <label>Email liên hệ *</label>
+              <input type="email" required name="email" placeholder="email@domain.com">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Nội dung lời nhắn hoặc yêu cầu kỹ thuật *</label>
+            <textarea required name="message" rows="5" placeholder="Mô tả chi tiết nội dung cần hỗ trợ hoặc tư vấn..."></textarea>
+          </div>
+          <button type="submit" class="btn-submit-quote">Gửi Tin Nhắn Ngay</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -1,0 +1,219 @@
+{% extends "admin/base.html" %}
+{% block title %}Chỉnh sửa tài nguyên #{{ product.id }} | Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <h1>Chỉnh Sửa Tài Nguyên #{{ product.id }}</h1>
+    <p>Cập nhật tên, giá bán, đổi file CAD đính kèm hoặc sửa mô tả sản phẩm.</p>
+  </div>
+  <a class="btn ghost" href="{{ url_for('admin_products') }}">← Quay lại danh sách</a>
+</div>
+
+<div style="max-width:860px;background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-xl);padding:32px;box-shadow:var(--shadow-md);">
+  <form method="post" enctype="multipart/form-data" class="admin-product-form">
+    <div class="form-group" style="margin-bottom:20px;">
+      <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+        Tên file / Khóa học / Đồ án <span style="color:#ef4444;">*</span>
+      </label>
+      <input type="text" required name="name" value="{{ product.name }}" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14.5px;">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div class="form-group">
+        <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+          Danh mục chính <span style="color:#ef4444;">*</span>
+        </label>
+        <select name="category_id" required style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14.5px;font-weight:600;">
+          {% for c in categories %}
+            <option value="{{ c.id }}" {% if product.category_id == c.id %}selected{% endif %}>
+              {% if c.slug == 'thu-vien-autocad' %}📐 1. {{ c.name }} (Bán lẻ từng file)
+              {% elif c.slug == 'thiet-ke-tu-dien' %}⚡ 2. {{ c.name }}
+              {% else %}🤖 3. {{ c.name }}{% endif %}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+          Giá bán (VNĐ) <span style="color:#ef4444;">*</span>
+        </label>
+        <input type="number" step="1000" min="0" required name="price" value="{{ '{:.0f}'.format(product.price) }}" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14.5px;font-weight:700;color:#ff7a00;">
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div class="form-group">
+        <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+          Mã SKU
+        </label>
+        <input type="text" name="sku" value="{{ product.sku or '' }}" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14px;">
+      </div>
+
+      <div class="form-group">
+        <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+          Slug URL
+        </label>
+        <input type="text" name="slug" value="{{ product.slug }}" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14px;">
+      </div>
+
+      <div class="form-group">
+        <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+          Trạng thái
+        </label>
+        <select name="status" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14px;">
+          <option value="active" {% if product.status == 'active' %}selected{% endif %}>Hiển thị bán</option>
+          <option value="hidden" {% if product.status == 'hidden' %}selected{% endif %}>Ẩn tạm thời</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:var(--radius-lg);padding:22px;margin-bottom:24px;">
+      <h4 style="margin:0 0 14px;color:#0f172a;font-size:15px;">📁 Quản Lý File Đính Kèm & Ảnh Bìa Sản Phẩm</h4>
+      
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px;">
+        <div class="form-group">
+          <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+            File bản vẽ CAD / File nén hiện tại:
+          </label>
+          {% if product.cad_file %}
+            <div style="font-size:13px;color:#16a34a;margin-bottom:8px;font-weight:bold;">
+              ✓ File hiện tại: <a href="{{ url_for('cad_download', product_id=product.id) }}" style="color:#0284c7;">{{ product.cad_file }}</a>
+            </div>
+          {% else %}
+            <div style="font-size:13px;color:#ef4444;margin-bottom:8px;">✕ Chưa có file tải lên</div>
+          {% endif %}
+          <input type="file" name="cad_file" style="width:100%;padding:8px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;">
+          <small style="color:#64748b;font-size:12px;display:block;margin-top:4px;">Chọn file mới nếu bạn muốn thay thế file cũ.</small>
+        </div>
+
+        <div class="form-group">
+          <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+            Thay đổi Ảnh đại diện chính (Ảnh bìa 1):
+          </label>
+          {% if product.image %}
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              <div style="width:54px;height:54px;border-radius:6px;overflow:hidden;border:1px solid #cbd5e1;background:#0b1120;">
+                <img src="{{ url_for('static', filename='uploads/images/' + product.image) }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+              </div>
+              <span style="font-size:12.5px;color:#334155;font-weight:600;">{{ product.image }}</span>
+            </div>
+          {% endif %}
+          <input type="file" name="image" accept="image/*" style="width:100%;padding:8px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;">
+          <small style="color:#64748b;font-size:12px;display:block;margin-top:4px;">Chọn ảnh mới để thay ảnh đại diện chính.</small>
+        </div>
+      </div>
+
+      <!-- GALLERY IMAGES LIST & UPLOAD -->
+      <div style="padding-top:16px;border-top:1px dashed #cbd5e1;">
+        <label style="display:block;font-weight:700;margin-bottom:8px;color:#0f172a;">
+          📸 Các ảnh hiện có của sản phẩm:
+        </label>
+        
+        {% if product.gallery_list and product.gallery_list|length > 0 %}
+          <div style="display:flex;flex-wrap:wrap;gap:14px;margin-bottom:16px;">
+            {% for img_name in product.gallery_list %}
+              <div style="position:relative;width:96px;height:86px;border-radius:8px;overflow:hidden;border:2px solid {% if img_name == product.image %}#ff7a00{% else %}#cbd5e1{% endif %};background:#0b1120;box-shadow:0 2px 6px rgba(0,0,0,0.15);">
+                <img src="{{ url_for('static', filename='uploads/images/' + img_name) }}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                {% if img_name == product.image %}
+                  <span style="position:absolute;bottom:2px;left:2px;background:#ff7a00;color:#fff;font-size:9px;font-weight:bold;padding:1px 4px;border-radius:3px;">Chính</span>
+                {% endif %}
+                <a href="{{ url_for('admin_product_delete_image', product_id=product.id, img_name=img_name) }}" onclick="return confirm('Bạn có chắc muốn xóa ảnh này?');" title="Xóa ảnh này" style="position:absolute;top:3px;right:3px;background:rgba(239,68,68,0.95);color:#fff;border-radius:50%;width:22px;height:22px;font-size:12px;font-weight:900;display:grid;place-items:center;text-decoration:none;box-shadow:0 2px 4px rgba(0,0,0,0.4);">
+                  ✕
+                </a>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p style="font-size:13px;color:#64748b;margin:0 0 12px;">Chưa có ảnh nào.</p>
+        {% endif %}
+
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-md);padding:16px;margin-top:10px;">
+          <h5 style="margin:0 0 10px;color:#0f172a;font-size:13.5px;">➕ Tải thêm ảnh mới (Chọn từng ảnh hoặc chọn nhiều ảnh):</h5>
+          
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+            <div>
+              <label style="font-size:12px;font-weight:700;color:#334155;display:block;margin-bottom:3px;">Ảnh bổ sung 2:</label>
+              <input type="file" name="image_2" accept="image/*" style="width:100%;font-size:12px;padding:6px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;">
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:700;color:#334155;display:block;margin-bottom:3px;">Ảnh bổ sung 3:</label>
+              <input type="file" name="image_3" accept="image/*" style="width:100%;font-size:12px;padding:6px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;">
+            </div>
+            <div>
+              <label style="font-size:12px;font-weight:700;color:#334155;display:block;margin-bottom:3px;">Ảnh bổ sung 4:</label>
+              <input type="file" name="image_4" accept="image/*" style="width:100%;font-size:12px;padding:6px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;">
+            </div>
+          </div>
+
+          <div style="padding-top:10px;border-top:1px dashed #e2e8f0;">
+            <label style="font-size:12px;font-weight:700;color:#334155;display:block;margin-bottom:3px;">Hoặc chọn nhiều ảnh cùng lúc (giữ Ctrl):</label>
+            <input type="file" name="gallery_images" multiple accept="image/*" style="width:100%;font-size:13px;padding:8px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- VIDEO MANAGEMENT SECTION -->
+      <div style="margin-top:20px;padding-top:18px;border-top:1.5px solid #e2e8f0;">
+        <h5 style="margin:0 0 12px;color:#0f172a;font-size:14.5px;display:flex;align-items:center;gap:6px;">
+          🎬 <span>Quản Lý Video Giới Thiệu (1-2 Phút Demo / Hướng Dẫn)</span>
+        </h5>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div class="form-group">
+            <label style="display:block;font-weight:600;margin-bottom:4px;color:#334155;font-size:13px;">
+              Cách 1: Link Video (YouTube / TikTok / Google Drive)
+            </label>
+            <input type="url" name="video_url" value="{{ product.video_url or '' }}" placeholder="VD: https://www.youtube.com/watch?v=xxxx" style="width:100%;padding:10px 14px;border:1.5px solid var(--border-line);border-radius:6px;font-size:13.5px;">
+            <small style="color:#64748b;font-size:12px;display:block;margin-top:3px;">
+              Link YouTube sẽ được nhúng player tự động phát nét căng.
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label style="display:block;font-weight:600;margin-bottom:4px;color:#334155;font-size:13px;">
+              Cách 2: File Video MP4 tải lên trực tiếp:
+            </label>
+            {% if product.video_file %}
+              <div style="display:flex;align-items:center;justify-content:space-between;background:#ecfdf5;border:1px solid #a7f3d0;padding:6px 12px;border-radius:6px;margin-bottom:8px;">
+                <span style="font-size:12.5px;color:#065f46;font-weight:bold;">
+                  ✓ Đang có video: {{ product.video_file }}
+                </span>
+                <a href="{{ url_for('admin_product_delete_video', product_id=product.id) }}" onclick="return confirm('Bạn có chắc muốn xóa video này?');" style="background:#ef4444;color:#fff;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:bold;text-decoration:none;">
+                  ✕ Xóa video
+                </a>
+              </div>
+            {% endif %}
+            <input type="file" name="video_file" accept="video/mp4,video/webm,video/quicktime" style="width:100%;padding:8px;background:#fff;border:1px solid #e2e8f0;border-radius:6px;">
+            <small style="color:#64748b;font-size:12px;display:block;margin-top:3px;">
+              Chọn file .mp4 mới nếu muốn thay video cũ.
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:20px;">
+      <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+        Mô tả chi tiết nội dung file / khóa học
+      </label>
+      <textarea name="description" rows="4" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14px;line-height:1.5;">{{ product.description or '' }}</textarea>
+    </div>
+
+    <div class="form-group" style="margin-bottom:24px;">
+      <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+        Thông số kỹ thuật / Phiên bản phần mềm / Định dạng file
+      </label>
+      <textarea name="specifications" rows="4" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14px;line-height:1.5;">{{ product.specifications or '' }}</textarea>
+    </div>
+
+    <div style="display:flex;gap:12px;">
+      <button type="submit" class="btn primary" style="padding:14px 28px;font-size:15px;">
+        ✓ LƯU THAY ĐỔI
+      </button>
+      <a href="{{ url_for('admin_products') }}" class="btn ghost" style="padding:14px 20px;">Hủy bỏ</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

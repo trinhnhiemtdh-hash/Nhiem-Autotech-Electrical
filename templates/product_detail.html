@@ -4,43 +4,282 @@
 {% block og_title %}{{ product.name }} | Nhiệm Autotech{% endblock %}
 {% block og_description %}{{ seo_description }}{% endblock %}
 {% block og_image %}{% if product.image %}<meta property="og:image" content="{{ site_url }}{{ url_for('static', filename='uploads/images/' + product.image) }}">{% endif %}{% endblock %}
+
 {% block content %}
 <div class="container page">
+  <!-- TOP RETURN / BACK NAVIGATION BAR -->
+  <div class="detail-top-nav-bar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--border-line);">
+    <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.location.href='{{ url_for('products', category=product.category.slug if product.category else None) }}'; }" class="btn-back-nav" style="display:inline-flex;align-items:center;gap:8px;padding:8px 18px;background:#fff;border:1.5px solid var(--border-line);border-radius:999px;font-size:13.5px;font-weight:700;color:#0f172a;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>← Quay Lại</span>
+    </button>
+
+    <div class="breadcrumb-bar" style="font-size:13px;color:#64748b;">
+      <a href="{{ url_for('index') }}" style="color:#0284c7;text-decoration:none;">🏠 Trang chủ</a> / 
+      {% if product.category %}
+        <a href="{{ url_for('products', category=product.category.slug) }}" style="color:#0284c7;text-decoration:none;">{{ product.category.name }}</a> /
+      {% endif %}
+      <span style="color:#0f172a;font-weight:600;">{{ product.name }}</span>
+    </div>
+  </div>
+
   <div class="detail">
-    <div class="detail-image">{% if product.image %}<img src="{{ url_for('static', filename='uploads/images/' + product.image) }}" alt="{{ product.name }}">{% else %}⚡{% endif %}</div>
+    <!-- LEFT COLUMN: ENLARGED COVER IMAGE & MULTI-IMAGE THUMBNAIL GALLERY -->
+    <div class="detail-gallery-col" style="display:flex;flex-direction:column;gap:14px;width:100%;">
+      <div class="detail-image-wrapper">
+        {% if product.image or (product.gallery_list and product.gallery_list|length > 0) %}
+          {% set main_img = product.image if product.image else product.gallery_list[0] %}
+          <a href="javascript:void(0)" onclick="openLightboxCurrent()" class="detail-img-link" title="Bấm để xem ảnh phóng to ngay trên trang">
+            <img src="{{ url_for('static', filename='uploads/images/' + main_img) }}" alt="{{ product.name }}" id="mainProductImg">
+          </a>
+          <button type="button" onclick="openLightboxCurrent()" class="btn-zoom-image" title="Phóng to ảnh">
+            🔍 Phóng to ảnh
+          </button>
+        {% else %}
+          <div style="text-align:center;padding:60px 40px;color:#fff;">
+            <div style="font-size:72px;margin-bottom:14px;">
+              {% if product.category and product.category.slug == 'thu-vien-autocad' %}📐
+              {% elif product.category and product.category.slug == 'thiet-ke-tu-dien' %}⚡
+              {% else %}🤖{% endif %}
+            </div>
+            <span style="font-size:16px;color:#94a3b8;font-weight:800;letter-spacing:0.05em;">NHIỆM AUTOTECH ELECTRICAL</span>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- MULTI-IMAGE THUMBNAIL SELECTOR (HIỂN THỊ KHI CÓ 2, 3 HOẶC NHIỀU ẢNH) -->
+      {% if product.gallery_list and product.gallery_list|length > 1 %}
+        <div class="thumb-gallery-strip" style="display:flex;gap:12px;overflow-x:auto;padding:6px 2px 10px;scrollbar-width:thin;">
+          {% for g_img in product.gallery_list %}
+            <div class="gal-thumb-item {% if loop.first %}active{% endif %}" onclick="selectThumb(this, '{{ url_for('static', filename='uploads/images/' + g_img) }}', {{ loop.index0 }})" style="position:relative;width:94px;height:76px;flex-shrink:0;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid {% if loop.first %}#ff7a00{% else %}#cbd5e1{% endif %};background:#0b1120;transition:all 0.25s ease;box-shadow:var(--shadow-sm);" title="Xem ảnh {{ loop.index }}">
+              <img src="{{ url_for('static', filename='uploads/images/' + g_img) }}" alt="Ảnh {{ loop.index }}" style="width:100%;height:100%;object-fit:cover;">
+              <span style="position:absolute;bottom:2px;right:2px;background:rgba(15,23,42,0.8);color:#fff;font-size:10px;font-weight:800;padding:1px 5px;border-radius:4px;">#{{ loop.index }}</span>
+            </div>
+          {% endfor %}
+        </div>
+        <small style="color:#64748b;font-size:12px;display:block;">💡 Bấm vào từng ảnh nhỏ để xem trước các góc bản vẽ khác nhau.</small>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT COLUMN: PRODUCT INFO -->
     <div>
-      <p class="eyebrow">{{ product.category.name if product.category else 'THIẾT BỊ' }}</p>
-      <h1>{{ product.name }}</h1>
-      <p class="sku">SKU: {{ product.sku or 'N/A' }}</p>
-      <div class="big-price">{{ "{:,.0f}".format(product.price) }} đ</div>
-      <p>{{ product.description }}</p>
-      <div class="detail-actions">
-        <form method="post" action="{{ url_for('cart_add', product_id=product.id) }}"><button class="btn primary">+ Thêm vào giỏ hàng</button></form>
-        <a class="btn secondary" href="{{ url_for('quote', product=product.name) }}">Yêu cầu báo giá</a>
-        {% if product.cad_file %}<a class="btn ghost" href="{{ url_for('cad_download', product_id=product.id) }}">⬇ Tải file CAD</a>{% endif %}
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap;">
+        <span class="badge-cat" style="font-size:12px;padding:4px 10px;border-radius:4px;">
+          {{ product.category.name if product.category else 'TÀI NGUYÊN' }}
+        </span>
+        {% if product.cad_file %}
+          <span class="badge-cad" style="font-size:12px;padding:4px 10px;">✓ Có File Tải Về</span>
+        {% endif %}
+      </div>
+
+      <h1 style="font-size:24px;line-height:1.35;margin-bottom:10px;color:#0f172a;">{{ product.name }}</h1>
+      <p class="sku" style="margin-bottom:14px;">Mã SKU / Ký hiệu: <strong>{{ product.sku or 'N/A' }}</strong></p>
+      
+      <div class="big-price" style="font-size:32px;color:#ff7a00;font-weight:900;margin-bottom:16px;">
+        {{ "{:,.0f}".format(product.price) }} đ
+      </div>
+
+      <!-- Trust Box -->
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:var(--radius-md);padding:14px 16px;margin-bottom:20px;font-size:13px;color:#9a3412;">
+        <strong>⚡ Giao file tự động qua Gmail:</strong> File bản vẽ / tài liệu sẽ được gửi trực tiếp vào Gmail của bạn ngay khi Admin duyệt chuyển khoản Vietcombank.
+      </div>
+
+      <p style="font-size:14.5px;line-height:1.6;color:#334155;margin-bottom:20px;">
+        {{ product.description }}
+      </p>
+
+      <div class="detail-actions" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn primary" href="{{ url_for('buy_now', product_id=product.id) }}" style="font-size:15px;padding:12px 24px;">
+          ⚡ Mua Ngay & Nhận File Qua Gmail
+        </a>
+        <form method="post" action="{{ url_for('cart_add', product_id=product.id) }}" style="display:inline-block;">
+          <button class="btn ghost" style="padding:12px 18px;">+ Thêm vào giỏ</button>
+        </form>
+        <a class="btn secondary" href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" style="padding:12px 18px;">
+          💬 Chat Zalo 0379 760 905
+        </a>
       </div>
     </div>
   </div>
 
-  <section class="spec-box">
-    <h2>Thông số kỹ thuật</h2>
-    <pre>{{ product.specifications or 'Chưa cập nhật thông số.' }}</pre>
+  <!-- VIDEO DEMO / REVIEW SECTION (IF HAS VIDEO) -->
+  {% if product.video_file or product.video_url %}
+    <section class="video-preview-box" style="margin-top:36px;background:#0b1120;border:1.5px solid #1e293b;border-radius:var(--radius-xl);padding:28px;color:#fff;box-shadow:var(--shadow-lg);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="background:#ef4444;color:#fff;font-size:12px;font-weight:900;padding:4px 10px;border-radius:4px;letter-spacing:0.05em;">VIDEO DEMO</span>
+          <h3 style="margin:0;font-size:19px;color:#fff;">🎬 Video Ngắn Giới Thiệu & Hướng Dẫn Thực Tế</h3>
+        </div>
+        <span style="font-size:13px;color:#94a3b8;">Xem trực quan thao tác mở file, bóc tách và chạy mô phỏng</span>
+      </div>
+
+      <div class="video-responsive-wrap" style="position:relative;width:100%;max-width:860px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 12px 30px rgba(0,0,0,0.6);">
+        {% if product.video_file %}
+          <video controls playsinline style="width:100%;max-height:500px;display:block;outline:none;" poster="{{ url_for('static', filename='uploads/images/' + product.image) if product.image else '' }}">
+            <source src="{{ url_for('static', filename='uploads/videos/' + product.video_file) }}" type="video/mp4">
+            Trình duyệt của bạn không hỗ trợ phát video HTML5.
+          </video>
+        {% elif product.youtube_embed_url %}
+          <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+            <iframe src="{{ product.youtube_embed_url }}" title="Video giới thiệu {{ product.name }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"></iframe>
+          </div>
+        {% else %}
+          <div style="padding:20px;text-align:center;">
+            <a href="{{ product.video_url }}" target="_blank" rel="noopener noreferrer" class="btn primary" style="font-size:15px;padding:12px 24px;">
+              ▶ Mở Xem Video Trực Tiếp
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+
+  <section class="spec-box" style="margin-top:36px;">
+    <h2>Thông số kỹ thuật & Nội dung file</h2>
+    <pre style="white-space:pre-wrap;font-family:inherit;font-size:14px;line-height:1.6;background:#f8fafc;padding:20px;border-radius:var(--radius-lg);border:1px solid var(--border-line);">{{ product.specifications or 'Chưa cập nhật thông số.' }}</pre>
   </section>
 
   <section class="quote-box">
-    <h2>Báo giá nhanh cho sản phẩm này</h2>
+    <h2>Yêu cầu tư vấn hoặc đặt làm theo yêu cầu</h2>
     <form method="post" action="{{ url_for('quote') }}" class="form-card quote-inline-form">
       <input type="hidden" name="product_name" value="{{ product.name }}">
       <label>Họ tên<input required name="name" placeholder="Nguyễn Văn A"></label>
       <label>Email<input required type="email" name="email" placeholder="email@domain.com"></label>
-      <label>Điện thoại<input name="phone" placeholder="09xx xxx xxx"></label>
-      <label>Số lượng<input type="number" min="1" name="quantity" value="1"></label>
-      <label>Nội dung yêu cầu<textarea name="message" placeholder="Ví dụ: cần báo giá 20 bộ MCB 3 pha, cần file CAD và thời gian giao hàng..."></textarea></label>
-      <button class="btn primary">Gửi yêu cầu báo giá</button>
+      <label>Điện thoại / Zalo<input name="phone" placeholder="09xx xxx xxx"></label>
+      <label>Số lượng / Phiên bản CAD<input type="text" name="quantity" value="AutoCAD 2007 - 2024"></label>
+      <label>Nội dung yêu cầu<textarea name="message" placeholder="Ví dụ: cần chỉnh sửa bản vẽ theo yêu cầu dự án, cần hỗ trợ mở file hoặc xuất BOM tủ điện..."></textarea></label>
+      <button class="btn primary">Gửi yêu cầu hỗ trợ</button>
     </form>
   </section>
 </div>
+
+<!-- SAME-PAGE IMAGE LIGHTBOX MODAL WITH MULTI-IMAGE NEXT/PREV NAVIGATION -->
+<div id="imageLightboxModal" style="display:none;position:fixed;inset:0;background:rgba(11,17,32,0.94);backdrop-filter:blur(10px);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+  <div style="position:relative;max-width:94vw;max-height:94vh;display:flex;flex-direction:column;align-items:center;">
+    
+    <!-- Close Button -->
+    <button type="button" onclick="closeImageModal()" style="position:absolute;top:-48px;right:0;background:#ff7a00;color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:20px;font-weight:900;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 14px rgba(0,0,0,0.5);z-index:10;">
+      ✕
+    </button>
+
+    <!-- Main Lightbox Image -->
+    <div style="position:relative;display:flex;align-items:center;justify-content:center;">
+      <img id="lightboxImg" src="" alt="Bản vẽ phóng to" style="max-width:92vw;max-height:82vh;object-fit:contain;border-radius:12px;border:2px solid rgba(255,255,255,0.25);box-shadow:0 20px 50px rgba(0,0,0,0.8);">
+
+      <!-- Prev / Next Navigation Buttons (Khi có nhiều ảnh) -->
+      {% if product.gallery_list and product.gallery_list|length > 1 %}
+        <button type="button" onclick="navLightbox(-1)" style="position:absolute;left:-24px;background:rgba(15,23,42,0.85);color:#fff;border:1px solid rgba(255,255,255,0.3);width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:20px;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);transition:all 0.2s ease;">
+          ❮
+        </button>
+        <button type="button" onclick="navLightbox(1)" style="position:absolute;right:-24px;background:rgba(15,23,42,0.85);color:#fff;border:1px solid rgba(255,255,255,0.3);width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:20px;display:grid;place-items:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);transition:all 0.2s ease;">
+          ❯
+        </button>
+      {% endif %}
+    </div>
+
+    <!-- Modal Footer info -->
+    <div style="margin-top:14px;color:#e2e8f0;font-size:14px;font-weight:600;display:flex;align-items:center;gap:16px;">
+      <span id="lightboxCounter">Ảnh 1/1</span>
+      <span>·</span>
+      <span>Bấm <kbd style="background:#334155;padding:2px 6px;border-radius:4px;">ESC</kbd> hoặc nút <strong style="color:#ff7a00;">✕</strong> để đóng</span>
+    </div>
+  </div>
+</div>
+
+<script>
+var galleryImages = [
+  {% for g_img in product.gallery_list %}
+    "{{ url_for('static', filename='uploads/images/' + g_img) }}"{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+var currentImageIndex = 0;
+
+function selectThumb(el, imgSrc, idx) {
+  var mainImg = document.getElementById('mainProductImg');
+  if (mainImg) {
+    mainImg.src = imgSrc;
+  }
+  currentImageIndex = idx;
+  
+  // Highlight active thumbnail
+  document.querySelectorAll('.gal-thumb-item').forEach(function(item) {
+    item.style.borderColor = '#cbd5e1';
+    item.classList.remove('active');
+  });
+  if (el) {
+    el.style.borderColor = '#ff7a00';
+    el.classList.add('active');
+  }
+}
+
+function openLightboxCurrent() {
+  if (galleryImages.length === 0) {
+    var mainImg = document.getElementById('mainProductImg');
+    if (mainImg) openImageModal(mainImg.src, 0);
+  } else {
+    openImageModal(galleryImages[currentImageIndex], currentImageIndex);
+  }
+}
+
+function openImageModal(imgSrc, idx) {
+  currentImageIndex = idx || 0;
+  var modal = document.getElementById('imageLightboxModal');
+  var img = document.getElementById('lightboxImg');
+  var counter = document.getElementById('lightboxCounter');
+  if (modal && img) {
+    img.src = imgSrc;
+    if (counter && galleryImages.length > 0) {
+      counter.innerText = 'Ảnh ' + (currentImageIndex + 1) + '/' + galleryImages.length;
+    }
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function navLightbox(direction) {
+  if (galleryImages.length <= 1) return;
+  currentImageIndex = (currentImageIndex + direction + galleryImages.length) % galleryImages.length;
+  var nextSrc = galleryImages[currentImageIndex];
+  var img = document.getElementById('lightboxImg');
+  var counter = document.getElementById('lightboxCounter');
+  if (img) img.src = nextSrc;
+  if (counter) counter.innerText = 'Ảnh ' + (currentImageIndex + 1) + '/' + galleryImages.length;
+  
+  // Sync main thumbnail
+  var mainImg = document.getElementById('mainProductImg');
+  if (mainImg) mainImg.src = nextSrc;
+  var thumbs = document.querySelectorAll('.gal-thumb-item');
+  thumbs.forEach(function(t, i) {
+    t.style.borderColor = (i === currentImageIndex) ? '#ff7a00' : '#cbd5e1';
+  });
+}
+
+function closeImageModal() {
+  var modal = document.getElementById('imageLightboxModal');
+  if (modal) {
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+}
+
+// Keyboard shortcuts: Escape to close, Left/Right arrows to flip images
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeImageModal();
+  } else if (e.key === 'ArrowLeft') {
+    navLightbox(-1);
+  } else if (e.key === 'ArrowRight') {
+    navLightbox(1);
+  }
+});
+document.getElementById('imageLightboxModal')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeImageModal();
+  }
+});
+</script>
 {% endblock %}
+
 {% block structured_data %}
 <script type="application/ld+json">
 {

@@ -1,2 +1,42 @@
 {% extends "base.html" %}
-{% block content %}<div class="admin-layout"><aside><h3>ADMIN</h3><a href="{{ url_for('admin_dashboard') }}">Dashboard</a><a href="{{ url_for('admin_products') }}">Sản phẩm</a><a href="{{ url_for('admin_categories') }}">Ảnh danh mục</a><a href="{{ url_for('admin_orders') }}">Đơn hàng</a><a href="{{ url_for('admin_contacts') }}">Liên hệ</a><a href="{{ url_for('index') }}">← Website</a></aside><section class="admin-main">{% block admin_content %}{% endblock %}</section></div>{% endblock %}
+
+{% block content %}
+<div class="admin-layout" style="display:grid;grid-template-columns:240px 1fr;gap:30px;padding:30px 0;min-height:75vh;">
+  <aside style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-xl);padding:24px;box-shadow:var(--shadow-sm);height:fit-content;position:sticky;top:90px;">
+    <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;color:#ff7a00;margin-bottom:14px;text-transform:uppercase;">
+      ⚡ QUẢN TRỊ VIÊN
+    </div>
+    
+    <nav style="display:flex;flex-direction:column;gap:6px;">
+      <a href="{{ url_for('admin_dashboard') }}" class="btn {% if request.endpoint == 'admin_dashboard' %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
+        📊 Bảng điều khiển
+      </a>
+      <a href="{{ url_for('admin_products') }}" class="btn {% if request.endpoint in ['admin_products', 'admin_product_add', 'admin_product_edit'] %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
+        📁 Quản lý Tài nguyên / File
+      </a>
+      <a href="{{ url_for('admin_orders') }}" class="btn {% if request.endpoint == 'admin_orders' %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
+        🛒 Đơn hàng & Duyệt CK
+      </a>
+      <a href="{{ url_for('admin_contacts') }}" class="btn {% if request.endpoint == 'admin_contacts' %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
+        💬 Yêu cầu báo giá
+      </a>
+      <a href="{{ url_for('admin_categories') }}" class="btn {% if request.endpoint == 'admin_categories' %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
+        🏷️ Ảnh danh mục
+      </a>
+      
+      <div style="border-top:1px solid var(--border-line);margin:12px 0 6px;"></div>
+      
+      <a href="{{ url_for('index') }}" class="btn ghost" target="_blank" style="justify-content:flex-start;font-size:13px;padding:8px 14px;color:#64748b;">
+        🌐 Xem Trang chủ Web ↗
+      </a>
+      <a href="{{ url_for('logout') }}" class="btn ghost" style="justify-content:flex-start;font-size:13px;padding:8px 14px;color:#ef4444;">
+        🚪 Đăng xuất Admin
+      </a>
+    </nav>
+  </aside>
+
+  <section class="admin-main">
+    {% block admin_content %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

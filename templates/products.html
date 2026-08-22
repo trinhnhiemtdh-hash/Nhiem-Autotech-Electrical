@@ -1,40 +1,123 @@
 {% extends "base.html" %}
-{% block title %}Thiết bị điện & tự động hóa{% endblock %}
+{% block title %}
+  {% if selected_category == 'thu-vien-autocad' %}
+    Thư Viện AutoCAD (.DWG) Bán Lẻ Từng File | Nhiệm Autotech
+  {% elif selected_category == 'thiet-ke-tu-dien' %}
+    Khóa Học & Bộ File Layout Tủ Điện (MSB, DB, ATS) | Nhiệm Autotech
+  {% elif selected_category == 'do-an-tu-dong-hoa' %}
+    Mô Hình & Đồ Án Tự Động Hóa PLC 3D SolidWorks | Nhiệm Autotech
+  {% else %}
+    Tài Nguyên Kỹ Thuật Điện, Layout Tủ & Đồ Án PLC | Nhiệm Autotech
+  {% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="container page">
+  <!-- TOP RETURN / BACK NAVIGATION BAR -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--border-line);">
+    <button type="button" onclick="if(window.history.length > 1){ window.history.back(); } else { window.location.href='{{ url_for('index') }}'; }" class="btn-back-nav" style="display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:#fff;border:1.5px solid var(--border-line);border-radius:999px;font-size:13px;font-weight:700;color:#0f172a;cursor:pointer;transition:var(--transition);box-shadow:var(--shadow-sm);">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>← Quay Lại</span>
+    </button>
+    <div style="font-size:13px;color:#64748b;">
+      <a href="{{ url_for('index') }}" style="color:#0284c7;text-decoration:none;">🏠 Trang chủ</a> / 
+      <span style="color:#0f172a;font-weight:600;">
+        {% if selected_category == 'thu-vien-autocad' %}Thư viện AutoCAD
+        {% elif selected_category == 'thiet-ke-tu-dien' %}Khóa học & Layout Tủ điện
+        {% elif selected_category == 'do-an-tu-dong-hoa' %}Đồ án Tự động hóa
+        {% else %}Tất cả sản phẩm{% endif %}
+      </span>
+    </div>
+  </div>
+
   <div class="page-head">
     <div>
-      <p class="eyebrow">PRODUCTS</p>
-      <h1>Thiết bị điện & tự động hóa</h1>
+      <p class="eyebrow">
+        {% if selected_category == 'thu-vien-autocad' %}
+          MỤC 1 · THƯ VIỆN CAD
+        {% elif selected_category == 'thiet-ke-tu-dien' %}
+          MỤC 2 · THIẾT KẾ TỦ ĐIỆN
+        {% elif selected_category == 'do-an-tu-dong-hoa' %}
+          MỤC 3 · TỰ ĐỘNG HÓA & 3D
+        {% else %}
+          TẤT CẢ TÀI NGUYÊN
+        {% endif %}
+      </p>
+      <h1>
+        {% if selected_category == 'thu-vien-autocad' %}
+          Thư Viện Bản Vẽ AutoCAD (.DWG) Chuẩn
+        {% elif selected_category == 'thiet-ke-tu-dien' %}
+          Khóa Học & Layout Tủ Điện (MSB, DB, ATS, Bù)
+        {% elif selected_category == 'do-an-tu-dong-hoa' %}
+          Mô Hình & Đồ Án Tự Động Hóa (PLC, SCADA, 3D)
+        {% else %}
+          Kho Bản Vẽ CAD, Layout Tủ Điện & Đồ Án PLC
+        {% endif %}
+      </h1>
     </div>
-    <a class="btn primary" href="{{ url_for('quote') }}">Yêu cầu báo giá</a>
+    <a class="btn primary" href="{{ url_for('quote') }}">Yêu cầu báo giá / Thiết kế riêng</a>
   </div>
 
-  <div class="product-hero-bar">
-    <div>
-      <strong>Hỗ trợ kỹ thuật chuyên nghiệp</strong>
-      <span>CB, MCB, MCCB, contactor, relay, tủ điện, phụ kiện và thư viện CAD.</span>
-    </div>
-  </div>
-
-  <form class="searchbar" method="get" role="search">
-    <label class="sr-only" for="product-search">Tìm kiếm sản phẩm</label>
-    <input id="product-search" type="search" name="q" value="{{ q }}" placeholder="Tìm theo tên, mã SKU, hãng, thông số..." autocomplete="off">
+  <!-- Search Bar -->
+  <form class="searchbar" method="get" role="search" style="margin-bottom:24px;">
+    <input id="product-search" type="search" name="q" value="{{ q }}" placeholder="Tìm kiếm file CAD, layout tủ MSB, đồ án S7-1200, SolidWorks..." autocomplete="off">
+    {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
     <button class="btn primary">Tìm kiếm</button>
   </form>
 
-  <div class="filter">
-    <a class="{{ 'active' if not selected_category }}" href="{{ url_for('products') }}">Tất cả</a>
+  <!-- 3 Pillar Category Filter Tabs -->
+  <div class="filter-3-tabs">
+    <a class="filter-tab-pill {% if not selected_category %}active{% endif %}" href="{{ url_for('products') }}">
+      <span class="f-icon">🌐</span> Tất Cả ({{ products|length }})
+    </a>
     {% for c in categories %}
-      <a class="{{ 'active' if selected_category==c.slug }}" href="{{ url_for('products', category=c.slug) }}">{{ c.name }}</a>
+      <a class="filter-tab-pill {% if selected_category == c.slug %}active{% endif %}" href="{{ url_for('products', category=c.slug) }}">
+        <span class="f-icon">
+          {% if c.slug == 'thu-vien-autocad' %}📐
+          {% elif c.slug == 'thiet-ke-tu-dien' %}⚡
+          {% else %}🤖{% endif %}
+        </span>
+        {{ c.name }}
+      </a>
     {% endfor %}
   </div>
+
+  {% if selected_category == 'thu-vien-autocad' or not selected_category %}
+    <!-- BRAND BANNER HERO -->
+    <div class="cad-banner-featured-card" style="margin-bottom:24px;border-radius:var(--radius-xl);overflow:hidden;border:1.5px solid var(--border-line);box-shadow:var(--shadow-md);">
+      <img src="{{ url_for('static', filename='images/thu_vien_thiet_bi_dien_brands_banner.jpg') }}" alt="Thư viện thiết bị điện & mẫu tủ điện công nghiệp các hãng" style="width:100%;height:auto;display:block;object-fit:cover;">
+    </div>
+
+    <!-- QUICK BRAND CHIPS -->
+    <div class="brand-chips-scroll" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;margin-bottom:28px;scrollbar-width:thin;">
+      <a href="{{ url_for('products', q='ABB', category='thu-vien-autocad') }}" class="brand-chip {% if q=='ABB' %}active{% endif %}">⚡ #1 ABB</a>
+      <a href="{{ url_for('products', q='Mitsubishi', category='thu-vien-autocad') }}" class="brand-chip {% if q=='Mitsubishi' %}active{% endif %}">⚡ #2 Mitsubishi</a>
+      <a href="{{ url_for('products', q='LS', category='thu-vien-autocad') }}" class="brand-chip {% if q=='LS' %}active{% endif %}">⚡ #3 LS Electric</a>
+      <a href="{{ url_for('products', q='Schneider', category='thu-vien-autocad') }}" class="brand-chip {% if q=='Schneider' %}active{% endif %}">⚡ #4 Schneider</a>
+      <a href="{{ url_for('products', q='Chint', category='thu-vien-autocad') }}" class="brand-chip {% if q=='Chint' %}active{% endif %}">⚡ #5 Chint</a>
+      <a href="{{ url_for('products', q='Hyundai', category='thu-vien-autocad') }}" class="brand-chip {% if q=='Hyundai' %}active{% endif %}">⚡ #6 Hyundai</a>
+      <a href="{{ url_for('products', q='Siemens', category='thu-vien-autocad') }}" class="brand-chip {% if q=='Siemens' %}active{% endif %}">⚡ #7 Siemens</a>
+      <a href="{{ url_for('products', q='VMC', category='thu-vien-autocad') }}" class="brand-chip {% if q=='VMC' %}active{% endif %}">⚡ #8 VMC</a>
+      <a href="{{ url_for('products', q='Etek', category='thu-vien-autocad') }}" class="brand-chip {% if q=='Etek' %}active{% endif %}">⚡ #9 Etek</a>
+      <a href="{{ url_for('products', q='Hager', category='thu-vien-autocad') }}" class="brand-chip {% if q=='Hager' %}active{% endif %}">⚡ #10 Hager</a>
+      <a href="{{ url_for('products', q='Omron', category='thu-vien-autocad') }}" class="brand-chip {% if q=='Omron' %}active{% endif %}">⚡ #11 Omron</a>
+      <a href="{{ url_for('products', q='Panasonic', category='thu-vien-autocad') }}" class="brand-chip {% if q=='Panasonic' %}active{% endif %}">⚡ #12 Panasonic</a>
+      <a href="{{ url_for('products', q='khung tên', category='thu-vien-autocad') }}" class="brand-chip {% if q=='khung tên' %}active{% endif %}">📋 Form Khung Tên</a>
+      <a href="{{ url_for('products', q='vỏ tủ', category='thu-vien-autocad') }}" class="brand-chip {% if q=='vỏ tủ' %}active{% endif %}">📦 Form Vỏ Tủ</a>
+      <a href="{{ url_for('products', q='mạch điều khiển', category='thu-vien-autocad') }}" class="brand-chip {% if q=='mạch điều khiển' %}active{% endif %}">🔌 Mạch Điều Khiển</a>
+    </div>
+  {% endif %}
 
   <div class="product-grid">
     {% for p in products %}
       {% include "_product_card.html" %}
     {% else %}
-      <p>Không tìm thấy sản phẩm phù hợp.</p>
+      <div class="empty-state-box" style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff; border-radius: var(--radius-xl); border: 1px solid var(--border-line);">
+        <div style="font-size: 40px; margin-bottom: 12px;">📁</div>
+        <h3>Chưa có sản phẩm nào trong danh mục này</h3>
+        <p style="color: #64748b; margin-bottom: 20px;">Vui lòng quay lại sau hoặc liên hệ Hotline/Zalo <strong>0379 760 905</strong> để được hỗ trợ gửi file trực tiếp.</p>
+        <a href="{{ url_for('products') }}" class="btn primary">Xem tất cả tài nguyên</a>
+      </div>
     {% endfor %}
   </div>
 </div>

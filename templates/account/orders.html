@@ -1,3 +1,86 @@
 {% extends "base.html" %}
-{% block title %}Đơn hàng của tôi{% endblock %}
-{% block content %}<div class="container page"><p class="eyebrow">ACCOUNT</p><h1>Đơn hàng của tôi</h1><div class="table-wrap"><table><tr><th>Mã</th><th>Ngày</th><th>Tổng</th><th>Trạng thái</th></tr>{% for o in orders %}<tr><td>#{{ o.id }}</td><td>{{ o.created_at.strftime('%d/%m/%Y %H:%M') }}</td><td>{{ "{:,.0f}".format(o.total) }} đ</td><td>{% if o.status == 'pending_payment' %}<a class="btn primary" href="{{ url_for('payment', order_id=o.id) }}">Thanh toán QR</a>{% elif o.status == 'paid' %}<span class="status paid">Đã thanh toán — có thể tải CAD</span>{% else %}<span class="status">{{ o.status }}</span>{% endif %}</td></tr>{% else %}<tr><td colspan="4">Chưa có đơn hàng.</td></tr>{% endfor %}</table></div></div>{% endblock %}
+{% block title %}Đơn hàng của tôi | Nhiệm Autotech Electrical{% endblock %}
+
+{% block content %}
+<div class="container page account-orders-page">
+  <div class="page-head">
+    <div>
+      <p class="eyebrow">TÀI KHOẢN CỦA BẠN</p>
+      <h1 class="page-title">Lịch Sử Đơn Hàng & Tải Bản Vẽ CAD</h1>
+    </div>
+    <a href="{{ url_for('products') }}" class="btn ghost">Tiếp tục mua hàng</a>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Mã đơn</th>
+          <th>Thời gian</th>
+          <th>Sản phẩm / Bản vẽ</th>
+          <th>Tổng tiền</th>
+          <th>Trạng thái & Tải File</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+          <tr>
+            <td>
+              <strong>#{{ o.id }}</strong>
+              <div style="font-size:11px;color:#64748b;margin-top:2px;">CK: NA{{ o.id }}</div>
+            </td>
+            <td>{{ o.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                {% for it in o.items %}
+                  <div style="font-size:13px;">
+                    <strong>{{ it.product_name }}</strong> (x{{ it.quantity }})
+                    {% if o.status == 'paid' %}
+                      <div style="margin-top:2px;">
+                        <a href="{{ url_for('cad_download', product_id=it.product_id) }}" class="btn-download-mini" title="Tải file CAD về máy">
+                          ⬇ Tải file CAD
+                        </a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </div>
+            </td>
+            <td>
+              <strong style="color:#ff7a00;font-size:15px;">{{ "{:,.0f}".format(o.total) }} đ</strong>
+            </td>
+            <td>
+              {% if o.status == 'pending_payment' %}
+                <a class="btn primary" style="padding:6px 14px;font-size:12.5px;" href="{{ url_for('payment', order_id=o.id) }}">
+                  Quét mã QR Vietcombank
+                </a>
+              {% elif o.status == 'awaiting_confirmation' %}
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                  <span class="status-pill status-awaiting-pill">⏳ Đang đợi Admin duyệt</span>
+                  <a href="{{ url_for('payment', order_id=o.id) }}" style="font-size:11.5px;color:#0284c7;">Xem chi tiết QR</a>
+                </div>
+              {% elif o.status == 'paid' %}
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                  <span class="status-pill status-paid-pill">✓ Đã thanh toán</span>
+                  <small style="color:#166534;font-size:11px;">Đã gửi link về Gmail</small>
+                </div>
+              {% elif o.status == 'cancelled' %}
+                <span class="status-pill">Đã hủy</span>
+              {% else %}
+                <span class="status-pill">{{ o.status }}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="5" style="text-align:center;padding:50px;">
+              <p style="font-size:15px;color:#64748b;margin-bottom:16px;">Bạn chưa có đơn hàng nào.</p>
+              <a href="{{ url_for('products') }}" class="btn primary">Khám phá sản phẩm & Thư viện CAD</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,1 +1,99 @@
-{% extends "admin/base.html" %}{% block title %}Quản lý đơn hàng{% endblock %}{% block admin_content %}<h1>Đơn hàng thanh toán QR</h1><p>Chỉ chọn <strong>Đã thanh toán</strong> sau khi kiểm tra giao dịch ngân hàng. Khách sẽ được mở quyền tải file CAD ngay sau đó.</p><div class="table-wrap"><table><tr><th>Mã</th><th>Khách</th><th>Điện thoại</th><th>Tổng</th><th>Trạng thái</th></tr>{% for o in orders %}<tr><td>#{{ o.id }}<br><small>Nội dung CK: NA{{ o.id }}</small></td><td>{{ o.customer_name }}</td><td>{{ o.phone }}</td><td>{{ "{:,.0f}".format(o.total) }} đ</td><td><form method="post" action="{{ url_for('admin_order_status', order_id=o.id) }}"><select name="status" onchange="this.form.submit()"><option value="pending_payment" {{ 'selected' if o.status=='pending_payment' }}>Chờ thanh toán</option><option value="paid" {{ 'selected' if o.status=='paid' }}>Đã thanh toán</option><option value="cancelled" {{ 'selected' if o.status=='cancelled' }}>Đã hủy</option></select></form></td></tr>{% endfor %}</table></div>{% endblock %}
+{% extends "admin/base.html" %}
+{% block title %}Quản lý đơn hàng & Thanh toán QR | Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <h1>Quản lý Đơn hàng & Thanh toán Vietcombank QR</h1>
+    <p>Kiểm tra số dư tài khoản Vietcombank (<strong>1016703323 - TRINH DUC NHIEM</strong>) theo nội dung chuyển khoản <code>NA[mã_đơn]</code>. Khi bấm <strong>Duyệt & Gửi file</strong>, hệ thống sẽ mở quyền tải CAD và tự động gửi email kèm file đính kèm về Gmail của khách hàng.</p>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:110px;">Mã đơn</th>
+        <th style="width:230px;">Khách hàng & Gmail</th>
+        <th>Sản phẩm đặt mua</th>
+        <th style="width:130px;">Tổng tiền</th>
+        <th style="width:180px;">Trạng thái</th>
+        <th style="width:220px;">Hành động duyệt</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+        <tr class="{% if o.status == 'awaiting_confirmation' %}row-highlight-awaiting{% endif %}">
+          <td>
+            <strong style="font-size:16px;color:#0f172a;">#{{ o.id }}</strong>
+            <div style="font-size:12px;color:#ff7a00;margin-top:2px;font-weight:bold;">Nội dung: NA{{ o.id }}</div>
+            <small style="color:#64748b;font-size:11.5px;">{{ o.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+          </td>
+          <td>
+            <div style="font-weight:700;color:#0f172a;font-size:14px;">{{ o.customer_name }}</div>
+            <div style="font-size:12.5px;color:#0284c7;font-weight:600;margin-top:2px;">
+              📧 {{ o.email or (o.user.email if o.user else 'Chưa có email') }}
+            </div>
+            <div style="font-size:12px;color:#475569;margin-top:2px;">
+              📞 <a href="tel:{{ o.phone }}" style="color:#0f172a;font-weight:bold;">{{ o.phone }}</a>
+            </div>
+            {% if o.note %}
+              <div style="font-size:11.5px;color:#854d0e;background:#fef3c7;padding:4px 8px;border-radius:4px;margin-top:5px;border-left:3px solid #f59e0b;">
+                <strong>Ghi chú:</strong> {{ o.note }}
+              </div>
+            {% endif %}
+          </td>
+          <td>
+            <ul style="margin:0;padding-left:16px;font-size:13px;line-height:1.5;">
+              {% for it in o.items %}
+                <li>
+                  <strong>{{ it.product_name }}</strong> 
+                  <span style="color:#64748b;">(x{{ it.quantity }}) - {{ "{:,.0f}".format(it.subtotal) }}đ</span>
+                </li>
+              {% endfor %}
+            </ul>
+          </td>
+          <td>
+            <strong style="color:#ff7a00;font-size:16px;font-weight:800;">{{ "{:,.0f}".format(o.total) }} đ</strong>
+          </td>
+          <td>
+            {% if o.status == 'awaiting_confirmation' %}
+              <span class="status-pill status-awaiting-pill">⚠️ Khách báo đã CK</span>
+            {% elif o.status == 'paid' %}
+              <span class="status-pill status-paid-pill">✓ Đã duyệt & Gửi mail</span>
+            {% elif o.status == 'pending_payment' %}
+              <span class="status-pill status-pending-pill">Chờ chuyển khoản</span>
+            {% else %}
+              <span class="status-pill">{{ o.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if o.status != 'paid' %}
+              <form method="post" action="{{ url_for('admin_order_status', order_id=o.id) }}" style="margin-bottom:6px;">
+                <input type="hidden" name="status" value="paid">
+                <button type="submit" class="btn primary" style="width:100%;padding:8px 12px;font-size:12.5px;font-weight:800;background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 2px 8px rgba(22,163,74,0.3);">
+                  ⚡ Duyệt & Gửi File CAD Ngay
+                </button>
+              </form>
+            {% endif %}
+
+            <form method="post" action="{{ url_for('admin_order_status', order_id=o.id) }}" style="display:flex;gap:6px;align-items:center;">
+              <select name="status" class="admin-status-select" style="font-size:12px;padding:4px 8px;">
+                <option value="pending_payment" {{ 'selected' if o.status=='pending_payment' }}>Chờ thanh toán</option>
+                <option value="awaiting_confirmation" {{ 'selected' if o.status=='awaiting_confirmation' }}>⚠️ Khách báo đã CK</option>
+                <option value="paid" {{ 'selected' if o.status=='paid' }}>✅ Đã thanh toán</option>
+                <option value="cancelled" {{ 'selected' if o.status=='cancelled' }}>❌ Đã hủy</option>
+              </select>
+              <button type="submit" class="btn ghost" style="padding:4px 8px;font-size:11.5px;">Đổi</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr>
+          <td colspan="6" style="text-align:center;padding:40px;color:#64748b;">Chưa có đơn hàng nào trong hệ thống.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

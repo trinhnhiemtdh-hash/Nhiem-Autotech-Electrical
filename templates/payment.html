@@ -1,31 +1,215 @@
 {% extends "base.html" %}
-{% block title %}Thanh toán QR cho đơn #{{ order.id }}{% endblock %}
-{% block content %}
-<div class="container page payment-page">
-  <p class="eyebrow">THANH TOÁN QR</p>
-  <h1>Hoàn tất thanh toán đơn #{{ order.id }}</h1>
-  <p class="lead">Chuyển đúng số tiền và nội dung bên dưới. Quản trị viên sẽ kiểm tra giao dịch rồi mở quyền tải file CAD cho đơn hàng của bạn.</p>
+{% block title %}Thanh toán đơn hàng #{{ order.id }} | Vietcombank QR{% endblock %}
 
-  <div class="payment-grid">
-    <section class="payment-card">
-      <h2>{{ "{:,.0f}".format(order.total) }} đ</h2>
-      <dl class="payment-details">
-        <div><dt>Ngân hàng</dt><dd>{{ bank_id or 'Chưa cấu hình' }}</dd></div>
-        <div><dt>Số tài khoản</dt><dd>{{ bank_account or 'Chưa cấu hình' }}</dd></div>
-        <div><dt>Chủ tài khoản</dt><dd>{{ bank_account_name or 'Chưa cấu hình' }}</dd></div>
-        <div><dt>Nội dung chuyển khoản</dt><dd class="transfer-note">{{ transfer_note }}</dd></div>
-      </dl>
-      <p><strong>Lưu ý:</strong> Không thay đổi nội dung chuyển khoản để chúng tôi xác nhận đơn nhanh hơn.</p>
-    </section>
-    <section class="payment-card qr-card">
-      {% if qr_url %}
-        <img src="{{ qr_url }}" alt="Mã QR thanh toán cho đơn {{ order.id }}">
-        <p>Quét mã QR bằng ứng dụng ngân hàng.</p>
-      {% else %}
-        <p>Thông tin QR chưa được cấu hình. Vui lòng liên hệ quản trị viên để nhận thông tin chuyển khoản.</p>
-      {% endif %}
-    </section>
+{% block content %}
+<div class="container page payment-page-wrap">
+  <div class="page-head-center">
+    <div class="section-eyebrow">THANH TOÁN CHUYỂN KHOẢN QR VIETCOMBANK</div>
+    <h1 class="page-title">Thanh Toán Đơn Hàng #{{ order.id }}</h1>
+    <p class="page-subtitle">Quét mã QR Vietcombank hoặc chuyển khoản theo thông tin dưới đây. Sau khi Admin duyệt đơn, file thư viện CAD sẽ được gửi thẳng về Gmail của bạn.</p>
   </div>
-  <div class="library-cta"><a class="btn ghost" href="{{ url_for('account_orders') }}">Xem trạng thái đơn hàng</a></div>
+
+  <!-- Status Alert Card -->
+  {% if order.status == 'awaiting_confirmation' %}
+    <div class="payment-status-card status-awaiting-card">
+      <div class="status-badge-icon">⏳</div>
+      <div class="status-info">
+        <h3>Đang Đợi Admin Xác Nhận Thanh Toán</h3>
+        <p>Bạn đã thông báo chuyển khoản thành công. Admin đang kiểm tra giao dịch tài khoản Vietcombank.</p>
+        <div class="status-gmail-note">
+          📧 Sau khi Admin xác nhận, toàn bộ sản phẩm và link tải file CAD sẽ tự động gửi về Gmail: <strong>{{ user_email }}</strong> và mở quyền tải trực tiếp trên trang này.
+        </div>
+        <div style="margin-top:14px;">
+          <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" class="btn secondary" style="font-size:13px;padding:8px 16px;">💬 Nhắn Zalo duyệt gấp (0379 760 905)</a>
+        </div>
+      </div>
+    </div>
+  {% elif order.status == 'paid' %}
+    <div class="payment-status-card status-success-card">
+      <div class="status-badge-icon">🎉</div>
+      <div class="status-info">
+        <h3>Đơn Hàng #{{ order.id }} Đã Được Xác Nhận Thanh Toán!</h3>
+        <p>Giao dịch thành công! File CAD và tài liệu đã được gửi về Gmail: <strong>{{ user_email }}</strong>.</p>
+        
+        <div class="paid-downloads-box">
+          <h4 style="margin:0 0 10px;color:#166534;font-size:15px;">⬇ Danh sách file bản vẽ CAD sẵn sàng tải về:</h4>
+          <div class="paid-files-list">
+            {% for item in order.items %}
+              <div class="paid-file-row">
+                <div>
+                  <strong>{{ item.product_name }}</strong>
+                  <span style="font-size:12px;color:#64748b;display:block;">Số lượng: {{ item.quantity }} · Thành tiền: {{ "{:,.0f}".format(item.subtotal) }}đ</span>
+                </div>
+                {% if item.product_id %}
+                  <a href="{{ url_for('cad_download', product_id=item.product_id, order_id=order.id) }}" class="btn primary btn-download-file">
+                    ⬇ Tải file CAD ngay
+                  </a>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="payment-grid-layout">
+    <!-- Left Column: Bank Information -->
+    <div class="payment-details-card">
+      <div class="p-card-header">
+        <span class="vcb-tag">VIETCOMBANK</span>
+        <h2>Thông Tin Tài Khoản</h2>
+      </div>
+
+      <div class="amount-highlight-box">
+        <small>Số tiền cần thanh toán:</small>
+        <div class="amount-val">
+          {{ "{:,.0f}".format(order.total) }} <span>VNĐ</span>
+        </div>
+      </div>
+
+      <div class="bank-info-table">
+        <div class="info-row">
+          <span class="info-lbl">Ngân hàng:</span>
+          <span class="info-val"><strong>Vietcombank (Ngân hàng Ngoại Thương VN)</strong></span>
+        </div>
+        <div class="info-row">
+          <span class="info-lbl">Số tài khoản (STK):</span>
+          <span class="info-val copyable-val">
+            <strong id="stkVal">{{ bank_account }}</strong>
+            <button type="button" class="btn-copy" onclick="copyText('{{ bank_account }}', this)">Sao chép STK</button>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-lbl">Chủ tài khoản:</span>
+          <span class="info-val"><strong>{{ bank_account_name }}</strong></span>
+        </div>
+        <div class="info-row">
+          <span class="info-lbl">Chi nhánh:</span>
+          <span class="info-val">{{ bank_branch }}</span>
+        </div>
+        <div class="info-row highlight-row">
+          <span class="info-lbl">Nội dung chuyển khoản:</span>
+          <span class="info-val copyable-val">
+            <strong class="note-highlight">{{ transfer_note }}</strong>
+            <button type="button" class="btn-copy" onclick="copyText('{{ transfer_note }}', this)">Sao chép nội dung</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="customer-target-email-box">
+        <div class="target-email-icon">📧</div>
+        <div>
+          <small>Gmail nhận file bản vẽ CAD sau khi duyệt:</small>
+          <strong>{{ user_email or 'Chưa cung cấp' }}</strong>
+          <span class="phone-sub">SĐT liên hệ: <strong>{{ order.phone }}</strong></span>
+        </div>
+      </div>
+
+      <div class="payment-warning-note">
+        ⚠️ <strong>Lưu ý:</strong> Vui lòng ghi đúng nội dung chuyển khoản là <code>{{ transfer_note }}</code> để Admin duyệt đơn và gửi file tự động về Gmail cho bạn nhanh nhất.
+      </div>
+
+      <!-- Action Form: Customer confirms payment -->
+      {% if order.status == 'pending_payment' %}
+        <form method="post" action="{{ url_for('payment_notify_paid', order_id=order.id) }}" class="notify-paid-box">
+          <label class="confirm-checkbox-label">
+            <input type="checkbox" required name="confirm_paid" id="confirmPaidCheckbox">
+            <span>Tôi đã chuyển khoản số tiền <strong>{{ "{:,.0f}".format(order.total) }}đ</strong> vào tài khoản Vietcombank trên.</span>
+          </label>
+          <button type="submit" class="btn-notify-submit">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>TÔI ĐÃ CHUYỂN KHOẢN XONG (BÁO ADMIN DUYỆT)</span>
+          </button>
+        </form>
+      {% elif order.status == 'awaiting_confirmation' %}
+        <div class="waiting-prompt-box">
+          <span>⏳ Đang đợi Admin kiểm tra giao dịch và gửi file CAD vào Gmail <strong>{{ user_email }}</strong>.</span>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: QR Code Box with Tabs -->
+    <div class="payment-qr-card">
+      <div class="qr-tabs-nav">
+        <button type="button" class="qr-tab-btn active" onclick="switchQrTab('dynamic', this)">Mã VietQR Tự Động</button>
+        <button type="button" class="qr-tab-btn" onclick="switchQrTab('card', this)">Thẻ QR Vietcombank</button>
+      </div>
+
+      <!-- Tab 1: Dynamic VietQR -->
+      <div id="tabDynamicQr" class="qr-tab-content active">
+        <div class="qr-header">
+          <h3>Quét Mã VietQR Chuyển Tiền</h3>
+          <p>Mở App ngân hàng bất kỳ để quét mã tự động điền STK, số tiền và nội dung</p>
+        </div>
+
+        <div class="qr-image-wrapper">
+          {% if qr_url %}
+            <img src="{{ qr_url }}" alt="Mã VietQR Vietcombank cho đơn {{ order.id }}" class="qr-img-main">
+          {% else %}
+            <div class="qr-placeholder">Không thể tạo mã VietQR</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Tab 2: User Official VCB QR Card -->
+      <div id="tabCardQr" class="qr-tab-content">
+        <div class="qr-header">
+          <h3>Thẻ QR Vietcombank Chính Chủ</h3>
+          <p>Trịnh Đức Nhiệm · STK: 1016703323 · PGD Ea Kar</p>
+        </div>
+
+        <div class="qr-card-image-wrapper">
+          <img src="{{ url_for('static', filename='images/vcb_qr_card.png') }}" alt="Thẻ VietQR Vietcombank Trịnh Đức Nhiệm" class="qr-card-img">
+        </div>
+      </div>
+
+      <div class="qr-guide-box">
+        <div class="guide-step">
+          <span class="step-num">1</span>
+          <span>Mở ứng dụng Ngân hàng trên điện thoại (VCB, Techcombank, MB, BIDV, Agribank...)</span>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">2</span>
+          <span>Chọn <strong>Quét mã QR</strong> để hệ thống tự động điền thông tin</span>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">3</span>
+          <span>Sau khi chuyển khoản, bấm nút <strong>"Tôi đã chuyển khoản xong"</strong> để Admin duyệt và gửi file qua Gmail</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="payment-bottom-nav">
+    <a href="{{ url_for('products') }}" class="btn ghost">← Tiếp tục xem sản phẩm</a>
+    <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" class="btn secondary">💬 Chat Zalo hỗ trợ xác nhận (0379 760 905)</a>
+  </div>
 </div>
+
+<script>
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.innerText;
+    btn.innerText = "✓ Đã sao chép";
+    btn.classList.add("copied");
+    setTimeout(() => {
+      btn.innerText = orig;
+      btn.classList.remove("copied");
+    }, 2000);
+  });
+}
+
+function switchQrTab(type, btn) {
+  document.querySelectorAll('.qr-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.qr-tab-content').forEach(c => c.classList.remove('active'));
+  
+  btn.classList.add('active');
+  if (type === 'dynamic') {
+    document.getElementById('tabDynamicQr').classList.add('active');
+  } else {
+    document.getElementById('tabCardQr').classList.add('active');
+  }
+}
+</script>
 {% endblock %}
