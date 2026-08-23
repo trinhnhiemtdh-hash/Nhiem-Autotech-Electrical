@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Nhiệm Autotech Electrical | Thư Viện AutoCAD MCB MCCB Các Hãng & Layout Tủ Điện{% endblock %}</title>
+  <meta name="author" content="Nhiệm Autotech Electrical">
   <meta name="description" content="{% block meta_description %}Nhiệm Autotech chuyên cung cấp thư viện AutoCAD MCB, MCCB, ACB của các hãng (Schneider, LS, Mitsubishi, ABB, Chint, Siemens, Omron), khóa học thiết kế layout tủ điện công nghiệp MSB DB ATS và đồ án tự động hóa PLC SolidWorks 3D.{% endblock %}">
   <meta name="keywords" content="thư viện autocad mcb, thư viện autocad mccb, block cad mcb các hãng, thư viện autocad schneider, thư viện autocad ls, thư viện autocad mitsubishi, thư viện autocad abb, thư viện autocad siemens, thiết kế layout tủ điện, layout tủ điện msb, layout tủ db, layout tủ ats, khóa học thiết kế tủ điện, đồ án tự động hóa plc, lập trình plc s7-1200, vẽ 3d solidworks cơ khí, Nhiệm Autotech">
   <meta name="robots" content="{{ robots or 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' }}">
@@ -12,7 +13,7 @@
   <meta property="og:description" content="{% block og_description %}Mua file thư viện AutoCAD DWG thiết bị điện MCB MCCB chuẩn hãng, layout tủ điện MSB DB và đồ án PLC 3D SolidWorks.{% endblock %}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{ canonical_url or site_url ~ request.path }}">
-  {% block og_image %}{% endblock %}
+  {% block og_image %}<meta property="og:image" content="{{ site_url ~ url_for('static', filename='images/logo.png') }}">{% endblock %}
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="{{ canonical_url or site_url ~ request.path }}">
   
@@ -23,6 +24,7 @@
   
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/electrical.css') }}">
+  <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}?v=2">
 </head>
 <body>
 
@@ -52,7 +54,7 @@
   <div class="container header-inner">
     <!-- Brand Logo -->
     <a class="brand-logo" href="{{ url_for('index') }}">
-      <div class="brand-badge">NA</div>
+      <img src="{{ url_for('static', filename='images/logo.jpg') }}?v=2" alt="Logo Nhiệm Autotech" class="brand-img" onerror="this.src='{{ url_for('static', filename='images/logo.png') }}';">
       <div class="brand-text">
         <span class="brand-name">NHIỆM AUTOTECH</span>
         <span class="brand-sub">ELECTRICAL & AUTOMATION</span>
@@ -152,7 +154,7 @@
 <div class="mobile-drawer" id="mobileDrawer">
   <div class="drawer-header">
     <div class="brand-logo">
-      <div class="brand-badge">NA</div>
+      <img src="{{ url_for('static', filename='images/logo.jpg') }}?v=2" alt="Logo Nhiệm Autotech" class="brand-img">
       <div class="brand-text">
         <span class="brand-name">NHIỆM AUTOTECH</span>
         <span class="brand-sub">ELECTRICAL</span>
@@ -284,7 +286,7 @@
     <!-- Col 1: Brand Info -->
     <div class="footer-col brand-col">
       <div class="brand-logo footer-logo">
-        <div class="brand-badge">NA</div>
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}?v=2" alt="Logo Nhiệm Autotech" class="brand-img">
         <div class="brand-text">
           <span class="brand-name">NHIỆM AUTOTECH</span>
           <span class="brand-sub">ELECTRICAL</span>

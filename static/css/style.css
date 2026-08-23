@@ -219,6 +219,22 @@ button, input, select, textarea {
   letter-spacing: 0.5px;
 }
 
+.brand-img {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 4px 14px rgba(255, 122, 0, 0.45);
+  border: 2px solid #ff7a00;
+  background: #000000;
+  display: block;
+  transition: transform 0.25s ease;
+}
+
+.brand-logo:hover .brand-img {
+  transform: scale(1.05);
+}
+
 .brand-text {
   display: flex;
   flex-direction: column;
