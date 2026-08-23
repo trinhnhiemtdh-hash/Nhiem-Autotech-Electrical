@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_, inspect, text
-from models import db, User, Category, Product, Order, OrderItem, Contact, Download
+from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit
 from config import Config
 from functools import wraps
 from pathlib import Path
@@ -242,6 +242,24 @@ def send_order_paid_email(order):
     except Exception as e:
         print(f"[MAIL ERROR] Could not send email to {customer_email}: {e}")
         return False
+
+@app.before_request
+def track_visitor():
+    if request.path.startswith("/static") or request.path.startswith("/admin") or request.path in ["/robots.txt", "/sitemap.xml"]:
+        return
+    try:
+        ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+        if ip and "," in ip:
+            ip = ip.split(",")[0].strip()
+        visit = PageVisit(
+            ip_address=ip[:50] if ip else "127.0.0.1",
+            user_agent=request.user_agent.string[:250] if request.user_agent else "",
+            path=request.path[:250]
+        )
+        db.session.add(visit)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 @app.after_request
 def prevent_private_pages_from_being_indexed(response):
@@ -727,6 +745,14 @@ def admin_dashboard():
     panel_count = Product.query.filter_by(category_id=cat_panel.id).count() if cat_panel else 0
     automation_count = Product.query.filter_by(category_id=cat_automation.id).count() if cat_automation else 0
 
+    from datetime import datetime, date, time
+    today_start = datetime.combine(date.today(), time.min)
+
+    total_visits = PageVisit.query.count()
+    today_visits = PageVisit.query.filter(PageVisit.created_at >= today_start).count()
+    unique_today = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= today_start).distinct().count()
+    recent_visits = PageVisit.query.order_by(PageVisit.created_at.desc()).limit(15).all()
+
     return render_template("admin/dashboard.html",
                            product_count=Product.query.count(),
                            cad_count=cad_count,
@@ -735,7 +761,11 @@ def admin_dashboard():
                            order_count=Order.query.count(),
                            awaiting_order_count=Order.query.filter_by(status="awaiting_confirmation").count(),
                            user_count=User.query.count(),
-                           contact_count=Contact.query.filter_by(is_read=False).count())
+                           contact_count=Contact.query.filter_by(is_read=False).count(),
+                           total_visits=total_visits,
+                           today_visits=today_visits,
+                           unique_today=unique_today,
+                           recent_visits=recent_visits)
 
 @app.route("/admin/products")
 @admin_required

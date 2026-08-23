@@ -99,3 +99,11 @@ class Download(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     product_id = db.Column(db.Integer, db.ForeignKey("product.id"))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class PageVisit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(50))
+    user_agent = db.Column(db.String(255))
+    path = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
