@@ -136,18 +136,30 @@
       <thead>
         <tr style="background:#f8fafc;border-bottom:2px solid #e2e8f0;color:#64748b;text-align:left;">
           <th style="padding:10px 12px;">Thời gian</th>
-          <th style="padding:10px 12px;">Địa chỉ IP</th>
-          <th style="padding:10px 12px;">Trang xem (Path)</th>
-          <th style="padding:10px 12px;">Thiết bị / Trình duyệt</th>
+          <th style="padding:10px 12px;">Khách hàng / Tài khoản</th>
+          <th style="padding:10px 12px;">Địa chỉ IP & Vị trí</th>
+          <th style="padding:10px 12px;">Trang đang xem (Path)</th>
+          <th style="padding:10px 12px;">Thiết bị truy cập</th>
         </tr>
       </thead>
       <tbody>
         {% for v in recent_visits %}
           <tr style="border-bottom:1px solid #f1f5f9;">
             <td style="padding:10px 12px;color:#64748b;white-space:nowrap;">{{ v.created_at.strftime('%H:%M:%S - %d/%m/%Y') }}</td>
-            <td style="padding:10px 12px;font-weight:600;color:#0284c7;white-space:nowrap;">{{ v.ip_address }}</td>
+            <td style="padding:10px 12px;font-weight:600;">
+              {% if v.user %}
+                <span style="color:#059669;display:block;">👤 {{ v.user.name }}</span>
+                <small style="color:#64748b;font-weight:normal;">{{ v.user.email }}</small>
+              {% else %}
+                <span style="color:#64748b;font-weight:normal;">👤 Khách vãng lai (Ẩn danh)</span>
+              {% endif %}
+            </td>
+            <td style="padding:10px 12px;white-space:nowrap;">
+              <strong style="color:#0284c7;display:block;">{{ v.ip_address }}</strong>
+              <small style="color:#475569;">{{ v.location or '🇻🇳 Việt Nam' }}</small>
+            </td>
             <td style="padding:10px 12px;font-weight:600;color:#0f172a;">{{ v.path }}</td>
-            <td style="padding:10px 12px;color:#64748b;max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ v.user_agent }}">{{ v.user_agent or 'Không xác định' }}</td>
+            <td style="padding:10px 12px;color:#475569;white-space:nowrap;">{{ v.device_type or '💻 Máy tính' }}</td>
           </tr>
         {% endfor %}
       </tbody>

@@ -32,6 +32,15 @@ def initialize_database():
     columns_prod = {column["name"] for column in inspect(db.engine).get_columns("product")}
     if "sort_order" not in columns_prod:
         db.session.execute(text("ALTER TABLE product ADD COLUMN sort_order INTEGER DEFAULT 0"))
+
+    if "page_visit" in inspect(db.engine).get_table_names():
+        columns_visit = {column["name"] for column in inspect(db.engine).get_columns("page_visit")}
+        if "user_id" not in columns_visit:
+            db.session.execute(text("ALTER TABLE page_visit ADD COLUMN user_id INTEGER"))
+        if "location" not in columns_visit:
+            db.session.execute(text("ALTER TABLE page_visit ADD COLUMN location VARCHAR(100) DEFAULT 'Việt Nam'"))
+        if "device_type" not in columns_visit:
+            db.session.execute(text("ALTER TABLE page_visit ADD COLUMN device_type VARCHAR(50) DEFAULT 'Máy tính'"))
         
     default_categories = [
         ("Thư viện AutoCAD", "thu-vien-autocad"),
@@ -243,6 +252,26 @@ def send_order_paid_email(order):
         print(f"[MAIL ERROR] Could not send email to {customer_email}: {e}")
         return False
 
+def get_device_type(ua_str):
+    if not ua_str:
+        return "💻 Máy tính"
+    ua_lower = ua_str.lower()
+    if "mobile" in ua_lower or "android" in ua_lower or "iphone" in ua_lower:
+        return "📱 Điện thoại"
+    elif "ipad" in ua_lower or "tablet" in ua_lower:
+        return "📱 Máy tính bảng"
+    return "💻 Máy tính"
+
+def get_location_name(ip):
+    if not ip or ip in ["127.0.0.1", "::1", "localhost"]:
+        return "🏠 Nội bộ (Localhost)"
+    country = request.headers.get("CF-IPCountry")
+    if country:
+        if country == "VN":
+            return "🇻🇳 Việt Nam"
+        return f"🌐 Quốc tế ({country})"
+    return "🇻🇳 Việt Nam"
+
 @app.before_request
 def track_visitor():
     if request.path.startswith("/static") or request.path.startswith("/admin") or request.path in ["/robots.txt", "/sitemap.xml"]:
@@ -251,9 +280,13 @@ def track_visitor():
         ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if ip and "," in ip:
             ip = ip.split(",")[0].strip()
+        user_agent_str = request.user_agent.string if request.user_agent else ""
         visit = PageVisit(
+            user_id=session.get("user_id"),
             ip_address=ip[:50] if ip else "127.0.0.1",
-            user_agent=request.user_agent.string[:250] if request.user_agent else "",
+            location=get_location_name(ip),
+            device_type=get_device_type(user_agent_str),
+            user_agent=user_agent_str[:250],
             path=request.path[:250]
         )
         db.session.add(visit)

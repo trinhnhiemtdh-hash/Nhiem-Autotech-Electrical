@@ -102,8 +102,13 @@ class Download(db.Model):
 
 class PageVisit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    user = db.relationship("User")
     ip_address = db.Column(db.String(50))
+    location = db.Column(db.String(100), default="Việt Nam")
+    device_type = db.Column(db.String(50), default="Máy tính")
     user_agent = db.Column(db.String(255))
     path = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 
