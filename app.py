@@ -465,6 +465,12 @@ def panel_forms():
 def google_verify_file():
     return Response("google-site-verification: google79bc38910d6f203a.html", mimetype="text/html")
 
+@app.route("/ping")
+@app.route("/health")
+def health_ping():
+    return Response("OK", mimetype="text/plain")
+
+
 @app.route("/robots.txt")
 def robots_txt():
     base_url = app.config["SITE_URL"] or request.url_root.rstrip("/")
