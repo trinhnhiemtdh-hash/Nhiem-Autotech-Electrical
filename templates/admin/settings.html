@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+{% block title %}Cài đặt Tài khoản & Mật khẩu | Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-page-header">
+  <div>
+    <h1>⚙️ Cài Đặt Tài Khoản & Mật Khẩu</h1>
+    <p>Thay đổi tên quản trị viên, email đăng nhập và mật khẩu truy cập Admin.</p>
+  </div>
+</div>
+
+<div style="max-width:680px;background:#fff;border:1px solid #e2e8f0;border-radius:var(--radius-xl);padding:28px;box-shadow:var(--shadow-sm);">
+  <form method="post" action="{{ url_for('admin_settings') }}">
+    <h3 style="margin:0 0 16px;font-size:16px;color:#0f172a;border-bottom:2px solid #f1f5f9;padding-bottom:8px;">
+      🔑 Thông Tin Tài Khoản Admin
+    </h3>
+
+    <div class="form-group" style="margin-bottom:16px;">
+      <label style="font-weight:700;font-size:13.5px;margin-bottom:6px;display:block;">Tên hiển thị Quản trị viên</label>
+      <input type="text" name="name" required value="{{ admin_user.name }}" style="width:100%;padding:10px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+    </div>
+
+    <div class="form-group" style="margin-bottom:16px;">
+      <label style="font-weight:700;font-size:13.5px;margin-bottom:6px;display:block;">Email Đăng nhập Admin</label>
+      <input type="email" name="email" required value="{{ admin_user.email }}" style="width:100%;padding:10px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+    </div>
+
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
+
+    <h3 style="margin:0 0 16px;font-size:16px;color:#0f172a;border-bottom:2px solid #f1f5f9;padding-bottom:8px;">
+      🔒 Thay Đổi Mật Khẩu Đăng Nhập
+    </h3>
+
+    <div class="form-group" style="margin-bottom:16px;">
+      <label style="font-weight:700;font-size:13.5px;margin-bottom:6px;display:block;">Mật khẩu hiện tại</label>
+      <input type="password" name="current_password" placeholder="Nhập mật khẩu hiện tại..." style="width:100%;padding:10px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+    </div>
+
+    <div class="form-group" style="margin-bottom:16px;">
+      <label style="font-weight:700;font-size:13.5px;margin-bottom:6px;display:block;">Mật khẩu MỚI (để trống nếu không đổi)</label>
+      <input type="password" name="new_password" placeholder="Mật khẩu mới..." style="width:100%;padding:10px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+    </div>
+
+    <div class="form-group" style="margin-bottom:24px;">
+      <label style="font-weight:700;font-size:13.5px;margin-bottom:6px;display:block;">Xác nhận Mật khẩu MỚI</label>
+      <input type="password" name="confirm_password" placeholder="Nhập lại mật khẩu mới..." style="width:100%;padding:10px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;">
+    </div>
+
+    <button type="submit" class="btn primary" style="padding:12px 28px;font-size:14.5px;font-weight:700;">
+      💾 Lưu Thay Đổi & Cập Nhật Mật Khẩu
+    </button>
+  </form>
+</div>
+{% endblock %}

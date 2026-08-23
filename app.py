@@ -1129,6 +1129,52 @@ def admin_contacts():
     contacts = Contact.query.order_by(Contact.created_at.desc()).all()
     return render_template("admin/contacts.html", contacts=contacts)
 
+@app.route("/admin/settings", methods=["GET", "POST"])
+@admin_required
+def admin_settings():
+    admin_user = db.session.get(User, session["user_id"]) if session.get("user_id") else None
+    if not admin_user:
+        admin_user = User.query.filter_by(is_admin=True).first()
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        current_password = request.form.get("current_password", "").strip()
+        new_password = request.form.get("new_password", "").strip()
+        confirm_password = request.form.get("confirm_password", "").strip()
+
+        if not name or not email:
+            flash("Vui lòng nhập đầy đủ Tên và Email quản trị.", "warning")
+            return render_template("admin/settings.html", admin_user=admin_user)
+
+        if email != admin_user.email and User.query.filter_by(email=email).first():
+            flash("Email đăng nhập này đã được sử dụng bởi tài khoản khác.", "danger")
+            return render_template("admin/settings.html", admin_user=admin_user)
+
+        admin_user.name = name
+        admin_user.email = email
+
+        if new_password:
+            if not current_password or not check_password_hash(admin_user.password_hash, current_password):
+                flash("Mật khẩu hiện tại không chính xác.", "danger")
+                return render_template("admin/settings.html", admin_user=admin_user)
+            if len(new_password) < 6:
+                flash("Mật khẩu mới phải có ít nhất 6 ký tự.", "warning")
+                return render_template("admin/settings.html", admin_user=admin_user)
+            if new_password != confirm_password:
+                flash("Mật khẩu mới và mật khẩu xác nhận không khớp.", "danger")
+                return render_template("admin/settings.html", admin_user=admin_user)
+            
+            admin_user.password_hash = generate_password_hash(new_password)
+            flash("Đã cập nhật Tên, Email và ĐỔI MẬT KHẨU Admin thành công!", "success")
+        else:
+            flash("Đã cập nhật Tên và Email Admin thành công!", "success")
+
+        db.session.commit()
+        return redirect(url_for("admin_settings"))
+
+    return render_template("admin/settings.html", admin_user=admin_user)
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()

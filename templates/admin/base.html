@@ -23,6 +23,9 @@
       <a href="{{ url_for('admin_categories') }}" class="btn {% if request.endpoint == 'admin_categories' %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
         🏷️ Ảnh danh mục
       </a>
+      <a href="{{ url_for('admin_settings') }}" class="btn {% if request.endpoint == 'admin_settings' %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
+        ⚙️ Cài đặt & Đổi mật khẩu
+      </a>
       
       <div style="border-top:1px solid var(--border-line);margin:12px 0 6px;"></div>
       
