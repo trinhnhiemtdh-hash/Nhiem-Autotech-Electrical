@@ -262,15 +262,39 @@ def get_device_type(ua_str):
         return "📱 Máy tính bảng"
     return "💻 Máy tính"
 
+_IP_LOCATION_CACHE = {}
+
 def get_location_name(ip):
-    if not ip or ip in ["127.0.0.1", "::1", "localhost"]:
+    if not ip or ip in ["127.0.0.1", "::1", "localhost"] or ip.startswith("192.168.") or ip.startswith("10."):
         return "🏠 Nội bộ (Localhost)"
-    country = request.headers.get("CF-IPCountry")
-    if country:
-        if country == "VN":
-            return "🇻🇳 Việt Nam"
-        return f"🌐 Quốc tế ({country})"
-    return "🇻🇳 Việt Nam"
+    
+    if ip in _IP_LOCATION_CACHE:
+        return _IP_LOCATION_CACHE[ip]
+
+    location_str = "🇻🇳 Việt Nam"
+    try:
+        import urllib.request
+        req = urllib.request.Request(f"http://ip-api.com/json/{ip}", headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=2.0) as res:
+            data = json.loads(res.read().decode("utf-8"))
+            if data.get("status") == "success":
+                city = data.get("city", "")
+                region = data.get("regionName", "")
+                country = data.get("country", "")
+                loc_parts = []
+                if city:
+                    loc_parts.append(city)
+                if region and region != city:
+                    loc_parts.append(region)
+                if country:
+                    loc_parts.append("Việt Nam" if country == "Vietnam" else country)
+                if loc_parts:
+                    location_str = "📍 " + ", ".join(loc_parts)
+    except Exception:
+        pass
+
+    _IP_LOCATION_CACHE[ip] = location_str
+    return location_str
 
 @app.before_request
 def track_visitor():
