@@ -55,13 +55,13 @@ def initialize_database():
                             password_hash=generate_password_hash(app.config["ADMIN_PASSWORD"]), is_admin=True))
     db.session.commit()
     
-    if Product.query.count() == 0:
-        json_path = Path(__file__).resolve().parent / "products_dump.json"
-        if json_path.exists():
-            try:
-                with open(json_path, "r", encoding="utf-8") as f:
-                    products_data = json.load(f)
-                cat_map = {c.slug: c.id for c in Category.query.all()}
+    json_path = Path(__file__).resolve().parent / "products_dump.json"
+    if json_path.exists():
+        try:
+            with open(json_path, "r", encoding="utf-8") as f:
+                products_data = json.load(f)
+            cat_map = {c.slug: c.id for c in Category.query.all()}
+            if Product.query.count() == 0:
                 for item in products_data:
                     cat_id = cat_map.get(item.get("category_slug"), None)
                     p = Product(
@@ -82,8 +82,48 @@ def initialize_database():
                     db.session.add(p)
                 db.session.commit()
                 print(f"[INIT] Auto-seeded {len(products_data)} products into database.")
-            except Exception as e:
-                print(f"[INIT ERROR] Failed to seed products: {e}")
+            else:
+                for item in products_data:
+                    slug = item.get("slug")
+                    if slug:
+                        existing = Product.query.filter_by(slug=slug).first()
+                        if existing and "price" in item:
+                            existing.price = float(item["price"])
+                            if "name" in item:
+                                existing.name = item["name"]
+                db.session.commit()
+                print(f"[INIT] Synced product prices from products_dump.json.")
+        except Exception as e:
+            print(f"[INIT ERROR] Failed to seed/sync products: {e}")
+
+def sync_products_to_dump():
+    """Sync all current DB products to products_dump.json so user price changes and product updates persist across deployments."""
+    try:
+        products = Product.query.order_by(Product.id.asc()).all()
+        cat_map = {c.id: c.slug for c in Category.query.all()}
+        dump_list = []
+        for p in products:
+            dump_list.append({
+                "category_slug": cat_map.get(p.category_id, ""),
+                "name": p.name,
+                "slug": p.slug,
+                "sku": p.sku,
+                "price": p.price,
+                "stock": p.stock,
+                "sort_order": p.sort_order,
+                "image": p.image or "",
+                "images": p.images or "",
+                "cad_file": p.cad_file or "",
+                "description": p.description or "",
+                "specifications": p.specifications or "",
+                "status": p.status or "active"
+            })
+        json_path = Path(__file__).resolve().parent / "products_dump.json"
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(dump_list, f, ensure_ascii=False, indent=2)
+        print(f"[SYNC] Preserved {len(dump_list)} products into products_dump.json")
+    except Exception as e:
+        print(f"[SYNC ERROR] Failed to sync products to JSON: {e}")
 
 with app.app_context():
     initialize_database()
@@ -975,6 +1015,7 @@ def admin_product_add():
             
         db.session.add(product)
         db.session.commit()
+        sync_products_to_dump()
         flash(f"Đã đăng '{product.name}' thành công lên danh mục!", "success")
         return redirect(url_for("admin_products"))
     return render_template("admin/product_add.html", categories=categories)
@@ -1059,6 +1100,7 @@ def admin_product_edit(product_id):
             product.cad_file = filename
             
         db.session.commit()
+        sync_products_to_dump()
         flash(f"Đã cập nhật '{product.name}' thành công!", "success")
         return redirect(url_for("admin_products"))
     return render_template("admin/product_edit.html", product=product, categories=categories)
@@ -1100,6 +1142,7 @@ def admin_product_toggle(product_id):
     if p:
         p.status = "hidden" if p.status == "active" else "active"
         db.session.commit()
+        sync_products_to_dump()
         flash(f"Đã chuyển trạng thái sản phẩm #{p.id} thành '{p.status}'.", "info")
     return redirect(url_for("admin_products"))
 
@@ -1110,6 +1153,7 @@ def admin_product_delete(product_id):
     if p:
         db.session.delete(p)
         db.session.commit()
+        sync_products_to_dump()
         flash("Đã xóa sản phẩm khỏi hệ thống.", "info")
     return redirect(url_for("admin_products"))
 
