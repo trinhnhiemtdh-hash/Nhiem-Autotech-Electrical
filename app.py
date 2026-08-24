@@ -88,6 +88,26 @@ def initialize_database():
 with app.app_context():
     initialize_database()
 
+def start_self_ping():
+    """Background thread to ping public site URL every 4 minutes to keep Render awake."""
+    import threading, time, urllib.request
+    def ping_loop():
+        time.sleep(20)
+        while True:
+            try:
+                target_url = "https://autotech-electrical.onrender.com/ping"
+                req = urllib.request.Request(target_url, headers={"User-Agent": "NhiemAutotechSelfPing/1.0"})
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    print(f"[KEEP-ALIVE] Self ping status: {resp.status}")
+            except Exception as e:
+                print(f"[KEEP-ALIVE] Self ping error: {e}")
+            time.sleep(240)
+
+    t = threading.Thread(target=ping_loop, daemon=True)
+    t.start()
+
+start_self_ping()
+
 ALLOWED_DOCS = {"dwg", "dxf", "pdf", "zip", "rar", "7z", "sldprt", "sldasm", "step", "stp", "iges", "igs", "xlsx", "docx", "pptx", "mp4", "zap", "mwp", "cxp"}
 ALLOWED_VIDEOS = {"mp4", "webm", "mov", "m4v", "avi", "mkv"}
 
