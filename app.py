@@ -55,35 +55,8 @@ def initialize_database():
                             password_hash=generate_password_hash(app.config["ADMIN_PASSWORD"]), is_admin=True))
     db.session.commit()
     
-    if Product.query.count() == 0:
-        json_path = Path(__file__).resolve().parent / "products_dump.json"
-        if json_path.exists():
-            try:
-                with open(json_path, "r", encoding="utf-8") as f:
-                    products_data = json.load(f)
-                cat_map = {c.slug: c.id for c in Category.query.all()}
-                for item in products_data:
-                    cat_id = cat_map.get(item.get("category_slug"), None)
-                    p = Product(
-                        category_id=cat_id,
-                        name=item.get("name"),
-                        slug=item.get("slug"),
-                        sku=item.get("sku"),
-                        price=item.get("price", 0),
-                        stock=item.get("stock", 999),
-                        sort_order=item.get("sort_order", 0),
-                        image=item.get("image", ""),
-                        images=item.get("images", ""),
-                        cad_file=item.get("cad_file", ""),
-                        description=item.get("description", ""),
-                        specifications=item.get("specifications", ""),
-                        status=item.get("status", "active")
-                    )
-                    db.session.add(p)
-                db.session.commit()
-                print(f"[INIT] Auto-seeded {len(products_data)} products into database.")
-            except Exception as e:
-                print(f"[INIT ERROR] Failed to seed products: {e}")
+    # Auto-seeding disabled permanently so user manages all products manually
+
 
 with app.app_context():
     initialize_database()
