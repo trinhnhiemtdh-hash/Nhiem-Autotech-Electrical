@@ -55,19 +55,8 @@ def initialize_database():
                             password_hash=generate_password_hash(app.config["ADMIN_PASSWORD"]), is_admin=True))
     db.session.commit()
     
-    # Delete sample products from categories 2 and 3 (Courses, Layouts, Automation Projects)
-    try:
-        db.session.execute(text("DELETE FROM product WHERE sku LIKE 'COURSE-%' OR sku LIKE 'LAYOUT-%' OR sku LIKE 'PROJ-%'"))
-        db.session.commit()
-    except Exception:
-        db.session.rollback()
-
-    # Seed the 16 AutoCAD library products if missing from database
-    cat_autocad = Category.query.filter_by(slug="thu-vien-autocad").first()
-    autocad_cat_id = cat_autocad.id if cat_autocad else 1
-    if Product.query.filter_by(category_id=autocad_cat_id).count() == 0 or Product.query.count() == 0:
+    if Product.query.count() == 0:
         json_path = Path(__file__).resolve().parent / "products_dump.json"
-
         if json_path.exists():
             try:
                 with open(json_path, "r", encoding="utf-8") as f:
@@ -92,12 +81,9 @@ def initialize_database():
                     )
                     db.session.add(p)
                 db.session.commit()
-                print(f"[INIT] Auto-seeded {len(products_data)} AutoCAD products into database.")
+                print(f"[INIT] Auto-seeded {len(products_data)} products into database.")
             except Exception as e:
                 print(f"[INIT ERROR] Failed to seed products: {e}")
-
-
-
 
 with app.app_context():
     initialize_database()
@@ -475,15 +461,13 @@ def keyword_plc():
 def panel_forms():
     return render_template("panel_forms.html")
 
+@app.route("/ping")
+def ping():
+    return Response("OK", mimetype="text/plain")
+
 @app.route("/google79bc38910d6f203a.html")
 def google_verify_file():
     return Response("google-site-verification: google79bc38910d6f203a.html", mimetype="text/html")
-
-@app.route("/ping")
-@app.route("/health")
-def health_ping():
-    return Response("OK", mimetype="text/plain")
-
 
 @app.route("/robots.txt")
 def robots_txt():

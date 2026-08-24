@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn wsgi:app
+    startCommand: gunicorn --workers 2 --threads 2 --keep-alive 5 wsgi:app
     envVars:
       - key: SECRET_KEY
         generateValue: true
