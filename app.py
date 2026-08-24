@@ -62,9 +62,12 @@ def initialize_database():
     except Exception:
         db.session.rollback()
 
-    # Seed the 16 AutoCAD library products if database is empty
-    if Product.query.count() == 0:
+    # Seed the 16 AutoCAD library products if missing from database
+    cat_autocad = Category.query.filter_by(slug="thu-vien-autocad").first()
+    autocad_cat_id = cat_autocad.id if cat_autocad else 1
+    if Product.query.filter_by(category_id=autocad_cat_id).count() == 0 or Product.query.count() == 0:
         json_path = Path(__file__).resolve().parent / "products_dump.json"
+
         if json_path.exists():
             try:
                 with open(json_path, "r", encoding="utf-8") as f:
