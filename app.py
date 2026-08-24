@@ -55,7 +55,13 @@ def initialize_database():
                             password_hash=generate_password_hash(app.config["ADMIN_PASSWORD"]), is_admin=True))
     db.session.commit()
     
-    # Auto-seeding disabled permanently so user manages all products manually
+    # Force purge legacy sample products from database on startup
+    try:
+        db.session.execute(text("DELETE FROM product WHERE sku LIKE 'LIB-%' OR sku LIKE 'COURSE-%' OR sku LIKE 'LAYOUT-%' OR sku LIKE 'PROJ-%'"))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+
 
 
 with app.app_context():
