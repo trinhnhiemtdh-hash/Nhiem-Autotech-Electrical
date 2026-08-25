@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_, inspect, text
-from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit
+from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit, Notification
 from config import Config
 from functools import wraps
 from pathlib import Path
@@ -312,6 +312,89 @@ def send_order_paid_email(order):
         print(f"[MAIL ERROR] Could not send email to {customer_email}: {e}")
         return False
 
+def send_admin_new_order_email(order):
+    """Send real-time alert email to Admin Gmail when a customer places a new order."""
+    admin_email = app.config.get("ADMIN_EMAIL") or app.config.get("MAIL_USERNAME") or "nhiem.autotech@gmail.com"
+    smtp_user = app.config.get("MAIL_USERNAME")
+    smtp_pass = app.config.get("MAIL_PASSWORD")
+    smtp_server = app.config.get("MAIL_SERVER", "smtp.gmail.com")
+    smtp_port = app.config.get("MAIL_PORT", 587)
+    smtp_tls = app.config.get("MAIL_USE_TLS", True)
+    sender = app.config.get("MAIL_DEFAULT_SENDER") or (smtp_user if smtp_user else "nhiem.autotech@gmail.com")
+
+    if not smtp_user or not smtp_pass:
+        print(f"[ADMIN MAIL WARN] SMTP not configured. New order notification ready for order #{order.id}")
+        return False
+
+    try:
+        items_str = "<br>".join([f"• <strong>{item.product_name}</strong> (x{item.quantity}): {item.subtotal:,.0f} đ" for item in order.items])
+        admin_order_url = public_url("admin_orders")
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family:Arial,sans-serif;line-height:1.6;color:#1e293b;background-color:#f8fafc;padding:20px;">
+          <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:10px;padding:24px;border:1px solid #e2e8f0;">
+            <div style="background:#0f172a;padding:16px;text-align:center;border-radius:8px;color:#fff;">
+              <h2 style="margin:0;color:#ff7a00;">🔥 THÔNG BÁO CÓ ĐƠN HÀNG MỚI #{order.id}</h2>
+            </div>
+            <p style="font-size:15px;margin-top:16px;">Kính gửi Admin Nhiệm Autotech,</p>
+            <p style="font-size:14px;">Khách hàng <strong>{order.customer_name}</strong> vừa đặt một đơn hàng mới trên website:</p>
+            
+            <div style="background:#f1f5f9;padding:14px;border-radius:6px;margin:16px 0;border-left:4px solid #ff7a00;">
+              <div>• <strong>Mã đơn hàng:</strong> #{order.id} (Nội dung CK: <strong>NA{order.id}</strong>)</div>
+              <div>• <strong>Khách hàng:</strong> {order.customer_name}</div>
+              <div>• <strong>Số điện thoại:</strong> {order.phone}</div>
+              <div>• <strong>Email khách:</strong> {order.email or 'Không có'}</div>
+              <div>• <strong>Tổng tiền:</strong> <strong style="color:#ff7a00;">{order.total:,.0f} đ</strong></div>
+            </div>
+
+            <h4>Chi tiết sản phẩm khách chọn mua:</h4>
+            <div style="font-size:14px;background:#fafafa;padding:12px;border-radius:6px;">{items_str}</div>
+
+            <div style="text-align:center;margin-top:24px;">
+              <a href="{admin_order_url}" style="background:#ff7a00;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">👉 VÀO TRANG ADMIN DUYỆT ĐƠN NGAY</a>
+            </div>
+          </div>
+        </body>
+        </html>
+        """
+
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"[Nhiệm Autotech Admin] 🔥 ĐƠN HÀNG MỚI #{order.id} - {order.customer_name} ({order.total:,.0f}đ)"
+        msg["From"] = sender
+        msg["To"] = admin_email
+        msg.attach(MIMEText(html_content, "html", "utf-8"))
+
+        if smtp_tls:
+            server = smtplib.SMTP(smtp_server, smtp_port, timeout=12)
+            server.starttls()
+        else:
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=12)
+        server.login(smtp_user, smtp_pass)
+        server.sendmail(sender, [admin_email], msg.as_string())
+        server.quit()
+        print(f"[ADMIN MAIL SUCCESS] Notified admin for new order #{order.id}")
+        return True
+    except Exception as e:
+        print(f"[ADMIN MAIL ERROR] Could not notify admin for order #{order.id}: {e}")
+        return False
+
+def add_notification(notif_type, title, message, link=None):
+    """Add notification to Admin Notification Center."""
+    try:
+        n = Notification(
+            type=notif_type,
+            title=title,
+            message=message,
+            link=link
+        )
+        db.session.add(n)
+        db.session.commit()
+    except Exception as e:
+        print(f"[NOTIF ERROR] Could not add notification: {e}")
+        db.session.rollback()
+
 def get_device_type(ua_str):
     if not ua_str:
         return "💻 Máy tính"
@@ -414,9 +497,19 @@ def cart_items():
 @app.context_processor
 def inject_globals():
     items, total = cart_items()
+    unread_notifs = 0
+    recent_notifs = []
+    try:
+        unread_notifs = Notification.query.filter_by(is_read=False).count()
+        recent_notifs = Notification.query.order_by(Notification.created_at.desc()).limit(6).all()
+    except Exception:
+        pass
+
     return {
         "cart_count": sum(x[1] for x in items),
         "cart_total": total,
+        "unread_notifs": unread_notifs,
+        "recent_notifs": recent_notifs,
         "site_url": app.config["SITE_URL"] or request.url_root.rstrip("/"),
         "google_site_verification": app.config["GOOGLE_SITE_VERIFICATION"],
         "bank_id": app.config.get("BANK_ID", "VCB"),
@@ -640,6 +733,7 @@ def cart_add(product_id):
     key = str(product_id)
     cart[key] = int(cart.get(key, 0)) + 1
     session.modified = True
+    add_notification("cart_add", "🛒 Khách thêm sản phẩm vào giỏ hàng", f"Khách vừa thêm '{product.name}' vào giỏ hàng.", link=url_for("admin_dashboard"))
     flash(f"Đã thêm '{product.name}' vào giỏ hàng.", "success")
     return redirect(request.referrer or url_for("products"))
 
@@ -727,6 +821,10 @@ def checkout():
             ))
         db.session.commit()
 
+        # Trigger Notification & Admin Email Alert
+        add_notification("new_order", f"🔥 ĐƠN HÀNG MỚI #{order.id}", f"Khách {customer_name} ({phone}) vừa đặt đơn #{order.id} trị giá {total:,.0f} đ.", link=url_for("admin_orders"))
+        send_admin_new_order_email(order)
+
         # Clear cart
         session["cart"] = {}
         flash(f"Tạo đơn hàng #{order.id} thành công! Quý khách vui lòng quét mã QR Vietcombank để thanh toán.", "success")
@@ -769,6 +867,7 @@ def payment_notify_paid(order_id):
     if order.status == "pending_payment":
         order.status = "awaiting_confirmation"
         db.session.commit()
+        add_notification("new_order", f"💳 Khách báo đã chuyển khoản #{order.id}", f"Khách {order.customer_name} ({order.phone}) vừa bấm BÁO ĐÃ CHUYỂN KHOẢN cho đơn #{order.id} ({order.total:,.0f} đ).", link=url_for("admin_orders"))
         customer_email = order.email or (order.user.email if order.user else "")
         flash(f"Đã ghi nhận thông báo chuyển khoản đơn #{order.id}. Hệ thống đang chờ Admin xác nhận. Sau khi duyệt, file CAD sẽ được gửi tự động về Gmail: {customer_email}", "success")
     elif order.status == "awaiting_confirmation":
@@ -792,9 +891,11 @@ def order_lookup():
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     if request.method == "POST":
-        db.session.add(Contact(name=request.form["name"], email=request.form["email"],
-                               phone=request.form.get("phone",""), message=request.form["message"]))
+        c = Contact(name=request.form["name"], email=request.form["email"],
+                    phone=request.form.get("phone",""), message=request.form["message"])
+        db.session.add(c)
         db.session.commit()
+        add_notification("contact", f"💬 Tin nhắn liên hệ mới từ {c.name}", f"SĐT: {c.phone} | Content: {c.message[:100]}", link=url_for("admin_contacts"))
         flash("Đã gửi liên hệ. Nhiệm sẽ phản hồi sớm.", "success")
         return redirect(url_for("contact"))
     return render_template("contact.html")
@@ -811,13 +912,15 @@ def quote():
             f"Số lượng: {quantity}\n"
             f"Yêu cầu: {requirements}"
         )
-        db.session.add(Contact(
+        c = Contact(
             name=request.form.get("name", "").strip(),
             email=request.form.get("email", "").strip(),
             phone=request.form.get("phone", "").strip(),
             message=message,
-        ))
+        )
+        db.session.add(c)
         db.session.commit()
+        add_notification("contact", f"📋 Yêu cầu báo giá mới từ {c.name}", f"SĐT: {c.phone} | Product: {product_name}", link=url_for("admin_contacts"))
         flash("Yêu cầu báo giá của bạn đã được gửi thành công. Nhiệm sẽ liên hệ trong thời gian sớm nhất.", "success")
         return redirect(url_for("quote"))
     return render_template("quote.html", default_product=default_product)
@@ -1242,6 +1345,24 @@ def admin_settings():
         return redirect(url_for("admin_settings"))
 
     return render_template("admin/settings.html", admin_user=admin_user)
+
+@app.route("/admin/notifications")
+@admin_required
+def admin_notifications():
+    notifications = Notification.query.order_by(Notification.created_at.desc()).all()
+    return render_template("admin/notifications.html", notifications=notifications)
+
+@app.post("/admin/notifications/mark-read")
+@admin_required
+def admin_notifications_mark_read():
+    try:
+        Notification.query.filter_by(is_read=False).update({Notification.is_read: True})
+        db.session.commit()
+        flash("Đã đánh dấu tất cả thông báo là đã đọc.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Lỗi khi đánh dấu thông báo: {e}", "danger")
+    return redirect(request.referrer or url_for("admin_notifications"))
 
 if __name__ == "__main__":
     with app.app_context():

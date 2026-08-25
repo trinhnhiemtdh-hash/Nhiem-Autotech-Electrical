@@ -11,6 +11,12 @@
       <a href="{{ url_for('admin_dashboard') }}" class="btn {% if request.endpoint == 'admin_dashboard' %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
         📊 Bảng điều khiển
       </a>
+      <a href="{{ url_for('admin_notifications') }}" class="btn {% if request.endpoint == 'admin_notifications' %}primary{% else %}ghost{% endif %}" style="justify-content:space-between;font-size:13.5px;padding:10px 14px;text-align:left;">
+        <span>🔔 Thông báo Hoạt động</span>
+        {% if unread_notifs > 0 %}
+          <span style="background:#ef4444;color:#fff;font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;">{{ unread_notifs }}</span>
+        {% endif %}
+      </a>
       <a href="{{ url_for('admin_products') }}" class="btn {% if request.endpoint in ['admin_products', 'admin_product_add', 'admin_product_edit'] %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
         📁 Quản lý Tài nguyên / File
       </a>

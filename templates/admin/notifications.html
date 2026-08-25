@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% block title %}Trung Tâm Thông Báo - Admin{% endblock %}
+
+{% block admin_content %}
+<div style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-xl);padding:24px;box-shadow:var(--shadow-sm);">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--border-line);">
+    <div>
+      <h2 style="margin:0;font-size:20px;color:#0f172a;">🔔 Trung Tâm Thông Báo Hoạt Động</h2>
+      <p style="margin:4px 0 0;font-size:13px;color:#64748b;">Ghi nhận theo thời gian thực khi có người xem web, thêm vào giỏ hàng, đặt hàng hoặc gửi liên hệ.</p>
+    </div>
+    {% if unread_notifs > 0 %}
+    <form action="{{ url_for('admin_notifications_mark_read') }}" method="post" style="margin:0;">
+      <button class="btn primary" style="font-size:13px;padding:8px 16px;">✓ Đánh dấu tất cả đã đọc ({{ unread_notifs }})</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if not notifications %}
+    <div style="text-align:center;padding:40px 20px;color:#94a3b8;">
+      <div style="font-size:40px;margin-bottom:10px;">🔕</div>
+      <p style="font-size:14px;margin:0;">Chưa có thông báo mới nào.</p>
+    </div>
+  {% else %}
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      {% for n in notifications %}
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:16px;border-radius:10px;border:1px solid {% if not n.is_read %}#f97316{% else %}#e2e8f0{% endif %};background:{% if not n.is_read %}#fff7ed{% else %}#ffffff{% endif %};transition:all 0.2s ease;">
+        <div style="font-size:24px;line-height:1;">
+          {% if n.type == 'new_order' %}🔥
+          {% elif n.type == 'cart_add' %}🛒
+          {% elif n.type == 'contact' %}💬
+          {% else %}👀{% endif %}
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <strong style="color:#0f172a;font-size:14.5px;">{{ n.title }}</strong>
+            <span style="font-size:12px;color:#94a3b8;">{{ n.created_at.strftime('%H:%M - %d/%m/%Y') }}</span>
+          </div>
+          <p style="margin:0 0 6px;font-size:13.5px;color:#334155;line-height:1.5;">{{ n.message }}</p>
+          {% if n.link %}
+            <a href="{{ n.link }}" style="font-size:12.5px;color:#ff7a00;font-weight:600;text-decoration:none;">👉 Xem chi tiết ➔</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
