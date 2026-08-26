@@ -1318,7 +1318,20 @@ def admin_product_delete(product_id):
 @app.route("/admin/orders")
 @admin_required
 def admin_orders():
-    return render_template("admin/orders.html", orders=Order.query.order_by(Order.created_at.desc()).all())
+    status_filter = request.args.get("status", "").strip()
+    query = Order.query
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    orders = query.order_by(Order.created_at.desc()).all()
+    
+    counts = {
+        "all": Order.query.count(),
+        "awaiting": Order.query.filter_by(status="awaiting_confirmation").count(),
+        "pending": Order.query.filter_by(status="pending_payment").count(),
+        "paid": Order.query.filter_by(status="paid").count(),
+        "cancelled": Order.query.filter_by(status="cancelled").count(),
+    }
+    return render_template("admin/orders.html", orders=orders, counts=counts, selected_status=status_filter)
 
 @app.post("/admin/orders/<int:order_id>/status")
 @admin_required
@@ -1347,6 +1360,23 @@ def admin_order_status(order_id):
             "cancelled": "Đã hủy"
         }
         flash(f"Đã cập nhật trạng thái đơn #{order.id} thành '{status_labels.get(status, status)}'.", "info")
+    return redirect(url_for("admin_orders"))
+
+@app.post("/admin/orders/<int:order_id>/delete")
+@admin_required
+def admin_order_delete(order_id):
+    order = db.session.get(Order, order_id)
+    if not order:
+        abort(404)
+    try:
+        for item in order.items:
+            db.session.delete(item)
+        db.session.delete(order)
+        db.session.commit()
+        flash(f"Đã xóa vĩnh viễn đơn hàng #{order_id} thành công.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Lỗi khi xóa đơn hàng #{order_id}: {e}", "danger")
     return redirect(url_for("admin_orders"))
 
 @app.route("/admin/contacts")

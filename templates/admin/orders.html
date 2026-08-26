@@ -9,6 +9,25 @@
   </div>
 </div>
 
+<!-- Filter Tabs -->
+<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+  <a href="{{ url_for('admin_orders') }}" class="btn {% if not selected_status %}primary{% else %}ghost{% endif %}" style="padding:7px 14px;font-size:13px;">
+    🌐 Tất cả ({{ counts.all }})
+  </a>
+  <a href="{{ url_for('admin_orders', status='awaiting_confirmation') }}" class="btn {% if selected_status == 'awaiting_confirmation' %}primary{% else %}ghost{% endif %}" style="padding:7px 14px;font-size:13px;{% if counts.awaiting > 0 and selected_status != 'awaiting_confirmation' %}color:#d97706;border-color:#fde68a;background:#fffbeb;{% endif %}">
+    ⚠️ Chờ duyệt CK ({{ counts.awaiting }})
+  </a>
+  <a href="{{ url_for('admin_orders', status='pending_payment') }}" class="btn {% if selected_status == 'pending_payment' %}primary{% else %}ghost{% endif %}" style="padding:7px 14px;font-size:13px;">
+    ⏳ Chờ thanh toán / Treo ({{ counts.pending }})
+  </a>
+  <a href="{{ url_for('admin_orders', status='paid') }}" class="btn {% if selected_status == 'paid' %}primary{% else %}ghost{% endif %}" style="padding:7px 14px;font-size:13px;">
+    ✅ Đã thanh toán ({{ counts.paid }})
+  </a>
+  <a href="{{ url_for('admin_orders', status='cancelled') }}" class="btn {% if selected_status == 'cancelled' %}primary{% else %}ghost{% endif %}" style="padding:7px 14px;font-size:13px;">
+    ❌ Đã hủy ({{ counts.cancelled }})
+  </a>
+</div>
+
 <div class="table-wrap">
   <table>
     <thead>
@@ -17,8 +36,8 @@
         <th style="width:230px;">Khách hàng & Gmail</th>
         <th>Sản phẩm đặt mua</th>
         <th style="width:130px;">Tổng tiền</th>
-        <th style="width:180px;">Trạng thái</th>
-        <th style="width:220px;">Hành động duyệt</th>
+        <th style="width:170px;">Trạng thái</th>
+        <th style="width:230px;">Hành động duyệt / Quản lý</th>
       </tr>
     </thead>
     <tbody>
@@ -63,6 +82,8 @@
               <span class="status-pill status-paid-pill">✓ Đã duyệt & Gửi mail</span>
             {% elif o.status == 'pending_payment' %}
               <span class="status-pill status-pending-pill">Chờ chuyển khoản</span>
+            {% elif o.status == 'cancelled' %}
+              <span class="status-pill" style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;">❌ Đã hủy</span>
             {% else %}
               <span class="status-pill">{{ o.status }}</span>
             {% endif %}
@@ -71,26 +92,35 @@
             {% if o.status != 'paid' %}
               <form method="post" action="{{ url_for('admin_order_status', order_id=o.id) }}" style="margin-bottom:6px;">
                 <input type="hidden" name="status" value="paid">
-                <button type="submit" class="btn primary" style="width:100%;padding:8px 12px;font-size:12.5px;font-weight:800;background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 2px 8px rgba(22,163,74,0.3);">
-                  ⚡ Duyệt & Gửi File CAD Ngay
+                <button type="submit" class="btn primary" style="width:100%;padding:8px 12px;font-size:12px;font-weight:800;background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 2px 8px rgba(22,163,74,0.3);">
+                  ⚡ Duyệt & Gửi File Ngay
                 </button>
               </form>
             {% endif %}
 
-            <form method="post" action="{{ url_for('admin_order_status', order_id=o.id) }}" style="display:flex;gap:6px;align-items:center;">
-              <select name="status" class="admin-status-select" style="font-size:12px;padding:4px 8px;">
-                <option value="pending_payment" {{ 'selected' if o.status=='pending_payment' }}>Chờ thanh toán</option>
-                <option value="awaiting_confirmation" {{ 'selected' if o.status=='awaiting_confirmation' }}>⚠️ Khách báo đã CK</option>
-                <option value="paid" {{ 'selected' if o.status=='paid' }}>✅ Đã thanh toán</option>
-                <option value="cancelled" {{ 'selected' if o.status=='cancelled' }}>❌ Đã hủy</option>
-              </select>
-              <button type="submit" class="btn ghost" style="padding:4px 8px;font-size:11.5px;">Đổi</button>
-            </form>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <form method="post" action="{{ url_for('admin_order_status', order_id=o.id) }}" style="display:flex;gap:4px;align-items:center;flex:1;">
+                <select name="status" class="admin-status-select" style="font-size:11.5px;padding:4px 6px;width:100%;">
+                  <option value="pending_payment" {{ 'selected' if o.status=='pending_payment' }}>Chờ thanh toán</option>
+                  <option value="awaiting_confirmation" {{ 'selected' if o.status=='awaiting_confirmation' }}>⚠️ Khách báo CK</option>
+                  <option value="paid" {{ 'selected' if o.status=='paid' }}>✅ Đã duyệt</option>
+                  <option value="cancelled" {{ 'selected' if o.status=='cancelled' }}>❌ Đã hủy</option>
+                </select>
+                <button type="submit" class="btn ghost" style="padding:4px 8px;font-size:11.5px;">Đổi</button>
+              </form>
+
+              <!-- Delete Button -->
+              <form method="post" action="{{ url_for('admin_order_delete', order_id=o.id) }}" onsubmit="return confirm('Bạn có chắc chắn muốn XÓA VĨNH VIỄN đơn hàng #{{ o.id }} của {{ o.customer_name }} không? Hành động này không thể hoàn tác!');" style="margin:0;">
+                <button type="submit" class="btn ghost" title="Xóa vĩnh viễn đơn hàng bị treo / test này" style="padding:4px 8px;font-size:11.5px;color:#ef4444;border-color:#fca5a5;background:#fff5f5;">
+                  🗑️ Xóa
+                </button>
+              </form>
+            </div>
           </td>
         </tr>
       {% else %}
         <tr>
-          <td colspan="6" style="text-align:center;padding:40px;color:#64748b;">Chưa có đơn hàng nào trong hệ thống.</td>
+          <td colspan="6" style="text-align:center;padding:40px;color:#64748b;">Không có đơn hàng nào theo bộ lọc này.</td>
         </tr>
       {% endfor %}
     </tbody>
