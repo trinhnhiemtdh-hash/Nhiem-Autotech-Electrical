@@ -550,65 +550,6 @@ def init_db():
         db.session.commit()
         print("Database initialized.")
 
-@app.route("/sitemap.xml")
-def sitemap_xml():
-    base_url = (app.config.get("SITE_URL") or "https://autotech-electrical.onrender.com").rstrip("/")
-    pages = [
-        {"loc": f"{base_url}/", "changefreq": "daily", "priority": "1.0"},
-        {"loc": f"{base_url}/products", "changefreq": "daily", "priority": "0.9"},
-        {"loc": f"{base_url}/products?category=thu-vien-autocad", "changefreq": "daily", "priority": "0.9"},
-        {"loc": f"{base_url}/products?category=thiet-ke-tu-dien", "changefreq": "daily", "priority": "0.8"},
-        {"loc": f"{base_url}/products?category=do-an-tu-dong-hoa", "changefreq": "daily", "priority": "0.8"},
-        {"loc": f"{base_url}/tra-cuu-don-hang", "changefreq": "weekly", "priority": "0.7"},
-        {"loc": f"{base_url}/quote", "changefreq": "weekly", "priority": "0.7"},
-        {"loc": f"{base_url}/contact", "changefreq": "weekly", "priority": "0.7"},
-    ]
-    
-    try:
-        products = Product.query.filter_by(status="active").all()
-        for p in products:
-            pages.append({
-                "loc": f"{base_url}/product/{p.slug}",
-                "changefreq": "weekly",
-                "priority": "0.8"
-            })
-    except Exception:
-        pass
-
-    xml_lines = [
-        '<?xml version="1.0" encoding="UTF-8"?>',
-        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
-    ]
-    for page in pages:
-        xml_lines.append("  <url>")
-        xml_lines.append(f"    <loc>{escape(page['loc'])}</loc>")
-        xml_lines.append(f"    <changefreq>{page['changefreq']}</changefreq>")
-        xml_lines.append(f"    <priority>{page['priority']}</priority>")
-        xml_lines.append("  </url>")
-    xml_lines.append('</urlset>')
-
-    response = Response("\n".join(xml_lines), mimetype="application/xml")
-    response.headers["Content-Type"] = "application/xml; charset=utf-8"
-    return response
-
-@app.route("/robots.txt")
-def robots_txt():
-    base_url = (app.config.get("SITE_URL") or "https://autotech-electrical.onrender.com").rstrip("/")
-    content = f"""User-agent: *
-Allow: /
-Disallow: /admin/
-Disallow: /checkout
-Disallow: /payment/
-Disallow: /cart
-
-Sitemap: {base_url}/sitemap.xml
-"""
-    return Response(content, mimetype="text/plain; charset=utf-8")
-
-@app.route("/google79bc38910d6f203a.html")
-def google_verify():
-    return "google-site-verification: google79bc38910d6f203a.html", 200, {"Content-Type": "text/html"}
-
 @app.route("/")
 def index():
     categories = Category.query.order_by(Category.id.asc()).all()
@@ -701,27 +642,22 @@ def google_verify_file():
 
 @app.route("/robots.txt")
 def robots_txt():
-    base_url = app.config["SITE_URL"] or request.url_root.rstrip("/")
-    content = f"User-agent: *\nAllow: /\nSitemap: {base_url}/sitemap.xml\n"
-    return Response(content, mimetype="text/plain")
+    base_url = (app.config.get("SITE_URL") or "https://autotech-electrical.onrender.com").rstrip("/")
+    content = f"User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /checkout\nDisallow: /payment/\nDisallow: /cart\n\nSitemap: {base_url}/sitemap.xml\n"
+    return Response(content, mimetype="text/plain; charset=utf-8")
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
-    base_url = app.config["SITE_URL"] or request.url_root.rstrip("/")
+    base_url = (app.config.get("SITE_URL") or "https://autotech-electrical.onrender.com").rstrip("/")
     static_pages = [
         ("", "daily", "1.0"),
         ("/products", "daily", "0.9"),
-        ("/thu-vien-autocad", "daily", "0.9"),
-        ("/thiet-ke-tu-dien", "daily", "0.9"),
-        ("/do-an-tu-dong-hoa", "daily", "0.9"),
-        ("/thuvien-autocad-thiet-bi-dien", "weekly", "0.85"),
-        ("/panel-forms", "weekly", "0.85"),
-        ("/mach-dieu-khien-plc", "weekly", "0.85"),
-        ("/library-by-brand", "weekly", "0.85"),
-        ("/cad-library", "weekly", "0.85"),
-        ("/quote", "monthly", "0.7"),
-        ("/contact", "monthly", "0.7"),
-        ("/tra-cuu-don-hang", "weekly", "0.6"),
+        ("/products?category=thu-vien-autocad", "daily", "0.9"),
+        ("/products?category=thiet-ke-tu-dien", "daily", "0.8"),
+        ("/products?category=do-an-tu-dong-hoa", "daily", "0.8"),
+        ("/tra-cuu-don-hang", "weekly", "0.7"),
+        ("/quote", "weekly", "0.7"),
+        ("/contact", "weekly", "0.7"),
     ]
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for path, freq, prio in static_pages:
@@ -730,16 +666,21 @@ def sitemap_xml():
         xml += f"    <changefreq>{freq}</changefreq>\n"
         xml += f"    <priority>{prio}</priority>\n"
         xml += "  </url>\n"
-    for product in Product.query.filter_by(status="active").all():
-        lastmod = product.created_at.replace(tzinfo=timezone.utc).date().isoformat()
-        xml += "  <url>\n"
-        xml += f"    <loc>{escape(base_url + '/product/' + url_quote(product.slug))}</loc>\n"
-        xml += f"    <lastmod>{lastmod}</lastmod>\n"
-        xml += "    <changefreq>weekly</changefreq>\n"
-        xml += "    <priority>0.8</priority>\n"
-        xml += "  </url>\n"
+    try:
+        for product in Product.query.filter_by(status="active").all():
+            xml += "  <url>\n"
+            xml += f"    <loc>{escape(base_url + '/product/' + url_quote(product.slug))}</loc>\n"
+            if getattr(product, 'created_at', None) and hasattr(product.created_at, 'strftime'):
+                xml += f"    <lastmod>{product.created_at.strftime('%Y-%m-%d')}</lastmod>\n"
+            xml += "    <changefreq>weekly</changefreq>\n"
+            xml += "    <priority>0.8</priority>\n"
+            xml += "  </url>\n"
+    except Exception:
+        pass
     xml += "</urlset>\n"
-    return Response(xml, mimetype="application/xml")
+    response = Response(xml, mimetype="application/xml")
+    response.headers["Content-Type"] = "application/xml; charset=utf-8"
+    return response
 
 @app.route("/buy-now/<int:product_id>", methods=["GET", "POST"])
 def buy_now(product_id):
