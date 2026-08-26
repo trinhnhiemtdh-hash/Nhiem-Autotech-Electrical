@@ -648,39 +648,43 @@ def robots_txt():
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
-    base_url = (app.config.get("SITE_URL") or "https://autotech-electrical.onrender.com").rstrip("/")
-    static_pages = [
-        ("", "daily", "1.0"),
-        ("/products", "daily", "0.9"),
-        ("/products?category=thu-vien-autocad", "daily", "0.9"),
-        ("/products?category=thiet-ke-tu-dien", "daily", "0.8"),
-        ("/products?category=do-an-tu-dong-hoa", "daily", "0.8"),
-        ("/tra-cuu-don-hang", "weekly", "0.7"),
-        ("/quote", "weekly", "0.7"),
-        ("/contact", "weekly", "0.7"),
-    ]
-    xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for path, freq, prio in static_pages:
-        xml += "  <url>\n"
-        xml += f"    <loc>{escape(base_url + path)}</loc>\n"
-        xml += f"    <changefreq>{freq}</changefreq>\n"
-        xml += f"    <priority>{prio}</priority>\n"
-        xml += "  </url>\n"
     try:
-        for product in Product.query.filter_by(status="active").all():
+        base_url = (app.config.get("SITE_URL") or "https://autotech-electrical.onrender.com").rstrip("/")
+        static_pages = [
+            ("", "daily", "1.0"),
+            ("/products", "daily", "0.9"),
+            ("/products?category=thu-vien-autocad", "daily", "0.9"),
+            ("/products?category=thiet-ke-tu-dien", "daily", "0.8"),
+            ("/products?category=do-an-tu-dong-hoa", "daily", "0.8"),
+            ("/tra-cuu-don-hang", "weekly", "0.7"),
+            ("/quote", "weekly", "0.7"),
+            ("/contact", "weekly", "0.7"),
+        ]
+        xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        for path, freq, prio in static_pages:
             xml += "  <url>\n"
-            xml += f"    <loc>{escape(base_url + '/product/' + url_quote(product.slug))}</loc>\n"
-            if getattr(product, 'created_at', None) and hasattr(product.created_at, 'strftime'):
-                xml += f"    <lastmod>{product.created_at.strftime('%Y-%m-%d')}</lastmod>\n"
-            xml += "    <changefreq>weekly</changefreq>\n"
-            xml += "    <priority>0.8</priority>\n"
+            xml += f"    <loc>{escape(base_url + path)}</loc>\n"
+            xml += f"    <changefreq>{freq}</changefreq>\n"
+            xml += f"    <priority>{prio}</priority>\n"
             xml += "  </url>\n"
-    except Exception:
-        pass
-    xml += "</urlset>\n"
-    response = Response(xml, mimetype="application/xml")
-    response.headers["Content-Type"] = "application/xml; charset=utf-8"
-    return response
+        
+        products = Product.query.filter_by(status="active").all()
+        for p in products:
+            if p.slug:
+                xml += "  <url>\n"
+                xml += f"    <loc>{escape(base_url + '/product/' + url_quote(str(p.slug)))}</loc>\n"
+                xml += "    <changefreq>weekly</changefreq>\n"
+                xml += "    <priority>0.8</priority>\n"
+                xml += "  </url>\n"
+        xml += "</urlset>\n"
+        response = Response(xml, mimetype="application/xml")
+        response.headers["Content-Type"] = "application/xml; charset=utf-8"
+        return response
+    except Exception as e:
+        fallback_xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://autotech-electrical.onrender.com/</loc><priority>1.0</priority></url>\n</urlset>'
+        response = Response(fallback_xml, mimetype="application/xml")
+        response.headers["Content-Type"] = "application/xml; charset=utf-8"
+        return response
 
 @app.route("/buy-now/<int:product_id>", methods=["GET", "POST"])
 def buy_now(product_id):
