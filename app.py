@@ -430,13 +430,20 @@ def get_location_name(ip):
 
 @app.before_request
 def track_visitor():
-    if request.path.startswith("/static") or request.path.startswith("/admin") or request.path in ["/robots.txt", "/sitemap.xml"]:
+    if request.path.startswith("/static") or request.path.startswith("/admin") or request.path in ["/robots.txt", "/sitemap.xml", "/ping"]:
+        return
+    # Skip tracking when the current user is Admin so admin activity does not pollute visitor analytics
+    if session.get("is_admin"):
         return
     try:
+        user_agent_str = request.user_agent.string if request.user_agent else ""
+        ua_lower = user_agent_str.lower()
+        if any(bot in ua_lower for bot in ["python-requests", "github-actions", "uptimerobot", "render", "curl", "headlesschrome", "bot", "crawler", "spider"]):
+            return
+
         ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if ip and "," in ip:
             ip = ip.split(",")[0].strip()
-        user_agent_str = request.user_agent.string if request.user_agent else ""
         visit = PageVisit(
             user_id=session.get("user_id"),
             ip_address=ip[:50] if ip else "127.0.0.1",
@@ -449,6 +456,28 @@ def track_visitor():
         db.session.commit()
     except Exception:
         db.session.rollback()
+
+@app.template_filter('time_ago')
+def time_ago_filter(dt):
+    if not dt:
+        return ""
+    from datetime import datetime
+    now = datetime.utcnow()
+    diff = now - dt
+    seconds = diff.total_seconds()
+    if seconds < 45:
+        return "Vừa xong"
+    elif seconds < 3600:
+        mins = max(1, int(seconds // 60))
+        return f"{mins} phút trước"
+    elif seconds < 86400:
+        hours = int(seconds // 3600)
+        return f"{hours} giờ trước"
+    elif seconds < 172800:
+        return "Hôm qua"
+    else:
+        days = int(seconds // 86400)
+        return f"{days} ngày trước"
 
 @app.after_request
 def prevent_private_pages_from_being_indexed(response):
@@ -962,13 +991,43 @@ def admin_dashboard():
     panel_count = Product.query.filter_by(category_id=cat_panel.id).count() if cat_panel else 0
     automation_count = Product.query.filter_by(category_id=cat_automation.id).count() if cat_automation else 0
 
-    from datetime import datetime, date, time
+    from datetime import datetime, date, time, timedelta
     today_start = datetime.combine(date.today(), time.min)
+    yesterday_start = datetime.combine(date.today() - timedelta(days=1), time.min)
+    yesterday_end = datetime.combine(date.today() - timedelta(days=1), time.max)
+    week_start = datetime.combine(date.today() - timedelta(days=6), time.min)
+    month_start = datetime.combine(date.today() - timedelta(days=29), time.min)
 
     total_visits = PageVisit.query.count()
     today_visits = PageVisit.query.filter(PageVisit.created_at >= today_start).count()
     unique_today = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= today_start).distinct().count()
-    recent_visits = PageVisit.query.order_by(PageVisit.created_at.desc()).limit(15).all()
+
+    yesterday_visits = PageVisit.query.filter(PageVisit.created_at >= yesterday_start, PageVisit.created_at <= yesterday_end).count()
+    unique_yesterday = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= yesterday_start, PageVisit.created_at <= yesterday_end).distinct().count()
+
+    week_visits = PageVisit.query.filter(PageVisit.created_at >= week_start).count()
+    unique_week = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= week_start).distinct().count()
+
+    month_visits = PageVisit.query.filter(PageVisit.created_at >= month_start).count()
+    unique_month = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= month_start).distinct().count()
+
+    daily_stats = []
+    for i in range(7):
+        day_date = date.today() - timedelta(days=i)
+        day_start = datetime.combine(day_date, time.min)
+        day_end = datetime.combine(day_date, time.max)
+        v_count = PageVisit.query.filter(PageVisit.created_at >= day_start, PageVisit.created_at <= day_end).count()
+        u_count = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= day_start, PageVisit.created_at <= day_end).distinct().count()
+        
+        day_label = "Hôm nay" if i == 0 else ("Hôm qua" if i == 1 else f"Thứ {day_date.isoweekday() + 1}" if day_date.isoweekday() < 7 else "Chủ Nhật")
+        daily_stats.append({
+            "date_str": day_date.strftime("%d/%m/%Y"),
+            "day_label": day_label,
+            "visits": v_count,
+            "uniques": u_count
+        })
+
+    recent_visits = PageVisit.query.order_by(PageVisit.created_at.desc()).limit(35).all()
 
     return render_template("admin/dashboard.html",
                            product_count=Product.query.count(),
@@ -982,6 +1041,13 @@ def admin_dashboard():
                            total_visits=total_visits,
                            today_visits=today_visits,
                            unique_today=unique_today,
+                           yesterday_visits=yesterday_visits,
+                           unique_yesterday=unique_yesterday,
+                           week_visits=week_visits,
+                           unique_week=unique_week,
+                           month_visits=month_visits,
+                           unique_month=unique_month,
+                           daily_stats=daily_stats,
                            recent_visits=recent_visits)
 
 @app.route("/admin/products")
