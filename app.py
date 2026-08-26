@@ -82,19 +82,8 @@ def initialize_database():
                     db.session.add(p)
                 db.session.commit()
                 print(f"[INIT] Auto-seeded {len(products_data)} products into database.")
-            else:
-                for item in products_data:
-                    slug = item.get("slug")
-                    if slug:
-                        existing = Product.query.filter_by(slug=slug).first()
-                        if existing and "price" in item:
-                            existing.price = float(item["price"])
-                            if "name" in item:
-                                existing.name = item["name"]
-                db.session.commit()
-                print(f"[INIT] Synced product prices from products_dump.json.")
         except Exception as e:
-            print(f"[INIT ERROR] Failed to seed/sync products: {e}")
+            print(f"[INIT ERROR] Failed to seed products: {e}")
 
 def sync_products_to_dump():
     """Sync all current DB products to products_dump.json so user price changes and product updates persist across deployments."""
