@@ -247,7 +247,7 @@ def send_order_paid_email(order):
           <div style="font-size:13px;color:#64748b;line-height:1.6;">
             <p style="margin:0 0 6px;"><strong style="color:#0f172a;">Cần hỗ trợ kỹ thuật hoặc hướng dẫn sử dụng file CAD?</strong></p>
             <p style="margin:0 0 4px;">📞 Hotline / Zalo: <strong style="color:#ff7a00;">0379 760 905</strong></p>
-            <p style="margin:0 0 4px;">🌐 Facebook: <a href="https://www.facebook.com/search/top?q=autotech%20electrical" style="color:#0284c7;">Autotech Electrical</a></p>
+            <p style="margin:0 0 4px;">🌐 Facebook: <a href="https://www.facebook.com/profile.php?id=61593437326233" style="color:#0284c7;">Nhiệm Autotech Electrical</a></p>
             <p style="margin:0 0 4px;">🎵 TikTok: <a href="https://www.tiktok.com/@nhim.autotech" style="color:#0284c7;">@nhim.autotech</a></p>
           </div>
         </div>
