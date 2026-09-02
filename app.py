@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, abort, Response
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, abort, Response, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_, inspect, text
@@ -947,6 +947,78 @@ def quote():
         return redirect(url_for("quote"))
     return render_template("quote.html", default_product=default_product)
 
+@app.post("/api/chat-support")
+def api_chat_support():
+    data = request.get_json(silent=True) or request.form
+    message = (data.get("message") or "").strip()
+    phone = (data.get("phone") or "").strip()
+    name = (data.get("name") or "").strip()
+    current_page = (data.get("page") or "").strip()
+
+    if not message and not phone:
+        return jsonify({"success": False, "error": "Vui lòng nhập tin nhắn hoặc số điện thoại."}), 400
+
+    # Auto-extract phone number from message if phone wasn't explicitly filled
+    if not phone and message:
+        import re
+        phones = re.findall(r'(?:0|\+84)[3|5|7|8|9][0-9]{8}', message)
+        if phones:
+            phone = phones[0]
+
+    contact_name = name or (f"Khách {phone[-4:]}" if phone else "Khách trực tuyến")
+    note_parts = [f"[Trò chuyện trực tiếp] {message}"]
+    if current_page:
+        note_parts.append(f"(Trang xem: {current_page})")
+    full_message = "\n".join(note_parts)
+
+    c = Contact(
+        name=contact_name,
+        email="chat@live-support.local",
+        phone=phone or "Chưa cung cấp",
+        message=full_message
+    )
+    db.session.add(c)
+    db.session.commit()
+
+    # Create admin notification
+    notif_title = f"💬 Khách nhắn tin trực tiếp: {phone if phone else contact_name}"
+    notif_msg = f"{contact_name}: {message[:120]}"
+    add_notification("contact", notif_title, notif_msg, link=url_for("admin_contacts"))
+
+    # Send admin email alert if configured
+    try:
+        smtp_user = app.config.get("MAIL_USERNAME")
+        smtp_pass = app.config.get("MAIL_PASSWORD")
+        if smtp_user and smtp_pass:
+            admin_email = app.config.get("ADMIN_EMAIL") or smtp_user
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = f"[Nhiệm Autotech] 💬 Tin nhắn hỗ trợ trực tiếp mới: {phone if phone else contact_name}"
+            msg["From"] = app.config.get("MAIL_DEFAULT_SENDER") or smtp_user
+            msg["To"] = admin_email
+            email_body = f"""
+            <h3>Khách hàng vừa nhắn tin trên website:</h3>
+            <p><strong>Người gửi:</strong> {contact_name}</p>
+            <p><strong>Số điện thoại:</strong> {phone or 'Khách chưa gửi SĐT'}</p>
+            <p><strong>Nội dung:</strong> {message}</p>
+            <p><strong>Trang xem:</strong> {current_page}</p>
+            <p><a href="{public_url('admin_contacts')}">Xem chi tiết trong Quản trị</a></p>
+            """
+            msg.attach(MIMEText(email_body, "html", "utf-8"))
+            server = smtplib.SMTP(app.config.get("MAIL_SERVER", "smtp.gmail.com"), app.config.get("MAIL_PORT", 587), timeout=8)
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.sendmail(msg["From"], [admin_email], msg.as_string())
+            server.quit()
+    except Exception as em:
+        print(f"[CHAT MAIL ALERT WARN] {em}")
+
+    reply = "Cảm ơn bạn! Nhiệm Autotech đã nhận được thông tin. Chúng tôi sẽ phản hồi hoặc liên hệ qua SĐT của bạn ngay nhé!"
+    return jsonify({
+        "success": True,
+        "reply": reply,
+        "phone_recorded": bool(phone)
+    })
+
 @app.route("/login", methods=["GET","POST"])
 def login():
     if request.method == "POST":
@@ -1386,8 +1458,23 @@ def admin_order_delete(order_id):
 @app.route("/admin/contacts")
 @admin_required
 def admin_contacts():
+    try:
+        Contact.query.filter_by(is_read=False).update({Contact.is_read: True})
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
     contacts = Contact.query.order_by(Contact.created_at.desc()).all()
     return render_template("admin/contacts.html", contacts=contacts)
+
+@app.post("/admin/contacts/<int:contact_id>/delete")
+@admin_required
+def admin_contact_delete(contact_id):
+    c = db.session.get(Contact, contact_id)
+    if c:
+        db.session.delete(c)
+        db.session.commit()
+        flash("Đã xóa tin nhắn khỏi danh sách.", "info")
+    return redirect(url_for("admin_contacts"))
 
 @app.route("/admin/settings", methods=["GET", "POST"])
 @admin_required

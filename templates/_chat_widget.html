@@ -1,0 +1,117 @@
+<!-- NHIỆM AUTOTECH - LIVE CHAT SUPPORT WIDGET -->
+<!-- Teaser / Tooltip Gợi Ý -->
+<div id="chatTeaser" class="chat-teaser" onclick="toggleLiveChat(true)">
+  <div class="chat-teaser-badge">HỖ TRỢ 24/7</div>
+  <div class="chat-teaser-text">
+    <strong>Cần tư vấn thiết bị & bản vẽ CAD?</strong>
+    <span>Nhắn tin trực tiếp để được kỹ sư hỗ trợ ngay! ⚡</span>
+  </div>
+  <button type="button" class="chat-teaser-close" onclick="event.stopPropagation(); dismissChatTeaser();" aria-label="Đóng gợi ý">×</button>
+</div>
+
+<!-- Chat Window -->
+<div id="chatWindow" class="chat-window" role="dialog" aria-label="Hộp thoại hỗ trợ trực tiếp">
+  <!-- Header -->
+  <div class="chat-header">
+    <div class="chat-header-profile">
+      <div class="chat-avatar-wrap">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}?v=2" alt="Nhiệm Autotech" class="chat-avatar" onerror="this.src='{{ url_for('static', filename='images/logo.png') }}';">
+        <span class="chat-status-dot online"></span>
+      </div>
+      <div class="chat-header-info">
+        <h4 class="chat-title">Hỗ Trợ Nhiệm Autotech</h4>
+        <span class="chat-subtitle">🟢 Trực tuyến · Phản hồi trong 1 phút</span>
+      </div>
+    </div>
+    <div class="chat-header-actions">
+      <a href="tel:0379760905" class="chat-action-btn" title="Gọi Hotline: 0379 760 905" aria-label="Gọi điện">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </a>
+      <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer" class="chat-action-btn zalo-action" title="Mở Zalo" aria-label="Mở Zalo">
+        Zalo
+      </a>
+      <button type="button" class="chat-action-btn" onclick="toggleLiveChat(false)" title="Thu nhỏ" aria-label="Đóng">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Quick Zalo Banner -->
+  <div class="chat-zalo-banner">
+    <span>⚡ Cần phản hồi gấp qua Zalo?</span>
+    <a href="https://zalo.me/0379760905" target="_blank" rel="noopener noreferrer">Chat Zalo 0379 760 905 →</a>
+  </div>
+
+  <!-- Message Area -->
+  <div id="chatMessages" class="chat-messages">
+    <div class="chat-date-divider"><span>Hôm nay</span></div>
+
+    <!-- Welcome Bot Message -->
+    <div class="chat-msg bot-msg">
+      <div class="msg-avatar">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}?v=2" alt="Bot" onerror="this.src='{{ url_for('static', filename='images/logo.png') }}';">
+      </div>
+      <div class="msg-bubble-wrap">
+        <div class="msg-author">Kỹ thuật Nhiệm Autotech</div>
+        <div class="msg-bubble">
+          Chào bạn! Hãy gửi <strong>số điện thoại</strong> để được hỗ trợ trực tiếp hoặc cho chúng tôi biết bạn cần hỗ trợ gì về <strong>thiết bị điện, layout tủ điện & bản vẽ AutoCAD</strong> nhé?
+        </div>
+        <span class="msg-time" id="welcomeMsgTime">Vừa xong</span>
+      </div>
+    </div>
+
+    <!-- Quick Chips -->
+    <div id="chatQuickChips" class="chat-quick-chips">
+      <button type="button" class="chip-btn" onclick="handleQuickChip('Tôi muốn gửi SĐT để tư vấn: ')">
+        📞 Gửi số điện thoại tư vấn
+      </button>
+      <button type="button" class="chip-btn" onclick="handleQuickChip('Tôi cần hỗ trợ file AutoCAD / DWG tủ điện')">
+        📐 Hỗ trợ file AutoCAD / DWG
+      </button>
+      <button type="button" class="chip-btn" onclick="handleQuickChip('Tôi cần báo giá thiết bị đóng cắt MCB, MCCB, PLC')">
+        ⚡ Báo giá thiết bị & Tủ điện
+      </button>
+      <button type="button" class="chip-btn" onclick="handleQuickChip('Tôi cần hỗ trợ thanh toán đơn hàng & tải file')">
+        💳 Hỗ trợ thanh toán đơn hàng
+      </button>
+    </div>
+
+    <!-- Container for dynamic conversation messages -->
+    <div id="dynamicChatMessages"></div>
+
+    <!-- Typing Indicator -->
+    <div id="chatTypingIndicator" class="chat-msg bot-msg typing-msg" style="display: none;">
+      <div class="msg-avatar">
+        <img src="{{ url_for('static', filename='images/logo.jpg') }}?v=2" alt="Bot" onerror="this.src='{{ url_for('static', filename='images/logo.png') }}';">
+      </div>
+      <div class="msg-bubble-wrap">
+        <div class="msg-bubble typing-bubble">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input Area -->
+  <form id="chatForm" class="chat-input-form" onsubmit="handleSendChat(event)">
+    <div class="chat-input-row">
+      <textarea
+        id="chatInput"
+        class="chat-input"
+        placeholder="Nhập tin nhắn hoặc số điện thoại..."
+        rows="1"
+        required
+        onkeydown="handleChatInputKeydown(event)"
+      ></textarea>
+      <button type="submit" id="chatSendBtn" class="chat-send-btn" aria-label="Gửi tin nhắn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+    <div class="chat-footer-note">
+      🔒 Thông tin được bảo mật. Hotline/Zalo: <strong>0379 760 905</strong>
+    </div>
+  </form>
+</div>

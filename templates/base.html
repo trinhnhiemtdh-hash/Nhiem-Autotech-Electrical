@@ -208,8 +208,26 @@
 <!-- MAIN CONTENT -->
 <main>{% block content %}{% endblock %}</main>
 
-<!-- FLOATING CONTACT WIDGETS (HOTLINE, ZALO, FACEBOOK, TIKTOK) -->
+<!-- FLOATING CONTACT WIDGETS (LIVE CHAT, HOTLINE, ZALO, FACEBOOK, TIKTOK) -->
 <div class="floating-contact-wrap">
+  <!-- Live Chat Support Launcher Button -->
+  <button type="button" id="chatLauncherBtn" class="floating-btn btn-livechat" onclick="toggleLiveChat()" title="Nhắn tin hỗ trợ trực tiếp" aria-label="Nhắn tin hỗ trợ trực tiếp">
+    <div class="btn-ripple"></div>
+    <div class="floating-icon chat-open-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </div>
+    <div class="floating-icon chat-close-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </div>
+    <span class="chat-badge" id="chatUnreadBadge">1</span>
+    <span class="floating-tooltip">💬 Nhắn tin hỗ trợ</span>
+  </button>
+
   <!-- Hotline Call Button -->
   <a href="tel:0379760905" class="floating-btn btn-call" title="Gọi Hotline: 0379 760 905" aria-label="Gọi điện">
     <div class="btn-ripple"></div>
@@ -244,6 +262,9 @@
     <span class="floating-tooltip">TikTok</span>
   </a>
 </div>
+
+<!-- LIVE CHAT SUPPORT POPUP WINDOW & TEASER -->
+{% include '_chat_widget.html' %}
 
 <!-- CONSULTATION MODAL POPUP -->
 <div class="modal-overlay" id="consultationModal">
@@ -410,5 +431,6 @@
 </script>
 {% block structured_data %}{% endblock %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
 </html>
