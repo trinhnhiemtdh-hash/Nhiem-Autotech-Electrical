@@ -6,7 +6,10 @@ BASE_DIR = Path(__file__).resolve().parent
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key")
-    SQLALCHEMY_DATABASE_URI = "sqlite:///" + str(BASE_DIR / "database.db")
+    raw_db_url = os.getenv("DATABASE_URL")
+    if raw_db_url and raw_db_url.startswith("postgres://"):
+        raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
+    SQLALCHEMY_DATABASE_URI = raw_db_url or ("sqlite:///" + str(BASE_DIR / "database.db"))
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = str(BASE_DIR / "static" / "uploads")
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "trinhnhiemtdh@gmail.com")

@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla Test",
+    "path": "/",
+    "created_at": "2026-08-23 08:15:49.173404",
+    "user_id": null,
+    "location": "Việt Nam",
+    "device_type": "Máy tính"
+  },
+  {
+    "id": 2,
+    "ip_address": "127.0.0.1",
+    "user_agent": null,
+    "path": "/",
+    "created_at": "2026-08-23 08:20:10.226320",
+    "user_id": 1,
+    "location": "🏠 Nội bộ (Localhost)",
+    "device_type": "💻 Máy tính"
+  },
+  {
+    "id": 3,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "path": "/api/chat-support",
+    "created_at": "2026-09-02 14:30:28.425486",
+    "user_id": null,
+    "location": "🏠 Nội bộ (Localhost)",
+    "device_type": "💻 Máy tính"
+  },
+  {
+    "id": 4,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "path": "/api/chat-support",
+    "created_at": "2026-09-02 14:30:38.140718",
+    "user_id": null,
+    "location": "🏠 Nội bộ (Localhost)",
+    "device_type": "💻 Máy tính"
+  },
+  {
+    "id": 5,
+    "ip_address": "127.0.0.1",
+    "user_agent": "",
+    "path": "/api/chat-support",
+    "created_at": "2026-09-02 14:31:09.422232",
+    "user_id": null,
+    "location": "🏠 Nội bộ (Localhost)",
+    "device_type": "💻 Máy tính"
+  }
+]

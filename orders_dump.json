@@ -1,0 +1,132 @@
+{
+  "orders": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "customer_name": "Administrator",
+      "phone": "ÂCSC",
+      "address": "Tài liệu số",
+      "note": "Á",
+      "total": 49000.0,
+      "status": "pending_payment",
+      "created_at": "2026-08-22 06:18:15.460772",
+      "email": null
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "customer_name": "Nguyen Van A",
+      "phone": "0379760905",
+      "address": "Ea Kar",
+      "note": "Test",
+      "total": 49000.0,
+      "status": "paid",
+      "created_at": "2026-08-22 06:27:57.776460",
+      "email": null
+    },
+    {
+      "id": 3,
+      "user_id": 2,
+      "customer_name": "Khách Hàng Test",
+      "phone": "0988776655",
+      "address": "Tài liệu số / File CAD",
+      "note": "Cần file AutoCAD 2007 và hỗ trợ kỹ thuật",
+      "total": 49000.0,
+      "status": "awaiting_confirmation",
+      "created_at": "2026-08-22 06:58:09.259400",
+      "email": "khachhang.test@gmail.com"
+    },
+    {
+      "id": 4,
+      "user_id": 2,
+      "customer_name": "Khách Hàng Test",
+      "phone": "0988776655",
+      "address": "Tài liệu số / File CAD",
+      "note": "Cần file AutoCAD 2007 và hỗ trợ kỹ thuật",
+      "total": 49000.0,
+      "status": "paid",
+      "created_at": "2026-08-22 06:58:52.125230",
+      "email": "khachhang.test@gmail.com"
+    },
+    {
+      "id": 5,
+      "user_id": 1,
+      "customer_name": "Administrator",
+      "phone": "CSA",
+      "address": "Tài liệu số / File AutoCAD",
+      "note": "",
+      "total": 49000.0,
+      "status": "awaiting_confirmation",
+      "created_at": "2026-08-22 07:00:28.716585",
+      "email": "admin@nhiem-autotech.local"
+    },
+    {
+      "id": 6,
+      "user_id": 1,
+      "customer_name": "Administrator",
+      "phone": "CSA",
+      "address": "Tài liệu số / File AutoCAD",
+      "note": "",
+      "total": 49000.0,
+      "status": "pending_payment",
+      "created_at": "2026-08-22 09:43:42.365603",
+      "email": "admin@nhiem-autotech.local"
+    }
+  ],
+  "items": [
+    {
+      "id": 1,
+      "order_id": 1,
+      "product_id": 1,
+      "product_name": "Thư Viện thiết bị điện (CB, RCBO, RCCO, MCB, MCCB, BIẾN TẦN,...) HÃNG LS",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 2,
+      "order_id": 2,
+      "product_id": 1,
+      "product_name": "Thư Viện thiết bị điện (CB, RCBO, RCCO, MCB, MCCB, BIẾN TẦN,...) HÃNG LS",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 3,
+      "order_id": 3,
+      "product_id": 1,
+      "product_name": "Thư Viện thiết bị điện (CB, RCBO, RCCO, MCB, MCCB, BIẾN TẦN,...) HÃNG LS",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 4,
+      "order_id": 4,
+      "product_id": 1,
+      "product_name": "Thư Viện thiết bị điện (CB, RCBO, RCCO, MCB, MCCB, BIẾN TẦN,...) HÃNG LS",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 5,
+      "order_id": 5,
+      "product_id": 1,
+      "product_name": "Thư Viện thiết bị điện (CB, RCBO, RCCO, MCB, MCCB, BIẾN TẦN,...) HÃNG LS",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 6,
+      "order_id": 6,
+      "product_id": 6,
+      "product_name": "6. Thư Viện AutoCAD HÃNG LS",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    }
+  ]
+}

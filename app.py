@@ -85,6 +85,85 @@ def initialize_database():
         except Exception as e:
             print(f"[INIT ERROR] Failed to seed products: {e}")
 
+    # Auto-restore Orders if table is empty
+    orders_json_path = Path(__file__).resolve().parent / "orders_dump.json"
+    if orders_json_path.exists() and Order.query.count() == 0:
+        try:
+            with open(orders_json_path, "r", encoding="utf-8") as f:
+                odata = json.load(f)
+            for o in odata.get("orders", []):
+                new_o = Order(
+                    id=o.get("id"),
+                    user_id=o.get("user_id"),
+                    customer_name=o.get("customer_name"),
+                    email=o.get("email"),
+                    phone=o.get("phone"),
+                    address=o.get("address"),
+                    note=o.get("note"),
+                    total=o.get("total", 0),
+                    status=o.get("status", "pending_payment")
+                )
+                db.session.add(new_o)
+            for it in odata.get("items", []):
+                new_it = OrderItem(
+                    id=it.get("id"),
+                    order_id=it.get("order_id"),
+                    product_id=it.get("product_id"),
+                    product_name=it.get("product_name"),
+                    price=it.get("price"),
+                    quantity=it.get("quantity"),
+                    subtotal=it.get("subtotal")
+                )
+                db.session.add(new_it)
+            db.session.commit()
+            print(f"[INIT] Auto-restored {len(odata.get('orders', []))} orders into database.")
+        except Exception as e:
+            db.session.rollback()
+            print(f"[INIT ERROR] Failed to restore orders: {e}")
+
+    # Auto-restore Contacts if table is empty
+    contacts_json_path = Path(__file__).resolve().parent / "contacts_dump.json"
+    if contacts_json_path.exists() and Contact.query.count() == 0:
+        try:
+            with open(contacts_json_path, "r", encoding="utf-8") as f:
+                cdata = json.load(f)
+            for c in cdata:
+                db.session.add(Contact(
+                    id=c.get("id"),
+                    name=c.get("name"),
+                    email=c.get("email"),
+                    phone=c.get("phone"),
+                    message=c.get("message"),
+                    is_read=c.get("is_read", False)
+                ))
+            db.session.commit()
+            print(f"[INIT] Auto-restored {len(cdata)} contacts into database.")
+        except Exception as e:
+            db.session.rollback()
+            print(f"[INIT ERROR] Failed to restore contacts: {e}")
+
+    # Auto-restore Page Visits if table is empty
+    visits_json_path = Path(__file__).resolve().parent / "visits_dump.json"
+    if visits_json_path.exists() and PageVisit.query.count() == 0:
+        try:
+            with open(visits_json_path, "r", encoding="utf-8") as f:
+                vdata = json.load(f)
+            for v in vdata:
+                db.session.add(PageVisit(
+                    id=v.get("id"),
+                    ip_address=v.get("ip_address"),
+                    user_agent=v.get("user_agent"),
+                    path=v.get("path"),
+                    user_id=v.get("user_id"),
+                    location=v.get("location", "Việt Nam"),
+                    device_type=v.get("device_type", "Máy tính")
+                ))
+            db.session.commit()
+            print(f"[INIT] Auto-restored {len(vdata)} visits into database.")
+        except Exception as e:
+            db.session.rollback()
+            print(f"[INIT ERROR] Failed to restore visits: {e}")
+
 def sync_products_to_dump():
     """Sync all current DB products to products_dump.json so user price changes and product updates persist across deployments."""
     try:

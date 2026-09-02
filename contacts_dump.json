@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Khách 4321",
+    "email": "chat@live-support.local",
+    "phone": "0987654321",
+    "message": "[Trò chuyện trực tiếp] Toi can tu van gia MCB Schneider 0987654321",
+    "is_read": 0,
+    "created_at": "2026-09-02 14:30:28.435582"
+  },
+  {
+    "id": 2,
+    "name": "Khách 4321",
+    "email": "chat@live-support.local",
+    "phone": "0987654321",
+    "message": "[Trò chuyện trực tiếp] Toi can tu van gia MCB Schneider 0987654321",
+    "is_read": 0,
+    "created_at": "2026-09-02 14:30:38.146732"
+  }
+]
