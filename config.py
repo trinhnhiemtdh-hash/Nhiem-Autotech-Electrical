@@ -9,7 +9,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = "sqlite:///" + str(BASE_DIR / "database.db")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = str(BASE_DIR / "static" / "uploads")
-    ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@nhiem-autotech.local")
+    ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "trinhnhiem321@gmail.com")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@123456")
     
     # Domain công khai khi đưa lên Internet
@@ -28,6 +28,6 @@ class Config:
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
     MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
     MAIL_USE_TLS = os.getenv("MAIL_USE_TLS", "true").lower() in ["true", "1", "yes"]
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "")
+    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "trinhnhiem321@gmail.com")
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "")  # Mật khẩu ứng dụng Gmail (App Password 16 ký tự)
-    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "Nhiệm Autotech Electrical <noreply@nhiem-autotech.vn>")
+    MAIL_DEFAULT_SENDER = os.getenv("MAIL_DEFAULT_SENDER", "Nhiệm Autotech Electrical <trinhnhiem321@gmail.com>")
