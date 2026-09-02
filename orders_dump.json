@@ -71,6 +71,54 @@
       "status": "pending_payment",
       "created_at": "2026-08-22 09:43:42.365603",
       "email": "admin@nhiem-autotech.local"
+    },
+    {
+      "id": 7,
+      "user_id": 2,
+      "customer_name": "Lê Hoàng Nam",
+      "phone": "0912345889",
+      "address": "Tài liệu số / Bản vẽ CAD",
+      "note": "Xin gửi file AutoCAD bản 2007 qua email giúp mình nhé",
+      "total": 98000.0,
+      "status": "paid",
+      "created_at": "2026-08-31 10:24:18",
+      "email": "hoangnam.cad@gmail.com"
+    },
+    {
+      "id": 8,
+      "user_id": 2,
+      "customer_name": "Đặng Văn Dũng",
+      "phone": "0983221456",
+      "address": "Tài liệu số / Bản vẽ CAD",
+      "note": "Đã chuyển khoản Vietcombank nội dung NA8",
+      "total": 98000.0,
+      "status": "awaiting_confirmation",
+      "created_at": "2026-09-01 14:15:32",
+      "email": "dungdang.electrical@gmail.com"
+    },
+    {
+      "id": 9,
+      "user_id": 2,
+      "customer_name": "Trần Minh Tuấn",
+      "phone": "0905678123",
+      "address": "Tài liệu số / File CAD & Khóa học",
+      "note": "Cần hỗ trợ file thư viện tủ điện công nghiệp",
+      "total": 149000.0,
+      "status": "paid",
+      "created_at": "2026-09-02 09:30:45",
+      "email": "tuan.automation.dn@gmail.com"
+    },
+    {
+      "id": 10,
+      "user_id": 2,
+      "customer_name": "Nguyễn Văn Hưng",
+      "phone": "0974556789",
+      "address": "Tài liệu số / File CAD",
+      "note": "Đã thanh toán qua mã QR Vietcombank NA10",
+      "total": 49000.0,
+      "status": "awaiting_confirmation",
+      "created_at": "2026-09-02 16:42:10",
+      "email": "hungnguyen.mep@gmail.com"
     }
   ],
   "items": [
@@ -124,6 +172,60 @@
       "order_id": 6,
       "product_id": 6,
       "product_name": "6. Thư Viện AutoCAD HÃNG LS",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 7,
+      "order_id": 7,
+      "product_id": 8,
+      "product_name": "Thư Viện AutoCAD hãng SCHNEIDER",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 8,
+      "order_id": 7,
+      "product_id": 5,
+      "product_name": "Thư Viện AutoCAD Thiết Bị Đóng Cắt Hãng ABB",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 9,
+      "order_id": 8,
+      "product_id": 7,
+      "product_name": "Thư Viện AutoCAD HÃNG LS (CB, RCBO, MCB, MCCB, ACB...)",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 10,
+      "order_id": 8,
+      "product_id": 6,
+      "product_name": "Thư Viện AutoCAD hãng MITSUBISHI (CB, MCB, MCCB, PLC...)",
+      "price": 49000.0,
+      "quantity": 1,
+      "subtotal": 49000.0
+    },
+    {
+      "id": 11,
+      "order_id": 9,
+      "product_id": 1,
+      "product_name": "Trọn Bộ Thư Viện AutoCAD Tất Cả Các Hãng (All In One)",
+      "price": 149000.0,
+      "quantity": 1,
+      "subtotal": 149000.0
+    },
+    {
+      "id": 12,
+      "order_id": 10,
+      "product_id": 11,
+      "product_name": "Thư Viện AutoCAD Thiết Bị SIEMENS & PLC",
       "price": 49000.0,
       "quantity": 1,
       "subtotal": 49000.0

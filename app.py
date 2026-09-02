@@ -92,16 +92,18 @@ def initialize_database():
             with open(orders_json_path, "r", encoding="utf-8") as f:
                 odata = json.load(f)
             for o in odata.get("orders", []):
+                created_dt = datetime.fromisoformat(o["created_at"]) if o.get("created_at") else datetime.utcnow()
                 new_o = Order(
                     id=o.get("id"),
-                    user_id=o.get("user_id"),
+                    user_id=o.get("user_id", 1),
                     customer_name=o.get("customer_name"),
                     email=o.get("email"),
                     phone=o.get("phone"),
                     address=o.get("address"),
                     note=o.get("note"),
                     total=o.get("total", 0),
-                    status=o.get("status", "pending_payment")
+                    status=o.get("status", "pending_payment"),
+                    created_at=created_dt
                 )
                 db.session.add(new_o)
             for it in odata.get("items", []):
@@ -128,13 +130,15 @@ def initialize_database():
             with open(contacts_json_path, "r", encoding="utf-8") as f:
                 cdata = json.load(f)
             for c in cdata:
+                created_dt = datetime.fromisoformat(c["created_at"]) if c.get("created_at") else datetime.utcnow()
                 db.session.add(Contact(
                     id=c.get("id"),
                     name=c.get("name"),
                     email=c.get("email"),
                     phone=c.get("phone"),
                     message=c.get("message"),
-                    is_read=c.get("is_read", False)
+                    is_read=c.get("is_read", False),
+                    created_at=created_dt
                 ))
             db.session.commit()
             print(f"[INIT] Auto-restored {len(cdata)} contacts into database.")
@@ -149,6 +153,7 @@ def initialize_database():
             with open(visits_json_path, "r", encoding="utf-8") as f:
                 vdata = json.load(f)
             for v in vdata:
+                created_dt = datetime.fromisoformat(v["created_at"]) if v.get("created_at") else datetime.utcnow()
                 db.session.add(PageVisit(
                     id=v.get("id"),
                     ip_address=v.get("ip_address"),
@@ -156,7 +161,8 @@ def initialize_database():
                     path=v.get("path"),
                     user_id=v.get("user_id"),
                     location=v.get("location", "Việt Nam"),
-                    device_type=v.get("device_type", "Máy tính")
+                    device_type=v.get("device_type", "Máy tính"),
+                    created_at=created_dt
                 ))
             db.session.commit()
             print(f"[INIT] Auto-restored {len(vdata)} visits into database.")
