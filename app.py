@@ -369,6 +369,82 @@ def send_admin_new_order_email(order):
         print(f"[ADMIN MAIL ERROR] Could not notify admin for order #{order.id}: {e}")
         return False
 
+def send_admin_contact_alert_email(name, phone, email, message, source_tag="Trò chuyện trực tiếp", current_page=None):
+    """Send alert email to Admin Gmail when a customer leaves a message, chat, or quote request."""
+    admin_email = app.config.get("ADMIN_EMAIL") or app.config.get("MAIL_USERNAME")
+    smtp_user = app.config.get("MAIL_USERNAME")
+    smtp_pass = app.config.get("MAIL_PASSWORD")
+    smtp_server = app.config.get("MAIL_SERVER", "smtp.gmail.com")
+    smtp_port = app.config.get("MAIL_PORT", 587)
+    smtp_tls = app.config.get("MAIL_USE_TLS", True)
+    sender = app.config.get("MAIL_DEFAULT_SENDER") or (smtp_user if smtp_user else "nhiem.autotech@gmail.com")
+
+    if not smtp_user or not smtp_pass or not admin_email:
+        print(f"[ADMIN MAIL INFO] SMTP not configured (MAIL_USERNAME/MAIL_PASSWORD empty). Message ready from: {name} ({phone})")
+        return False
+
+    try:
+        page_html = f"<div>• <strong>Trang khách gửi:</strong> {current_page}</div>" if current_page else ""
+        contacts_url = public_url("admin_contacts")
+        clean_phone = (phone or "").replace(" ", "").replace("-", "")
+        call_link = f'<a href="tel:{clean_phone}" style="background:#10b981;color:#fff;padding:9px 18px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin-right:8px;">📞 Gọi cho khách: {phone}</a>' if clean_phone and clean_phone != "Chưacungcấp" else ""
+        zalo_link = f'<a href="https://zalo.me/{clean_phone}" style="background:#0088ff;color:#fff;padding:9px 18px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">💬 Chat Zalo</a>' if clean_phone and clean_phone != "Chưacungcấp" else ""
+
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <body style="font-family:Arial,sans-serif;line-height:1.6;color:#1e293b;background-color:#f8fafc;padding:20px;">
+          <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:10px;padding:24px;border:1px solid #e2e8f0;">
+            <div style="background:#0f172a;padding:16px;text-align:center;border-radius:8px;color:#fff;">
+              <h2 style="margin:0;color:#ff7a00;">💬 KHÁCH HÀNG LIÊN HỆ: {source_tag.upper()}</h2>
+            </div>
+            <p style="font-size:15px;margin-top:16px;">Kính gửi Admin Nhiệm Autotech,</p>
+            <p style="font-size:14px;">Bạn vừa nhận được thông tin từ khách hàng trên website:</p>
+            
+            <div style="background:#f1f5f9;padding:14px;border-radius:6px;margin:16px 0;border-left:4px solid #ff7a00;">
+              <div>• <strong>Hình thức:</strong> <span style="background:#ff7a00;color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:bold;">{source_tag}</span></div>
+              <div>• <strong>Họ tên:</strong> {name}</div>
+              <div>• <strong>Số điện thoại:</strong> <strong style="color:#0284c7;font-size:16px;">{phone or 'Khách chưa để lại SĐT'}</strong></div>
+              <div>• <strong>Email:</strong> {email or 'Không có'}</div>
+              {page_html}
+            </div>
+
+            <h4>Nội dung tin nhắn khách gửi:</h4>
+            <div style="font-size:14px;background:#fafafa;padding:14px;border-radius:6px;border:1px solid #e2e8f0;white-space:pre-line;">{message}</div>
+
+            <div style="margin-top:20px;">
+              {call_link}
+              {zalo_link}
+            </div>
+
+            <div style="text-align:center;margin-top:24px;border-top:1px solid #e2e8f0;padding-top:16px;">
+              <a href="{contacts_url}" style="background:#0f172a;color:#fff;padding:10px 20px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;font-size:13px;">👉 Xem tất cả tin nhắn trong Quản Trị</a>
+            </div>
+          </div>
+        </body>
+        </html>
+        """
+
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = f"[Nhiệm Autotech] 💬 Khách liên hệ mới: {phone or name} ({source_tag})"
+        msg["From"] = sender
+        msg["To"] = admin_email
+        msg.attach(MIMEText(html_content, "html", "utf-8"))
+
+        if smtp_tls:
+            server = smtplib.SMTP(smtp_server, smtp_port, timeout=12)
+            server.starttls()
+        else:
+            server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=12)
+        server.login(smtp_user, smtp_pass)
+        server.sendmail(sender, [admin_email], msg.as_string())
+        server.quit()
+        print(f"[ADMIN MAIL SUCCESS] Notified admin for contact message from {phone or name}")
+        return True
+    except Exception as e:
+        print(f"[ADMIN MAIL ERROR] Could not notify admin for contact message: {e}")
+        return False
+
 def add_notification(notif_type, title, message, link=None):
     """Add notification to Admin Notification Center."""
     try:
@@ -918,6 +994,7 @@ def contact():
         db.session.add(c)
         db.session.commit()
         add_notification("contact", f"💬 Tin nhắn liên hệ mới từ {c.name}", f"SĐT: {c.phone} | Content: {c.message[:100]}", link=url_for("admin_contacts"))
+        send_admin_contact_alert_email(c.name, c.phone, c.email, c.message, source_tag="Form liên hệ", current_page="/contact")
         flash("Đã gửi liên hệ. Nhiệm sẽ phản hồi sớm.", "success")
         return redirect(url_for("contact"))
     return render_template("contact.html")
@@ -943,6 +1020,7 @@ def quote():
         db.session.add(c)
         db.session.commit()
         add_notification("contact", f"📋 Yêu cầu báo giá mới từ {c.name}", f"SĐT: {c.phone} | Product: {product_name}", link=url_for("admin_contacts"))
+        send_admin_contact_alert_email(c.name, c.phone, c.email, c.message, source_tag="Yêu cầu báo giá", current_page="/quote")
         flash("Yêu cầu báo giá của bạn đã được gửi thành công. Nhiệm sẽ liên hệ trong thời gian sớm nhất.", "success")
         return redirect(url_for("quote"))
     return render_template("quote.html", default_product=default_product)
@@ -985,32 +1063,8 @@ def api_chat_support():
     notif_msg = f"{contact_name}: {message[:120]}"
     add_notification("contact", notif_title, notif_msg, link=url_for("admin_contacts"))
 
-    # Send admin email alert if configured
-    try:
-        smtp_user = app.config.get("MAIL_USERNAME")
-        smtp_pass = app.config.get("MAIL_PASSWORD")
-        if smtp_user and smtp_pass:
-            admin_email = app.config.get("ADMIN_EMAIL") or smtp_user
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = f"[Nhiệm Autotech] 💬 Tin nhắn hỗ trợ trực tiếp mới: {phone if phone else contact_name}"
-            msg["From"] = app.config.get("MAIL_DEFAULT_SENDER") or smtp_user
-            msg["To"] = admin_email
-            email_body = f"""
-            <h3>Khách hàng vừa nhắn tin trên website:</h3>
-            <p><strong>Người gửi:</strong> {contact_name}</p>
-            <p><strong>Số điện thoại:</strong> {phone or 'Khách chưa gửi SĐT'}</p>
-            <p><strong>Nội dung:</strong> {message}</p>
-            <p><strong>Trang xem:</strong> {current_page}</p>
-            <p><a href="{public_url('admin_contacts')}">Xem chi tiết trong Quản trị</a></p>
-            """
-            msg.attach(MIMEText(email_body, "html", "utf-8"))
-            server = smtplib.SMTP(app.config.get("MAIL_SERVER", "smtp.gmail.com"), app.config.get("MAIL_PORT", 587), timeout=8)
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(msg["From"], [admin_email], msg.as_string())
-            server.quit()
-    except Exception as em:
-        print(f"[CHAT MAIL ALERT WARN] {em}")
+    # Send admin email alert
+    send_admin_contact_alert_email(contact_name, phone, None, message, source_tag="Trò chuyện trực tiếp", current_page=current_page)
 
     reply = "Cảm ơn bạn! Nhiệm Autotech đã nhận được thông tin. Chúng tôi sẽ phản hồi hoặc liên hệ qua SĐT của bạn ngay nhé!"
     return jsonify({
