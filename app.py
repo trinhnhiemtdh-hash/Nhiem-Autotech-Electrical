@@ -19,28 +19,33 @@ app.config.from_object(Config)
 db.init_app(app)
 
 def initialize_database():
-    """Create and safely upgrade the SQLite database on startup."""
+    """Create and safely upgrade the database on startup."""
     db.create_all()
-    columns_cat = {column["name"] for column in inspect(db.engine).get_columns("category")}
-    if "image" not in columns_cat:
-        db.session.execute(text("ALTER TABLE category ADD COLUMN image VARCHAR(255)"))
-    
-    columns_order = {column["name"] for column in inspect(db.engine).get_columns("order")}
-    if "email" not in columns_order:
-        db.session.execute(text("ALTER TABLE \"order\" ADD COLUMN email VARCHAR(180)"))
+    try:
+        columns_cat = {column["name"] for column in inspect(db.engine).get_columns("category")}
+        if "image" not in columns_cat:
+            db.session.execute(text("ALTER TABLE category ADD COLUMN image VARCHAR(255)"))
         
-    columns_prod = {column["name"] for column in inspect(db.engine).get_columns("product")}
-    if "sort_order" not in columns_prod:
-        db.session.execute(text("ALTER TABLE product ADD COLUMN sort_order INTEGER DEFAULT 0"))
+        columns_order = {column["name"] for column in inspect(db.engine).get_columns("order")}
+        if "email" not in columns_order:
+            db.session.execute(text("ALTER TABLE \"order\" ADD COLUMN email VARCHAR(180)"))
+            
+        columns_prod = {column["name"] for column in inspect(db.engine).get_columns("product")}
+        if "sort_order" not in columns_prod:
+            db.session.execute(text("ALTER TABLE product ADD COLUMN sort_order INTEGER DEFAULT 0"))
 
-    if "page_visit" in inspect(db.engine).get_table_names():
-        columns_visit = {column["name"] for column in inspect(db.engine).get_columns("page_visit")}
-        if "user_id" not in columns_visit:
-            db.session.execute(text("ALTER TABLE page_visit ADD COLUMN user_id INTEGER"))
-        if "location" not in columns_visit:
-            db.session.execute(text("ALTER TABLE page_visit ADD COLUMN location VARCHAR(100) DEFAULT 'Việt Nam'"))
-        if "device_type" not in columns_visit:
-            db.session.execute(text("ALTER TABLE page_visit ADD COLUMN device_type VARCHAR(50) DEFAULT 'Máy tính'"))
+        if "page_visit" in inspect(db.engine).get_table_names():
+            columns_visit = {column["name"] for column in inspect(db.engine).get_columns("page_visit")}
+            if "user_id" not in columns_visit:
+                db.session.execute(text("ALTER TABLE page_visit ADD COLUMN user_id INTEGER"))
+            if "location" not in columns_visit:
+                db.session.execute(text("ALTER TABLE page_visit ADD COLUMN location VARCHAR(100) DEFAULT 'Việt Nam'"))
+            if "device_type" not in columns_visit:
+                db.session.execute(text("ALTER TABLE page_visit ADD COLUMN device_type VARCHAR(50) DEFAULT 'Máy tính'"))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        print(f"[DB UPGRADE NOTE] {e}")
         
     default_categories = [
         ("Thư viện AutoCAD", "thu-vien-autocad"),
