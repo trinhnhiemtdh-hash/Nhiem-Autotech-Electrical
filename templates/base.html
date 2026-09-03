@@ -13,7 +13,10 @@
   <meta property="og:description" content="{% block og_description %}Mua file thư viện AutoCAD DWG thiết bị điện MCB MCCB chuẩn hãng, layout tủ điện MSB DB và đồ án PLC 3D SolidWorks.{% endblock %}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{ canonical_url or site_url ~ request.path }}">
+  <meta property="og:site_name" content="Nhiệm Autotech">
   {% block og_image %}<meta property="og:image" content="{{ site_url ~ url_for('static', filename='images/logo.png') }}">{% endblock %}
+  <meta name="application-name" content="Nhiệm Autotech">
+  <meta name="apple-mobile-web-app-title" content="Nhiệm Autotech">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="{{ canonical_url or site_url ~ request.path }}">
   
@@ -24,7 +27,9 @@
   
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/electrical.css') }}">
-  <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}?v=2">
+  <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}?v=3">
+  <link rel="shortcut icon" href="{{ url_for('favicon') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='images/logo.jpg') }}">
 </head>
 <body>
 
@@ -407,24 +412,37 @@
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Organization",
-      "name": "Nhiệm Autotech Electrical",
-      "url": {{ site_url|tojson }},
-      "telephone": "0379760905",
-      "sameAs": [
-        "https://www.facebook.com/profile.php?id=61593437326233",
-        "https://www.tiktok.com/@nhim.autotech"
-      ]
-    },
-    {
       "@type": "WebSite",
-      "name": "Nhiệm Autotech Electrical",
+      "@id": {{ (site_url ~ "/#website")|tojson }},
       "url": {{ site_url|tojson }},
+      "name": "Nhiệm Autotech",
+      "alternateName": [
+        "Nhiệm Autotech Electrical",
+        "Thư Viện AutoCAD Tủ Điện",
+        "Thư Viện Thiết Kế Tủ Điện",
+        "Autotech Electrical"
+      ],
+      "publisher": {
+        "@id": {{ (site_url ~ "/#organization")|tojson }}
+      },
       "potentialAction": {
         "@type": "SearchAction",
         "target": {{ (site_url ~ url_for('products') ~ '?q={search_term_string}')|tojson }},
         "query-input": "required name=search_term_string"
       }
+    },
+    {
+      "@type": "Organization",
+      "@id": {{ (site_url ~ "/#organization")|tojson }},
+      "name": "Nhiệm Autotech Electrical",
+      "alternateName": "Nhiệm Autotech",
+      "url": {{ site_url|tojson }},
+      "logo": {{ (site_url ~ url_for('static', filename='images/logo.jpg'))|tojson }},
+      "telephone": "0379760905",
+      "sameAs": [
+        "https://www.facebook.com/profile.php?id=61593437326233",
+        "https://www.tiktok.com/@nhim.autotech"
+      ]
     }
   ]
 }

@@ -802,6 +802,10 @@ def panel_forms():
 def ping():
     return Response("OK", mimetype="text/plain")
 
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, "static", "images"), "logo.jpg", mimetype="image/jpeg")
+
 @app.route("/google79bc38910d6f203a.html")
 def google_verify_file():
     return Response("google-site-verification: google79bc38910d6f203a.html", mimetype="text/html")
