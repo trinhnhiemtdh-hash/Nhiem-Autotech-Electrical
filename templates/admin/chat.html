@@ -1,0 +1,441 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Live Chat 2 Chiều | Quản Trị Hệ Thống{% endblock %}
+
+{% block admin_content %}
+<div class="admin-card" style="background:#fff;border:1px solid var(--border-line);border-radius:var(--radius-xl);padding:0;box-shadow:var(--shadow-sm);overflow:hidden;height:calc(85vh - 40px);display:flex;flex-direction:column;">
+  <!-- Main Chat Grid -->
+  <div style="display:grid;grid-template-columns:320px 1fr;height:100%;min-height:0;">
+    
+    <!-- LEFT: Conversations List -->
+    <div style="border-right:1px solid var(--border-line);display:flex;flex-direction:column;height:100%;min-height:0;background:#f8fafc;">
+      <!-- Search & Title -->
+      <div style="padding:16px;border-bottom:1px solid var(--border-line);background:#fff;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <h2 style="margin:0;font-size:16px;font-weight:800;color:var(--text-main);display:flex;align-items:center;gap:6px;">
+            💬 Khách Trò Chuyện
+          </h2>
+          <span id="unreadTotalBadge" style="background:#ff7a00;color:#fff;font-size:11px;font-weight:bold;padding:2px 8px;border-radius:12px;display:none;">
+            0 mới
+          </span>
+        </div>
+        <div style="position:relative;">
+          <input 
+            type="text" 
+            id="searchConvInput" 
+            placeholder="Tìm theo tên, SĐT..." 
+            oninput="filterConversations()"
+            style="width:100%;padding:8px 12px;font-size:13px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;"
+          >
+        </div>
+      </div>
+
+      <!-- Conversations Scroll List -->
+      <div id="conversationsList" style="flex:1;overflow-y:auto;padding:8px 0;">
+        <div style="text-align:center;padding:30px 16px;color:#94a3b8;font-size:13px;">
+          <div style="font-size:24px;margin-bottom:8px;">⏳</div>
+          Đang tải danh sách hội thoại...
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Active Chat Thread -->
+    <div style="display:flex;flex-direction:column;height:100%;min-height:0;background:#ffffff;">
+      
+      <!-- Thread Header -->
+      <div id="threadHeader" style="padding:14px 20px;border-bottom:1px solid var(--border-line);display:flex;align-items:center;justify-content:space-between;background:#fff;min-height:64px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div id="threadAvatar" style="width:40px;height:40px;border-radius:50%;background:#e0f2fe;color:#0284c7;display:grid;place-items:center;font-weight:800;font-size:16px;">
+            👤
+          </div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <strong id="threadCustomerName" style="font-size:16px;color:#0f172a;">Chọn một khách hàng để trò chuyện</strong>
+              <span id="threadLiveStatus" style="font-size:11px;color:#10b981;font-weight:700;display:none;">● Đang kết nối</span>
+            </div>
+            <div id="threadSubInfo" style="font-size:12px;color:#64748b;margin-top:2px;">
+              Vui lòng chọn phiên chat từ danh sách bên trái.
+            </div>
+          </div>
+        </div>
+
+        <!-- Call / Zalo Shortcuts -->
+        <div id="threadActions" style="display:none;align-items:center;gap:8px;">
+          <a id="btnCallCustomer" href="#" class="btn" style="background:#10b981;color:#fff;font-size:12px;padding:6px 12px;border-radius:8px;text-decoration:none;display:none;">
+            📞 Gọi điện
+          </a>
+          <a id="btnZaloCustomer" href="#" target="_blank" rel="noopener noreferrer" class="btn" style="background:#0088ff;color:#fff;font-size:12px;padding:6px 12px;border-radius:8px;text-decoration:none;display:none;">
+            Chat Zalo
+          </a>
+        </div>
+      </div>
+
+      <!-- Messages Stream Area -->
+      <div id="threadMessagesContainer" style="flex:1;overflow-y:auto;padding:20px;background:#f8fafc;display:flex;flex-direction:column;gap:12px;">
+        <div style="text-align:center;margin:auto;color:#94a3b8;font-size:14px;">
+          <div style="font-size:42px;margin-bottom:12px;">👋</div>
+          <strong>Chào mừng bạn đến với Trung Tâm Live Chat 2 Chiều!</strong>
+          <p style="font-size:13px;margin-top:6px;max-width:380px;">Chọn một cuộc trò chuyện từ cột bên trái để bắt đầu đọc và gửi phản hồi trực tiếp cho khách hàng trên website.</p>
+        </div>
+      </div>
+
+      <!-- Quick Reply Templates -->
+      <div id="quickRepliesBar" style="display:none;padding:8px 16px;background:#fff;border-top:1px solid #f1f5f9;overflow-x:auto;white-space:nowrap;gap:8px;">
+        <span style="font-size:11px;font-weight:700;color:#64748b;margin-right:4px;">Gợi ý mẫu:</span>
+        <button type="button" class="btn ghost" style="padding:4px 10px;font-size:12px;border-radius:14px;" onclick="applyQuickReply('Chào bạn! Kỹ thuật Nhiệm Autotech có thể hỗ trợ gì cho bạn?')">
+          👋 Chào hỏi
+        </button>
+        <button type="button" class="btn ghost" style="padding:4px 10px;font-size:12px;border-radius:14px;" onclick="applyQuickReply('Bạn gửi giúp mình mã sản phẩm hoặc bản vẽ CAD cần hỗ trợ nhé!')">
+          📐 Hỏi file CAD
+        </button>
+        <button type="button" class="btn ghost" style="padding:4px 10px;font-size:12px;border-radius:14px;" onclick="applyQuickReply('Bên mình đã nhận được yêu cầu và đang kiểm tra thông số kỹ thuật cho bạn ngay đây.')">
+          ⚡ Đang kiểm tra
+        </button>
+        <button type="button" class="btn ghost" style="padding:4px 10px;font-size:12px;border-radius:14px;" onclick="applyQuickReply('Bạn có thể kết bạn Zalo 0379 760 905 để bên mình gửi trực tiếp tài liệu nhé!')">
+          💬 Mời qua Zalo
+        </button>
+      </div>
+
+      <!-- Input Area -->
+      <div id="threadInputBox" style="display:none;padding:14px 20px;background:#fff;border-top:1px solid var(--border-line);">
+        <form id="adminReplyForm" onsubmit="handleSendAdminReply(event)" style="display:flex;gap:10px;align-items:flex-end;">
+          <textarea 
+            id="adminReplyInput" 
+            placeholder="Nhập nội dung trả lời khách hàng (Nhấn Enter để gửi, Shift+Enter xuống dòng)..."
+            rows="2"
+            required
+            onkeydown="handleAdminInputKeydown(event)"
+            style="flex:1;padding:10px 14px;border:1px solid #cbd5e1;border-radius:10px;font-size:14px;resize:none;outline:none;"
+          ></textarea>
+          <button type="submit" id="btnSendReply" class="btn primary" style="padding:10px 20px;font-weight:700;height:44px;display:flex;align-items:center;gap:6px;">
+            <span>Gửi</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+.conv-item {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: background 0.15s ease;
+  border-bottom: 1px solid #f1f5f9;
+  position: relative;
+}
+.conv-item:hover {
+  background: #f1f5f9;
+}
+.conv-item.active {
+  background: #e0f2fe;
+  border-left: 4px solid #0284c7;
+}
+.conv-item.unread {
+  background: #fffcf0;
+}
+.chat-bubble-admin {
+  background: linear-gradient(135deg, #0284c7, #0369a1);
+  color: #fff;
+  border-radius: 14px 14px 2px 14px;
+  padding: 10px 14px;
+  max-width: 75%;
+  font-size: 14px;
+  line-height: 1.5;
+  align-self: flex-end;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.chat-bubble-user {
+  background: #fff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px 14px 14px 2px;
+  padding: 10px 14px;
+  max-width: 75%;
+  font-size: 14px;
+  line-height: 1.5;
+  align-self: flex-start;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.chat-bubble-wrap {
+  display: flex;
+  flex-direction: column;
+}
+.chat-bubble-wrap.admin-side {
+  align-items: flex-end;
+}
+.chat-bubble-wrap.user-side {
+  align-items: flex-start;
+}
+.chat-meta {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+</style>
+
+<script>
+let currentSessionId = "{{ selected_session }}";
+let conversationsData = [];
+let pollInterval = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+  loadConversations(true);
+  
+  pollInterval = setInterval(() => {
+    loadConversations(false);
+    if (currentSessionId) {
+      loadThread(currentSessionId, false);
+    }
+  }, 3500);
+});
+
+async function loadConversations(isFirstLoad = false) {
+  try {
+    const res = await fetch("/admin/api/chat-conversations");
+    const data = await res.json();
+    if (data.success) {
+      conversationsData = data.conversations || [];
+      renderConversationsList();
+      
+      let totalUnread = 0;
+      conversationsData.forEach(c => totalUnread += (c.unread_count || 0));
+      const badge = document.getElementById("unreadTotalBadge");
+      if (badge) {
+        if (totalUnread > 0) {
+          badge.textContent = `${totalUnread} tin mới`;
+          badge.style.display = "inline-block";
+        } else {
+          badge.style.display = "none";
+        }
+      }
+
+      if (isFirstLoad) {
+        if (currentSessionId) {
+          selectConversation(currentSessionId);
+        } else if (conversationsData.length > 0) {
+          selectConversation(conversationsData[0].session_id);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Error loading conversations:", err);
+  }
+}
+
+function renderConversationsList() {
+  const container = document.getElementById("conversationsList");
+  if (!container) return;
+
+  const filterText = (document.getElementById("searchConvInput")?.value || "").toLowerCase().trim();
+  const list = conversationsData.filter(c => {
+    if (!filterText) return true;
+    return (c.customer_name || "").toLowerCase().includes(filterText) ||
+           (c.phone || "").toLowerCase().includes(filterText) ||
+           (c.last_message || "").toLowerCase().includes(filterText);
+  });
+
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:30px 16px;color:#94a3b8;font-size:13px;">
+        Chưa có cuộc trò chuyện nào phù hợp.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(c => {
+    const isActive = c.session_id === currentSessionId;
+    const isUnread = (c.unread_count || 0) > 0;
+    const initial = (c.customer_name || "K")[0].toUpperCase();
+
+    return `
+      <div class="conv-item ${isActive ? 'active' : ''} ${isUnread ? 'unread' : ''}" onclick="selectConversation('${c.session_id}')">
+        <div style="width:38px;height:38px;border-radius:50%;background:${isUnread ? '#ffedd5' : '#e2e8f0'};color:${isUnread ? '#c2410c' : '#475569'};display:grid;place-items:center;font-weight:700;font-size:14px;flex-shrink:0;">
+          ${initial}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:2px;">
+            <strong style="font-size:13.5px;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              ${escapeHtml(c.customer_name)}
+            </strong>
+            <span style="font-size:11px;color:#94a3b8;flex-shrink:0;">${c.time || ''}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+            <div style="font-size:12px;color:${isUnread ? '#0f172a' : '#64748b'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:${isUnread ? '700' : '400'};">
+              ${c.last_sender === 'admin' ? '<span style="color:#0284c7;">Bạn: </span>' : ''}${escapeHtml(c.last_message || '')}
+            </div>
+            ${isUnread ? `<span style="background:#ff7a00;color:#fff;font-size:10px;font-weight:800;padding:1px 6px;border-radius:10px;flex-shrink:0;">${c.unread_count}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function filterConversations() {
+  renderConversationsList();
+}
+
+async function selectConversation(sessionId) {
+  currentSessionId = sessionId;
+  renderConversationsList();
+  
+  document.getElementById("threadInputBox").style.display = "block";
+  document.getElementById("quickRepliesBar").style.display = "flex";
+  document.getElementById("threadLiveStatus").style.display = "inline";
+
+  await loadThread(sessionId, true);
+  
+  const input = document.getElementById("adminReplyInput");
+  if (input) input.focus();
+}
+
+async function loadThread(sessionId, autoScroll = false) {
+  if (!sessionId) return;
+  try {
+    const res = await fetch(`/admin/api/chat-thread/${sessionId}`);
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById("threadCustomerName").textContent = data.customer_name || "Khách hàng";
+      document.getElementById("threadAvatar").textContent = (data.customer_name || "K")[0].toUpperCase();
+      
+      const phone = data.phone;
+      const subInfo = document.getElementById("threadSubInfo");
+      const threadActions = document.getElementById("threadActions");
+      const btnCall = document.getElementById("btnCallCustomer");
+      const btnZalo = document.getElementById("btnZaloCustomer");
+
+      if (phone && phone !== "Chưa cung cấp") {
+        subInfo.textContent = `SĐT: ${phone} · Phiên: ${sessionId.slice(-8)}`;
+        threadActions.style.display = "flex";
+        btnCall.href = `tel:${phone}`;
+        btnCall.style.display = "inline-flex";
+        
+        const cleanPhone = phone.replace(/[^\d+]/g, '');
+        if (cleanPhone.startsWith('0') || cleanPhone.startsWith('+84')) {
+          btnZalo.href = `https://zalo.me/${cleanPhone}`;
+          btnZalo.style.display = "inline-flex";
+        } else {
+          btnZalo.style.display = "none";
+        }
+      } else {
+        subInfo.textContent = `Phiên chat trực tuyến: ${sessionId.slice(-8)}`;
+        btnCall.style.display = "none";
+        btnZalo.style.display = "none";
+      }
+
+      renderMessages(data.messages || [], autoScroll);
+    }
+  } catch (err) {
+    console.error("Error loading thread:", err);
+  }
+}
+
+function renderMessages(messages, forceScroll = false) {
+  const container = document.getElementById("threadMessagesContainer");
+  if (!container) return;
+
+  const isAtBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) < 60;
+
+  if (messages.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;margin:auto;color:#94a3b8;font-size:13px;">
+        Chưa có tin nhắn nào trong phiên này.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = messages.map(m => {
+    const isAdmin = m.sender === "admin";
+    return `
+      <div class="chat-bubble-wrap ${isAdmin ? 'admin-side' : 'user-side'}">
+        <div class="${isAdmin ? 'chat-bubble-admin' : 'chat-bubble-user'}">
+          ${escapeHtml(m.message)}
+        </div>
+        <div class="chat-meta">
+          ${isAdmin ? 'Kỹ thuật viên' : escapeHtml(m.sender_name || 'Khách')} · ${m.time || ''}
+          ${isAdmin ? (m.is_read ? ' · <span style="color:#0284c7;">✓✓ Khách đã xem</span>' : ' · <span>✓ Đã gửi</span>') : ''}
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  if (forceScroll || isAtBottom) {
+    container.scrollTop = container.scrollHeight;
+  }
+}
+
+function handleAdminInputKeydown(e) {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    handleSendAdminReply(e);
+  }
+}
+
+function applyQuickReply(text) {
+  const input = document.getElementById("adminReplyInput");
+  if (input) {
+    input.value = text;
+    input.focus();
+  }
+}
+
+async function handleSendAdminReply(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  
+  const input = document.getElementById("adminReplyInput");
+  const sendBtn = document.getElementById("btnSendReply");
+  if (!input || !currentSessionId) return;
+
+  const msgText = input.value.trim();
+  if (!msgText) return;
+
+  input.value = "";
+  if (sendBtn) sendBtn.disabled = true;
+
+  try {
+    const res = await fetch("/admin/api/chat-reply", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        session_id: currentSessionId,
+        message: msgText
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      await loadThread(currentSessionId, true);
+      loadConversations(false);
+    } else {
+      alert(data.error || "Không thể gửi tin nhắn. Vui lòng thử lại.");
+    }
+  } catch (err) {
+    console.error("Error sending admin reply:", err);
+    alert("Đã xảy ra lỗi mạng khi gửi tin nhắn.");
+  } finally {
+    if (sendBtn) sendBtn.disabled = false;
+    if (input) input.focus();
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+</script>
+{% endblock %}

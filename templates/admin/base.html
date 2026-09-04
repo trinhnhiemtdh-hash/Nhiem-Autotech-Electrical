@@ -23,6 +23,12 @@
       <a href="{{ url_for('admin_orders') }}" class="btn {% if request.endpoint == 'admin_orders' %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
         🛒 Đơn hàng & Duyệt CK
       </a>
+      <a href="{{ url_for('admin_chat') }}" class="btn {% if request.endpoint == 'admin_chat' %}primary{% else %}ghost{% endif %}" style="justify-content:space-between;font-size:13.5px;padding:10px 14px;text-align:left;">
+        <span>⚡ Live Chat 2 Chiều</span>
+        {% if unread_chats is defined and unread_chats > 0 %}
+          <span style="background:#ff7a00;color:#fff;font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;">{{ unread_chats }}</span>
+        {% endif %}
+      </a>
       <a href="{{ url_for('admin_contacts') }}" class="btn {% if request.endpoint == 'admin_contacts' %}primary{% else %}ghost{% endif %}" style="justify-content:flex-start;font-size:13.5px;padding:10px 14px;text-align:left;">
         💬 Tin nhắn & Hỗ trợ KH
       </a>

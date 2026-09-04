@@ -16,6 +16,9 @@
       </p>
     </div>
     <div style="display:flex;gap:10px;align-items:center;">
+      <a href="{{ url_for('admin_chat') }}" class="btn primary" style="font-size:13px;padding:8px 16px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+        <span>⚡ Mở Live Chat 2 Chiều</span>
+      </a>
       <span style="background:#f1f5f9;color:#0f172a;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;">
         Tổng cộng: <strong>{{ contacts|length }}</strong> tin nhắn
       </span>
@@ -58,6 +61,11 @@
 
           <!-- Quick Action Buttons -->
           <div style="display:flex;align-items:center;gap:8px;">
+            {% if is_livechat %}
+              <a href="{{ url_for('admin_chat') }}" class="btn" style="background:#ff7a00;color:#fff;font-size:12px;padding:6px 12px;border-radius:8px;text-decoration:none;" title="Mở phòng chat 2 chiều để trả lời">
+                💬 Trả Lời Ngay
+              </a>
+            {% endif %}
             {% if c.phone and c.phone != 'Chưa cung cấp' %}
               <a href="tel:{{ c.phone }}" class="btn" style="background:#10b981;color:#fff;font-size:12px;padding:6px 12px;border-radius:8px;text-decoration:none;" title="Gọi điện cho khách">
                 📞 Gọi: {{ c.phone }}

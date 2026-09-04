@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_, inspect, text
-from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit, Notification
+from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit, Notification, ChatMessage
 from config import Config
 from functools import wraps
 from pathlib import Path
@@ -470,7 +470,10 @@ def send_admin_contact_alert_email(name, phone, email, message, source_tag="Trò
     sender = app.config.get("MAIL_DEFAULT_SENDER") or (smtp_user if smtp_user else "nhiem.autotech@gmail.com")
 
     if not smtp_user or not smtp_pass or not admin_email:
-        print(f"[ADMIN MAIL INFO] SMTP not configured (MAIL_USERNAME/MAIL_PASSWORD empty). Message ready from: {name} ({phone})")
+        try:
+            print(f"[ADMIN MAIL INFO] SMTP not configured. Message ready from: {name}")
+        except Exception:
+            pass
         return False
 
     try:
@@ -594,6 +597,17 @@ def get_location_name(ip):
     _IP_LOCATION_CACHE[ip] = location_str
     return location_str
 
+@app.context_processor
+def inject_admin_badges():
+    if session.get("is_admin"):
+        try:
+            unread_n = Notification.query.filter_by(is_read=False).count()
+            unread_c = ChatMessage.query.filter_by(sender="user", is_read_by_admin=False).count()
+            return {"unread_notifs": unread_n, "unread_chats": unread_c}
+        except Exception:
+            return {"unread_notifs": 0, "unread_chats": 0}
+    return {"unread_notifs": 0, "unread_chats": 0}
+
 @app.before_request
 def track_visitor():
     if request.path.startswith("/static") or request.path.startswith("/admin") or request.path in ["/robots.txt", "/sitemap.xml", "/ping"]:
@@ -651,7 +665,7 @@ def prevent_private_pages_from_being_indexed(response):
         "login", "register", "logout", "cart", "cart_add", "cart_update", "cart_remove",
         "checkout", "payment", "payment_notify_paid", "account_orders", "cad_download", "admin_dashboard", "admin_products",
         "admin_product_add", "admin_product_delete", "admin_orders", "admin_order_status",
-        "admin_contacts",
+        "admin_contacts", "admin_chat",
     }
     if request.endpoint in private_endpoints:
         response.headers["X-Robots-Tag"] = "noindex, nofollow"
@@ -1126,6 +1140,11 @@ def api_chat_support():
     phone = (data.get("phone") or "").strip()
     name = (data.get("name") or "").strip()
     current_page = (data.get("page") or "").strip()
+    session_id = (data.get("session_id") or "").strip()
+
+    if not session_id:
+        import uuid
+        session_id = f"sess_{uuid.uuid4().hex[:16]}"
 
     if not message and not phone:
         return jsonify({"success": False, "error": "Vui lòng nhập tin nhắn hoặc số điện thoại."}), 400
@@ -1143,6 +1162,19 @@ def api_chat_support():
         note_parts.append(f"(Trang xem: {current_page})")
     full_message = "\n".join(note_parts)
 
+    # 1. Lưu vào ChatMessage để phục vụ trò chuyện 2 chiều
+    chat_msg = ChatMessage(
+        session_id=session_id,
+        sender="user",
+        sender_name=contact_name,
+        message=message,
+        phone=phone or None,
+        is_read_by_admin=False,
+        is_read_by_user=True
+    )
+    db.session.add(chat_msg)
+
+    # 2. Giữ nguyên lưu Contact để tương thích toàn bộ hệ thống cũ & email
     c = Contact(
         name=contact_name,
         email="chat@live-support.local",
@@ -1152,20 +1184,66 @@ def api_chat_support():
     db.session.add(c)
     db.session.commit()
 
-    # Create admin notification
+    # Tạo thông báo Admin chuyển hướng thẳng tới màn hình chat
     notif_title = f"💬 Khách nhắn tin trực tiếp: {phone if phone else contact_name}"
     notif_msg = f"{contact_name}: {message[:120]}"
-    add_notification("contact", notif_title, notif_msg, link=url_for("admin_contacts"))
+    add_notification("contact", notif_title, notif_msg, link=url_for("admin_chat", session_id=session_id))
 
-    # Send admin email alert
-    send_admin_contact_alert_email(contact_name, phone, None, message, source_tag="Trò chuyện trực tiếp", current_page=current_page)
+    # Gửi email cảnh báo cho Admin (nếu cấu hình SMTP)
+    try:
+        send_admin_contact_alert_email(contact_name, phone, None, message, source_tag="Trò chuyện trực tiếp", current_page=current_page)
+    except Exception as e:
+        print(f"[MAIL ALERT WARN] Could not send email alert: {e}")
 
-    reply = "Cảm ơn bạn! Nhiệm Autotech đã nhận được thông tin. Chúng tôi sẽ phản hồi hoặc liên hệ qua SĐT của bạn ngay nhé!"
+    reply = "Cảm ơn bạn! Nhiệm Autotech đã nhận được tin nhắn. Kỹ sư sẽ phản hồi trực tiếp cho bạn tại đây ngay nhé!"
     return jsonify({
         "success": True,
         "reply": reply,
-        "phone_recorded": bool(phone)
+        "phone_recorded": bool(phone),
+        "session_id": session_id,
+        "message_id": chat_msg.id
     })
+
+@app.get("/api/chat-poll")
+def api_chat_poll():
+    session_id = request.args.get("session_id", "").strip()
+    if not session_id:
+        return jsonify({"success": False, "messages": []})
+
+    try:
+        after_id = int(request.args.get("after_id", 0))
+    except (ValueError, TypeError):
+        after_id = 0
+
+    query = ChatMessage.query.filter(
+        ChatMessage.session_id == session_id,
+        ChatMessage.id > after_id
+    ).order_by(ChatMessage.id.asc())
+
+    messages = query.all()
+    out = []
+    has_admin = False
+    for m in messages:
+        if m.sender == "admin":
+            m.is_read_by_user = True
+            has_admin = True
+        out.append({
+            "id": m.id,
+            "sender": m.sender,
+            "sender_name": m.sender_name,
+            "message": m.message,
+            "time": m.created_at.strftime("%H:%M"),
+            "date": m.created_at.strftime("%d/%m/%Y")
+        })
+
+    if has_admin:
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+    return jsonify({"success": True, "messages": out})
+
 
 @app.route("/login", methods=["GET","POST"])
 def login():
@@ -1623,6 +1701,142 @@ def admin_contact_delete(contact_id):
         db.session.commit()
         flash("Đã xóa tin nhắn khỏi danh sách.", "info")
     return redirect(url_for("admin_contacts"))
+
+# ==========================================
+# ADMIN LIVE CHAT 2-WAY ROUTES & APIS
+# ==========================================
+@app.route("/admin/chat")
+@admin_required
+def admin_chat():
+    selected_session = request.args.get("session_id", "").strip()
+    return render_template("admin/chat.html", selected_session=selected_session)
+
+@app.get("/admin/api/chat-conversations")
+@admin_required
+def admin_api_chat_conversations():
+    from sqlalchemy import func
+    try:
+        subquery = db.session.query(
+            ChatMessage.session_id,
+            func.max(ChatMessage.id).label("max_id")
+        ).group_by(ChatMessage.session_id).subquery()
+
+        latest_messages = db.session.query(ChatMessage).join(
+            subquery, ChatMessage.id == subquery.c.max_id
+        ).order_by(ChatMessage.created_at.desc()).all()
+
+        conversations = []
+        for lm in latest_messages:
+            unread = ChatMessage.query.filter_by(
+                session_id=lm.session_id,
+                sender="user",
+                is_read_by_admin=False
+            ).count()
+
+            user_msg = ChatMessage.query.filter_by(
+                session_id=lm.session_id,
+                sender="user"
+            ).order_by(ChatMessage.id.desc()).first()
+
+            cust_name = user_msg.sender_name if user_msg and user_msg.sender_name else "Khách trực tuyến"
+            phone = user_msg.phone if user_msg and user_msg.phone else None
+
+            conversations.append({
+                "session_id": lm.session_id,
+                "customer_name": cust_name,
+                "phone": phone,
+                "last_message": lm.message,
+                "last_sender": lm.sender,
+                "time": lm.created_at.strftime("%H:%M · %d/%m"),
+                "unread_count": unread
+            })
+
+        return jsonify({"success": True, "conversations": conversations})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.get("/admin/api/chat-thread/<session_id>")
+@admin_required
+def admin_api_chat_thread(session_id):
+    try:
+        ChatMessage.query.filter_by(
+            session_id=session_id,
+            sender="user",
+            is_read_by_admin=False
+        ).update({ChatMessage.is_read_by_admin: True})
+        db.session.commit()
+
+        messages = ChatMessage.query.filter_by(session_id=session_id).order_by(ChatMessage.id.asc()).all()
+        cust_phone = None
+        cust_name = "Khách trực tuyến"
+        for m in messages:
+            if m.sender == "user":
+                if m.phone:
+                    cust_phone = m.phone
+                if m.sender_name:
+                    cust_name = m.sender_name
+
+        return jsonify({
+            "success": True,
+            "session_id": session_id,
+            "customer_name": cust_name,
+            "phone": cust_phone,
+            "messages": [{
+                "id": m.id,
+                "sender": m.sender,
+                "sender_name": m.sender_name,
+                "message": m.message,
+                "time": m.created_at.strftime("%H:%M · %d/%m"),
+                "is_read": m.is_read_by_user if m.sender == "admin" else m.is_read_by_admin
+            } for m in messages]
+        })
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.post("/admin/api/chat-reply")
+@admin_required
+def admin_api_chat_reply():
+    data = request.get_json(silent=True) or request.form
+    session_id = (data.get("session_id") or "").strip()
+    message = (data.get("message") or "").strip()
+
+    if not session_id or not message:
+        return jsonify({"success": False, "error": "Thiếu nội dung tin nhắn hoặc phiên chat."}), 400
+
+    admin_user = db.session.get(User, session.get("user_id")) if session.get("user_id") else None
+    admin_name = admin_user.name if admin_user else "Kỹ thuật Nhiệm Autotech"
+
+    reply_msg = ChatMessage(
+        session_id=session_id,
+        sender="admin",
+        sender_name=admin_name,
+        message=message,
+        is_read_by_admin=True,
+        is_read_by_user=False
+    )
+    db.session.add(reply_msg)
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "message": {
+            "id": reply_msg.id,
+            "sender": "admin",
+            "sender_name": admin_name,
+            "message": reply_msg.message,
+            "time": reply_msg.created_at.strftime("%H:%M · %d/%m")
+        }
+    })
+
+@app.get("/admin/api/chat-unread-count")
+@admin_required
+def admin_api_chat_unread_count():
+    try:
+        count = ChatMessage.query.filter_by(sender="user", is_read_by_admin=False).count()
+        return jsonify({"count": count})
+    except Exception:
+        return jsonify({"count": 0})
+
 
 @app.route("/admin/settings", methods=["GET", "POST"])
 @admin_required
