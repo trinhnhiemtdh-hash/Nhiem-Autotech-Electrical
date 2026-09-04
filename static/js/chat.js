@@ -77,7 +77,7 @@ function renderSavedMessages() {
           <img src="/static/images/logo.jpg?v=2" alt="Kỹ sư" onerror="this.src='/static/images/logo.png';">
         </div>
         <div class="msg-bubble-wrap">
-          <div class="msg-author" style="color:#0284c7;font-weight:700;">⚡ ${escapeHtml(msg.sender_name || "Kỹ sư Nhiệm Autotech")}</div>
+          <div class="msg-author" style="color:#0284c7;font-weight:700;">⚡ ${escapeHtml(msg.sender_name || "Bộ phận kỹ thuật Nhiệm Autotech")}</div>
           <div class="msg-bubble" style="background:#f0f9ff;border:1px solid #bae6fd;color:#0f172a;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
             ${escapeHtml(msg.text)}
           </div>
@@ -243,9 +243,11 @@ async function handleSendChat(e) {
     setTimeout(() => {
       if (typing) typing.style.display = "none";
       
-      const replyText = (data && data.reply) 
-        ? data.reply 
-        : "Cảm ơn bạn! Nhiệm Autotech đã nhận được tin nhắn và kỹ sư sẽ phản hồi ngay tại đây nhé!";
+      const userMsgCount = history.filter(h => h.sender === "user").length;
+      const defaultReply = userMsgCount <= 1
+        ? "Cảm ơn bạn! Nhiệm Autotech đã nhận được thông tin. Chúng tôi sẽ phản hồi hoặc liên hệ qua SĐT của bạn ngay nhé!"
+        : "Cảm ơn bạn! Nhiệm Autotech đã nhận được tin nhắn. Bộ phận kỹ thuật sẽ phản hồi trực tiếp cho bạn tại đây ngay nhé!";
+      const replyText = (data && data.reply) ? data.reply : defaultReply;
       const replyTime = formatCurrentTime();
 
       const botMsgEl = document.createElement("div");
@@ -323,7 +325,7 @@ async function pollAdminMessages() {
             const adminItem = {
               id: m.id,
               sender: "admin",
-              sender_name: m.sender_name || "Kỹ sư Nhiệm Autotech",
+              sender_name: m.sender_name || "Bộ phận kỹ thuật Nhiệm Autotech",
               text: m.message,
               time: m.time || formatCurrentTime()
             };
@@ -361,7 +363,7 @@ async function pollAdminMessages() {
               if (teaser) {
                 const teaserSpan = teaser.querySelector(".chat-teaser-text span");
                 if (teaserSpan) {
-                  teaserSpan.innerHTML = `<strong>Kỹ sư vừa trả lời:</strong> "${escapeHtml(m.message.slice(0, 45))}..." ⚡`;
+                  teaserSpan.innerHTML = `<strong>Bộ phận kỹ thuật vừa trả lời:</strong> "${escapeHtml(m.message.slice(0, 45))}..." ⚡`;
                 }
                 teaser.style.display = "flex";
                 teaser.classList.add("show");

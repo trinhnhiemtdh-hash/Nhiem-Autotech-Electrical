@@ -1195,7 +1195,13 @@ def api_chat_support():
     except Exception as e:
         print(f"[MAIL ALERT WARN] Could not send email alert: {e}")
 
-    reply = "Cảm ơn bạn! Nhiệm Autotech đã nhận được tin nhắn. Kỹ sư sẽ phản hồi trực tiếp cho bạn tại đây ngay nhé!"
+    # Phản hồi tự động theo số lần khách gửi:
+    user_msg_count = ChatMessage.query.filter_by(session_id=session_id, sender="user").count()
+    if user_msg_count <= 1:
+        reply = "Cảm ơn bạn! Nhiệm Autotech đã nhận được thông tin. Chúng tôi sẽ phản hồi hoặc liên hệ qua SĐT của bạn ngay nhé!"
+    else:
+        reply = "Cảm ơn bạn! Nhiệm Autotech đã nhận được tin nhắn. Bộ phận kỹ thuật sẽ phản hồi trực tiếp cho bạn tại đây ngay nhé!"
+
     return jsonify({
         "success": True,
         "reply": reply,
