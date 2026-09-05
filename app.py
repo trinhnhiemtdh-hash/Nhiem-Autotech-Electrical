@@ -629,7 +629,7 @@ def track_visitor():
     if session.get("is_admin"):
         return
     try:
-        user_agent_str = request.user_agent.string if request.user_agent else ""
+        user_agent_str = request.headers.get("User-Agent") or (request.user_agent.string if request.user_agent else "") or ""
         ua_lower = user_agent_str.lower()
         if any(bot in ua_lower for bot in ["python-requests", "github-actions", "uptimerobot", "render", "curl", "headlesschrome", "bot", "crawler", "spider"]):
             return
@@ -637,16 +637,47 @@ def track_visitor():
         ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if ip and "," in ip:
             ip = ip.split(",")[0].strip()
-        # Ghi nhận nguồn truy cập (Referrer / Traffic Source từ Facebook, TikTok, Google...)
-        incoming_ref = (request.referrer or request.headers.get("Referer") or "").strip()
-        saved_entry_ref = session.get("entry_referrer")
-        is_internal = any(domain in incoming_ref.lower() for domain in ["autotech-electrical", "127.0.0.1", "localhost"])
 
-        if incoming_ref and not is_internal:
+        # Ghi nhận nguồn truy cập (HTTP Referer + URL Params fbclid/ttclid/zarsrc + In-App Browser UA)
+        incoming_ref = (request.referrer or request.headers.get("Referer") or "").strip()
+        full_query = request.query_string.decode("utf-8", errors="ignore").lower()
+
+        detected_ref = ""
+        if "fbclid" in full_query or any(fb_tag in ua_lower for fb_tag in ["fban", "fbav", "fb_iab", "fb4a", "fbios"]):
+            detected_ref = "https://facebook.com/ (App Facebook)"
+        elif "ttclid" in full_query or any(tt_tag in ua_lower for tt_tag in ["tiktok", "musical_ly", "trill", "bytedance"]):
+            detected_ref = "https://tiktok.com/ (App TikTok)"
+        elif "zarsrc" in full_query or any(zalo_tag in ua_lower for zalo_tag in ["zalo", "zalopc", "zalotheme"]):
+            detected_ref = "https://zalo.me/ (App Zalo)"
+        elif "gclid" in full_query:
+            detected_ref = "https://google.com/ (Google Ads)"
+        elif request.args.get("utm_source"):
+            u_src = request.args.get("utm_source", "").strip().lower()
+            if "fb" in u_src or "facebook" in u_src:
+                detected_ref = "https://facebook.com/ (Facebook Campaign)"
+            elif "tiktok" in u_src:
+                detected_ref = "https://tiktok.com/ (TikTok Campaign)"
+            elif "zalo" in u_src:
+                detected_ref = "https://zalo.me/ (Zalo Campaign)"
+            elif "google" in u_src:
+                detected_ref = "https://google.com/ (Google Campaign)"
+            elif "youtube" in u_src:
+                detected_ref = "https://youtube.com/ (YouTube Campaign)"
+            else:
+                detected_ref = f"utm:{u_src}"
+
+        # Xác định referrer có hiệu lực
+        is_internal = any(domain in incoming_ref.lower() for domain in ["autotech-electrical", "127.0.0.1", "localhost"])
+        saved_entry_ref = session.get("entry_referrer")
+
+        if detected_ref:
+            effective_ref = detected_ref
+            session["entry_referrer"] = detected_ref
+        elif incoming_ref and not is_internal:
+            effective_ref = incoming_ref
             session["entry_referrer"] = incoming_ref
-            current_ref = incoming_ref
         else:
-            current_ref = saved_entry_ref or incoming_ref
+            effective_ref = saved_entry_ref or incoming_ref
 
         visit = PageVisit(
             user_id=session.get("user_id"),
@@ -656,7 +687,7 @@ def track_visitor():
             user_agent=user_agent_str[:250],
             path=request.path[:250],
             duration_seconds=0,
-            referrer=current_ref[:350] if current_ref else ""
+            referrer=effective_ref[:350] if effective_ref else ""
         )
         db.session.add(visit)
         db.session.commit()
@@ -1409,18 +1440,19 @@ def admin_dashboard():
         rmins = int(mins % 60)
         return f"{hrs} giờ {rmins}p"
 
-    def parse_traffic_source(ref_str):
-        if not ref_str:
-            return {
-                "source": "direct",
-                "name": "Trực tiếp (Gõ URL / Bookmark)",
-                "icon": "🌐",
-                "badge_bg": "#f1f5f9",
-                "badge_color": "#475569",
-                "badge_border": "#e2e8f0"
-            }
-        r = ref_str.lower()
-        if "facebook.com" in r or "fb.me" in r or "fb.com" in r or "l.facebook" in r:
+    def parse_traffic_source(ref_str, ua_str=""):
+        ref_lower = (ref_str or "").lower()
+        ua_lower = (ua_str or "").lower()
+
+        # Facebook (Link web, link app, fbclid, hoặc in-app webview)
+        if (
+            "facebook.com" in ref_lower
+            or "fb.me" in ref_lower
+            or "fb.com" in ref_lower
+            or "l.facebook" in ref_lower
+            or "fbclid" in ref_lower
+            or any(fb_tag in ua_lower for fb_tag in ["fban", "fbav", "fb_iab", "fb4a", "fbios"])
+        ):
             return {
                 "source": "facebook",
                 "name": "Facebook",
@@ -1429,7 +1461,13 @@ def admin_dashboard():
                 "badge_color": "#1d4ed8",
                 "badge_border": "#bfdbfe"
             }
-        elif "tiktok.com" in r:
+
+        # TikTok (Link web, bio link, ttclid, hoặc in-app webview)
+        if (
+            "tiktok.com" in ref_lower
+            or "ttclid" in ref_lower
+            or any(tt_tag in ua_lower for tt_tag in ["tiktok", "musical_ly", "trill", "bytedance"])
+        ):
             return {
                 "source": "tiktok",
                 "name": "TikTok",
@@ -1438,16 +1476,9 @@ def admin_dashboard():
                 "badge_color": "#ffffff",
                 "badge_border": "#0f172a"
             }
-        elif "google." in r:
-            return {
-                "source": "google",
-                "name": "Google Tìm kiếm",
-                "icon": "🔍",
-                "badge_bg": "#f0fdf4",
-                "badge_color": "#15803d",
-                "badge_border": "#bbf7d0"
-            }
-        elif "zalo" in r:
+
+        # Zalo (Link chia sẻ, zarsrc, hoặc app Zalo)
+        if "zalo" in ref_lower or "zarsrc" in ref_lower or any(zalo_tag in ua_lower for zalo_tag in ["zalo", "zalopc", "zalotheme"]):
             return {
                 "source": "zalo",
                 "name": "Zalo",
@@ -1456,7 +1487,20 @@ def admin_dashboard():
                 "badge_color": "#0284c7",
                 "badge_border": "#bae6fd"
             }
-        elif "youtube.com" in r or "youtu.be" in r:
+
+        # Google Search hoặc Google Ads
+        if "google." in ref_lower or "gclid" in ref_lower:
+            return {
+                "source": "google",
+                "name": "Google Tìm kiếm",
+                "icon": "🔍",
+                "badge_bg": "#f0fdf4",
+                "badge_color": "#15803d",
+                "badge_border": "#bbf7d0"
+            }
+
+        # YouTube
+        if "youtube.com" in ref_lower or "youtu.be" in ref_lower:
             return {
                 "source": "youtube",
                 "name": "YouTube",
@@ -1465,7 +1509,9 @@ def admin_dashboard():
                 "badge_color": "#b91c1c",
                 "badge_border": "#fecaca"
             }
-        elif "bing.com" in r:
+
+        # Bing Search
+        if "bing.com" in ref_lower:
             return {
                 "source": "bing",
                 "name": "Bing Search",
@@ -1474,21 +1520,32 @@ def admin_dashboard():
                 "badge_color": "#0369a1",
                 "badge_border": "#bae6fd"
             }
-        else:
-            try:
-                from urllib.parse import urlparse
-                domain = urlparse(ref_str).netloc
-                name = domain if domain else ref_str[:30]
-            except Exception:
-                name = ref_str[:30]
+
+        if not ref_lower:
             return {
-                "source": "external",
-                "name": name,
-                "icon": "🔗",
-                "badge_bg": "#f8fafc",
-                "badge_color": "#334155",
-                "badge_border": "#cbd5e1"
+                "source": "direct",
+                "name": "Trực tiếp (Gõ URL / Bookmark)",
+                "icon": "🌐",
+                "badge_bg": "#f1f5f9",
+                "badge_color": "#475569",
+                "badge_border": "#e2e8f0"
             }
+
+        # External websites
+        try:
+            from urllib.parse import urlparse
+            domain = urlparse(ref_str).netloc
+            name = domain if domain else ref_str[:30]
+        except Exception:
+            name = ref_str[:30]
+        return {
+            "source": "external",
+            "name": name,
+            "icon": "🔗",
+            "badge_bg": "#f8fafc",
+            "badge_color": "#334155",
+            "badge_border": "#cbd5e1"
+        }
 
     # Tổng hợp thống kê chi tiết theo từng IP trong ngày (Hôm nay)
     visits_today = PageVisit.query.filter(
@@ -1522,9 +1579,12 @@ def admin_dashboard():
                 user_email = v.user.email
                 break
 
-        # Tìm nguồn referrer bên ngoài ban đầu của IP này
+        # Tìm nguồn referrer hoặc User-Agent bên ngoài ban đầu của IP này
         ip_referrer = ""
+        ip_ua = ""
         for v in vlist_sorted:
+            if v.user_agent and not ip_ua:
+                ip_ua = v.user_agent
             r = (v.referrer or "").strip()
             if r and not any(internal in r.lower() for internal in ["autotech-electrical", "127.0.0.1", "localhost"]):
                 ip_referrer = r
@@ -1535,7 +1595,7 @@ def admin_dashboard():
                     ip_referrer = v.referrer.strip()
                     break
 
-        traffic_source = parse_traffic_source(ip_referrer)
+        traffic_source = parse_traffic_source(ip_referrer, ip_ua)
         is_online = (now_dt - last_t).total_seconds() <= 180
 
         ip_stats_today.append({
