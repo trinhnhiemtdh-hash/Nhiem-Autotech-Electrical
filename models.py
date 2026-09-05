@@ -110,6 +110,7 @@ class PageVisit(db.Model):
     user_agent = db.Column(db.String(255))
     path = db.Column(db.String(255))
     duration_seconds = db.Column(db.Integer, default=0)
+    referrer = db.Column(db.String(350), default="")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Notification(db.Model):

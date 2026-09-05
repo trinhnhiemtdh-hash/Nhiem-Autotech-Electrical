@@ -44,6 +44,8 @@ def initialize_database():
                 db.session.execute(text("ALTER TABLE page_visit ADD COLUMN device_type VARCHAR(50) DEFAULT 'Máy tính'"))
             if "duration_seconds" not in columns_visit:
                 db.session.execute(text("ALTER TABLE page_visit ADD COLUMN duration_seconds INTEGER DEFAULT 0"))
+            if "referrer" not in columns_visit:
+                db.session.execute(text("ALTER TABLE page_visit ADD COLUMN referrer VARCHAR(350) DEFAULT ''"))
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -635,6 +637,17 @@ def track_visitor():
         ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if ip and "," in ip:
             ip = ip.split(",")[0].strip()
+        # Ghi nhận nguồn truy cập (Referrer / Traffic Source từ Facebook, TikTok, Google...)
+        incoming_ref = (request.referrer or request.headers.get("Referer") or "").strip()
+        saved_entry_ref = session.get("entry_referrer")
+        is_internal = any(domain in incoming_ref.lower() for domain in ["autotech-electrical", "127.0.0.1", "localhost"])
+
+        if incoming_ref and not is_internal:
+            session["entry_referrer"] = incoming_ref
+            current_ref = incoming_ref
+        else:
+            current_ref = saved_entry_ref or incoming_ref
+
         visit = PageVisit(
             user_id=session.get("user_id"),
             ip_address=ip[:50] if ip else "127.0.0.1",
@@ -642,7 +655,8 @@ def track_visitor():
             device_type=get_device_type(user_agent_str),
             user_agent=user_agent_str[:250],
             path=request.path[:250],
-            duration_seconds=0
+            duration_seconds=0,
+            referrer=current_ref[:350] if current_ref else ""
         )
         db.session.add(visit)
         db.session.commit()
@@ -1395,6 +1409,87 @@ def admin_dashboard():
         rmins = int(mins % 60)
         return f"{hrs} giờ {rmins}p"
 
+    def parse_traffic_source(ref_str):
+        if not ref_str:
+            return {
+                "source": "direct",
+                "name": "Trực tiếp (Gõ URL / Bookmark)",
+                "icon": "🌐",
+                "badge_bg": "#f1f5f9",
+                "badge_color": "#475569",
+                "badge_border": "#e2e8f0"
+            }
+        r = ref_str.lower()
+        if "facebook.com" in r or "fb.me" in r or "fb.com" in r or "l.facebook" in r:
+            return {
+                "source": "facebook",
+                "name": "Facebook",
+                "icon": "🔵",
+                "badge_bg": "#eff6ff",
+                "badge_color": "#1d4ed8",
+                "badge_border": "#bfdbfe"
+            }
+        elif "tiktok.com" in r:
+            return {
+                "source": "tiktok",
+                "name": "TikTok",
+                "icon": "⚫",
+                "badge_bg": "#0f172a",
+                "badge_color": "#ffffff",
+                "badge_border": "#0f172a"
+            }
+        elif "google." in r:
+            return {
+                "source": "google",
+                "name": "Google Tìm kiếm",
+                "icon": "🔍",
+                "badge_bg": "#f0fdf4",
+                "badge_color": "#15803d",
+                "badge_border": "#bbf7d0"
+            }
+        elif "zalo" in r:
+            return {
+                "source": "zalo",
+                "name": "Zalo",
+                "icon": "💬",
+                "badge_bg": "#eff6ff",
+                "badge_color": "#0284c7",
+                "badge_border": "#bae6fd"
+            }
+        elif "youtube.com" in r or "youtu.be" in r:
+            return {
+                "source": "youtube",
+                "name": "YouTube",
+                "icon": "🔴",
+                "badge_bg": "#fef2f2",
+                "badge_color": "#b91c1c",
+                "badge_border": "#fecaca"
+            }
+        elif "bing.com" in r:
+            return {
+                "source": "bing",
+                "name": "Bing Search",
+                "icon": "🔎",
+                "badge_bg": "#f0f9ff",
+                "badge_color": "#0369a1",
+                "badge_border": "#bae6fd"
+            }
+        else:
+            try:
+                from urllib.parse import urlparse
+                domain = urlparse(ref_str).netloc
+                name = domain if domain else ref_str[:30]
+            except Exception:
+                name = ref_str[:30]
+            return {
+                "source": "external",
+                "name": name,
+                "icon": "🔗",
+                "badge_bg": "#f8fafc",
+                "badge_color": "#334155",
+                "badge_border": "#cbd5e1"
+            }
+
     # Tổng hợp thống kê chi tiết theo từng IP trong ngày (Hôm nay)
     visits_today = PageVisit.query.filter(
         PageVisit.created_at >= today_start,
@@ -1427,6 +1522,20 @@ def admin_dashboard():
                 user_email = v.user.email
                 break
 
+        # Tìm nguồn referrer bên ngoài ban đầu của IP này
+        ip_referrer = ""
+        for v in vlist_sorted:
+            r = (v.referrer or "").strip()
+            if r and not any(internal in r.lower() for internal in ["autotech-electrical", "127.0.0.1", "localhost"]):
+                ip_referrer = r
+                break
+        if not ip_referrer:
+            for v in vlist_sorted:
+                if v.referrer and v.referrer.strip():
+                    ip_referrer = v.referrer.strip()
+                    break
+
+        traffic_source = parse_traffic_source(ip_referrer)
         is_online = (now_dt - last_t).total_seconds() <= 180
 
         ip_stats_today.append({
@@ -1440,6 +1549,8 @@ def admin_dashboard():
             "last_seen": last_t,
             "duration_formatted": format_visit_duration(dur_sec, len(vlist)),
             "duration_sec": dur_sec,
+            "traffic_source": traffic_source,
+            "raw_referrer": ip_referrer,
             "is_online": is_online
         })
 
