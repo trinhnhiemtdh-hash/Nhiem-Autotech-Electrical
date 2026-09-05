@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_, and_, inspect, text
-from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit, Notification, ChatMessage
+from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit, Notification, ChatMessage, AdminIP
 from config import Config
 from functools import wraps
 from pathlib import Path
@@ -625,18 +625,35 @@ def track_visitor():
         or request.path.endswith(".jpg")
     ):
         return
-    # Skip tracking when the current user is Admin so admin activity does not pollute visitor analytics
+    # 1. Bỏ qua nếu là Admin đang có phiên đăng nhập
     if session.get("is_admin"):
         return
     try:
-        user_agent_str = request.headers.get("User-Agent") or (request.user_agent.string if request.user_agent else "") or ""
-        ua_lower = user_agent_str.lower()
-        if any(bot in ua_lower for bot in ["python-requests", "github-actions", "uptimerobot", "render", "curl", "headlesschrome", "bot", "crawler", "spider"]):
-            return
-
         ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if ip and "," in ip:
             ip = ip.split(",")[0].strip()
+
+        # 2. Bỏ qua nếu là IP máy chủ nội bộ hoặc localhost
+        if not ip or ip in ["127.0.0.1", "::1", "localhost", "0.0.0.0"]:
+            return
+
+        # 3. Bỏ qua nếu IP này đã từng là của Quản trị viên
+        try:
+            if AdminIP.query.filter_by(ip_address=ip).first():
+                return
+        except Exception:
+            pass
+
+        # 4. Bỏ qua bot, crawler, scraper hoặc health check của máy chủ
+        user_agent_str = request.headers.get("User-Agent") or (request.user_agent.string if request.user_agent else "") or ""
+        ua_lower = user_agent_str.lower()
+        if any(bot in ua_lower for bot in [
+            "python-requests", "github-actions", "uptimerobot", "render", "curl",
+            "headlesschrome", "bot", "crawler", "spider", "facebookexternalhit",
+            "facebot", "googlebot", "bingbot", "yandex", "baiduspider", "semrush",
+            "ahrefs", "bytespider", "tiktokbot"
+        ]):
+            return
 
         # Ghi nhận nguồn truy cập (HTTP Referer + URL Params fbclid/ttclid/zarsrc + In-App Browser UA)
         incoming_ref = (request.referrer or request.headers.get("Referer") or "").strip()
@@ -1357,6 +1374,18 @@ def login():
         user = User.query.filter_by(email=request.form["email"].lower().strip()).first()
         if user and check_password_hash(user.password_hash, request.form["password"]):
             session["user_id"], session["is_admin"] = user.id, user.is_admin
+            if user.is_admin:
+                admin_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+                if admin_ip and "," in admin_ip:
+                    admin_ip = admin_ip.split(",")[0].strip()
+                if admin_ip and admin_ip not in ["127.0.0.1", "::1", "localhost", "0.0.0.0"]:
+                    try:
+                        if not AdminIP.query.filter_by(ip_address=admin_ip).first():
+                            db.session.add(AdminIP(ip_address=admin_ip))
+                        PageVisit.query.filter_by(ip_address=admin_ip).delete()
+                        db.session.commit()
+                    except Exception:
+                        db.session.rollback()
             return redirect(request.args.get("next") or url_for("index"))
         flash("Email hoặc mật khẩu không đúng.", "danger")
     return render_template("auth/login.html")
@@ -1412,8 +1441,32 @@ def admin_dashboard():
     week_start = datetime.combine(vn_today - timedelta(days=6), time.min) - timedelta(hours=7)
     month_start = datetime.combine(vn_today - timedelta(days=29), time.min) - timedelta(hours=7)
 
-    # Bộ lọc loại trừ API nội bộ và favicon
-    clean_filter = or_(PageVisit.path == None, and_(PageVisit.path.notlike('/api/%'), PageVisit.path != '/favicon.ico'))
+    # 1. Tự động nhận diện và lưu IP của Quản trị viên khi mở trang Admin
+    current_admin_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+    if current_admin_ip and "," in current_admin_ip:
+        current_admin_ip = current_admin_ip.split(",")[0].strip()
+    if current_admin_ip and current_admin_ip not in ["127.0.0.1", "::1", "localhost", "0.0.0.0"]:
+        try:
+            if not AdminIP.query.filter_by(ip_address=current_admin_ip).first():
+                db.session.add(AdminIP(ip_address=current_admin_ip))
+            # Xóa sạch mọi vết truy cập của IP admin trong PageVisit
+            PageVisit.query.filter_by(ip_address=current_admin_ip).delete()
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+    # 2. Lấy danh sách toàn bộ IP của Quản trị viên và Máy chủ để loại trừ 100%
+    try:
+        known_admin_ips = [r.ip_address for r in AdminIP.query.all()]
+    except Exception:
+        known_admin_ips = []
+    excluded_ips = set(["127.0.0.1", "::1", "localhost", "0.0.0.0"] + known_admin_ips)
+
+    # Bộ lọc loại trừ IP admin, IP máy chủ nội bộ, API nội bộ và favicon
+    clean_filter = and_(
+        PageVisit.ip_address.notin_(list(excluded_ips)),
+        or_(PageVisit.path == None, and_(PageVisit.path.notlike('/api/%'), PageVisit.path != '/favicon.ico'))
+    )
 
     total_visits = PageVisit.query.filter(clean_filter).count()
     today_visits = PageVisit.query.filter(PageVisit.created_at >= today_start, clean_filter).count()
@@ -1656,7 +1709,8 @@ def admin_dashboard():
                            month_visits=month_visits,
                            unique_month=unique_month,
                            daily_stats=daily_stats,
-                           ip_stats_today=ip_stats_today)
+                           ip_stats_today=ip_stats_today,
+                           current_admin_ip=current_admin_ip)
 
 @app.route("/admin/products")
 @admin_required

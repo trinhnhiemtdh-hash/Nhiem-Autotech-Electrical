@@ -132,3 +132,9 @@ class ChatMessage(db.Model):
     is_read_by_admin = db.Column(db.Boolean, default=False)
     is_read_by_user = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class AdminIP(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(50), unique=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
