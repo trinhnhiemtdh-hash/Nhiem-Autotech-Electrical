@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory, abort, Response, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from sqlalchemy import or_, inspect, text
+from sqlalchemy import or_, and_, inspect, text
 from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit, Notification, ChatMessage
 from config import Config
 from functools import wraps
@@ -42,6 +42,8 @@ def initialize_database():
                 db.session.execute(text("ALTER TABLE page_visit ADD COLUMN location VARCHAR(100) DEFAULT 'Việt Nam'"))
             if "device_type" not in columns_visit:
                 db.session.execute(text("ALTER TABLE page_visit ADD COLUMN device_type VARCHAR(50) DEFAULT 'Máy tính'"))
+            if "duration_seconds" not in columns_visit:
+                db.session.execute(text("ALTER TABLE page_visit ADD COLUMN duration_seconds INTEGER DEFAULT 0"))
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -610,7 +612,16 @@ def inject_admin_badges():
 
 @app.before_request
 def track_visitor():
-    if request.path.startswith("/static") or request.path.startswith("/admin") or request.path in ["/robots.txt", "/sitemap.xml", "/ping"]:
+    # Loại trừ toàn bộ static, admin, api, favicon và hình ảnh để số liệu không bị ảo
+    if (
+        request.path.startswith("/static")
+        or request.path.startswith("/admin")
+        or request.path.startswith("/api")
+        or request.path in ["/robots.txt", "/sitemap.xml", "/ping", "/favicon.ico"]
+        or request.path.endswith(".ico")
+        or request.path.endswith(".png")
+        or request.path.endswith(".jpg")
+    ):
         return
     # Skip tracking when the current user is Admin so admin activity does not pollute visitor analytics
     if session.get("is_admin"):
@@ -630,12 +641,43 @@ def track_visitor():
             location=get_location_name(ip),
             device_type=get_device_type(user_agent_str),
             user_agent=user_agent_str[:250],
-            path=request.path[:250]
+            path=request.path[:250],
+            duration_seconds=0
         )
         db.session.add(visit)
         db.session.commit()
     except Exception:
         db.session.rollback()
+
+@app.post("/api/track-duration")
+def api_track_duration():
+    if session.get("is_admin"):
+        return jsonify({"ok": True})
+    data = request.get_json(silent=True) or {}
+    seconds = int(data.get("seconds", 0))
+    if seconds <= 0 or seconds > 7200:
+        return jsonify({"ok": True})
+
+    ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+    if ip and "," in ip:
+        ip = ip.split(",")[0].strip()
+    if not ip:
+        return jsonify({"ok": True})
+
+    try:
+        from datetime import datetime, timedelta
+        recent_cutoff = datetime.utcnow() - timedelta(hours=1)
+        latest_visit = PageVisit.query.filter(
+            PageVisit.ip_address == ip,
+            PageVisit.created_at >= recent_cutoff,
+            PageVisit.path.notlike('/api/%')
+        ).order_by(PageVisit.id.desc()).first()
+        if latest_visit:
+            latest_visit.duration_seconds = max(latest_visit.duration_seconds or 0, seconds)
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
+    return jsonify({"ok": True})
 
 @app.template_filter('time_ago')
 def time_ago_filter(dt):
@@ -1300,33 +1342,38 @@ def admin_dashboard():
     automation_count = Product.query.filter_by(category_id=cat_automation.id).count() if cat_automation else 0
 
     from datetime import datetime, date, time, timedelta
+    from collections import defaultdict
+
     today_start = datetime.combine(date.today(), time.min)
     yesterday_start = datetime.combine(date.today() - timedelta(days=1), time.min)
     yesterday_end = datetime.combine(date.today() - timedelta(days=1), time.max)
     week_start = datetime.combine(date.today() - timedelta(days=6), time.min)
     month_start = datetime.combine(date.today() - timedelta(days=29), time.min)
 
-    total_visits = PageVisit.query.count()
-    today_visits = PageVisit.query.filter(PageVisit.created_at >= today_start).count()
-    unique_today = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= today_start).distinct().count()
+    # Bộ lọc loại trừ API nội bộ và favicon
+    clean_filter = or_(PageVisit.path == None, and_(PageVisit.path.notlike('/api/%'), PageVisit.path != '/favicon.ico'))
 
-    yesterday_visits = PageVisit.query.filter(PageVisit.created_at >= yesterday_start, PageVisit.created_at <= yesterday_end).count()
-    unique_yesterday = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= yesterday_start, PageVisit.created_at <= yesterday_end).distinct().count()
+    total_visits = PageVisit.query.filter(clean_filter).count()
+    today_visits = PageVisit.query.filter(PageVisit.created_at >= today_start, clean_filter).count()
+    unique_today = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= today_start, clean_filter).distinct().count()
 
-    week_visits = PageVisit.query.filter(PageVisit.created_at >= week_start).count()
-    unique_week = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= week_start).distinct().count()
+    yesterday_visits = PageVisit.query.filter(PageVisit.created_at >= yesterday_start, PageVisit.created_at <= yesterday_end, clean_filter).count()
+    unique_yesterday = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= yesterday_start, PageVisit.created_at <= yesterday_end, clean_filter).distinct().count()
 
-    month_visits = PageVisit.query.filter(PageVisit.created_at >= month_start).count()
-    unique_month = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= month_start).distinct().count()
+    week_visits = PageVisit.query.filter(PageVisit.created_at >= week_start, clean_filter).count()
+    unique_week = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= week_start, clean_filter).distinct().count()
+
+    month_visits = PageVisit.query.filter(PageVisit.created_at >= month_start, clean_filter).count()
+    unique_month = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= month_start, clean_filter).distinct().count()
 
     daily_stats = []
     for i in range(7):
         day_date = date.today() - timedelta(days=i)
         day_start = datetime.combine(day_date, time.min)
         day_end = datetime.combine(day_date, time.max)
-        v_count = PageVisit.query.filter(PageVisit.created_at >= day_start, PageVisit.created_at <= day_end).count()
-        u_count = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= day_start, PageVisit.created_at <= day_end).distinct().count()
-        
+        v_count = PageVisit.query.filter(PageVisit.created_at >= day_start, PageVisit.created_at <= day_end, clean_filter).count()
+        u_count = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= day_start, PageVisit.created_at <= day_end, clean_filter).distinct().count()
+
         day_label = "Hôm nay" if i == 0 else ("Hôm qua" if i == 1 else f"Thứ {day_date.isoweekday() + 1}" if day_date.isoweekday() < 7 else "Chủ Nhật")
         daily_stats.append({
             "date_str": day_date.strftime("%d/%m/%Y"),
@@ -1335,7 +1382,68 @@ def admin_dashboard():
             "uniques": u_count
         })
 
-    recent_visits = PageVisit.query.order_by(PageVisit.created_at.desc()).limit(35).all()
+    def format_visit_duration(seconds, page_cnt):
+        if seconds <= 5 and page_cnt <= 1:
+            return "~30 giây - 1 phút"
+        if seconds < 60:
+            return f"{int(seconds)} giây"
+        mins = int(seconds // 60)
+        secs = int(seconds % 60)
+        if mins < 60:
+            return f"{mins} phút {secs}s" if secs > 0 else f"{mins} phút"
+        hrs = int(mins // 60)
+        rmins = int(mins % 60)
+        return f"{hrs} giờ {rmins}p"
+
+    # Tổng hợp thống kê chi tiết theo từng IP trong ngày (Hôm nay)
+    visits_today = PageVisit.query.filter(
+        PageVisit.created_at >= today_start,
+        clean_filter
+    ).order_by(PageVisit.created_at.desc()).all()
+
+    today_ip_map = defaultdict(list)
+    for v in visits_today:
+        today_ip_map[v.ip_address].append(v)
+
+    now_dt = datetime.utcnow()
+    ip_stats_today = []
+    for ip, vlist in today_ip_map.items():
+        vlist_sorted = sorted(vlist, key=lambda x: x.created_at)
+        first_t = vlist_sorted[0].created_at
+        last_t = vlist_sorted[-1].created_at
+        dur_sec = (last_t - first_t).total_seconds() + sum(v.duration_seconds or 0 for v in vlist)
+
+        seen_paths = []
+        for v in vlist:
+            clean_p = v.path or "/"
+            if clean_p not in seen_paths and clean_p != "/favicon.ico":
+                seen_paths.append(clean_p)
+
+        user_name = None
+        user_email = None
+        for v in vlist:
+            if v.user:
+                user_name = v.user.name
+                user_email = v.user.email
+                break
+
+        is_online = (now_dt - last_t).total_seconds() <= 180
+
+        ip_stats_today.append({
+            "ip_address": ip,
+            "location": vlist[0].location or "Việt Nam",
+            "user_name": user_name,
+            "user_email": user_email,
+            "page_count": len([v for v in vlist if v.path != '/favicon.ico']),
+            "paths": seen_paths if seen_paths else ["/"],
+            "first_seen": first_t,
+            "last_seen": last_t,
+            "duration_formatted": format_visit_duration(dur_sec, len(vlist)),
+            "duration_sec": dur_sec,
+            "is_online": is_online
+        })
+
+    ip_stats_today.sort(key=lambda x: x["last_seen"], reverse=True)
 
     return render_template("admin/dashboard.html",
                            product_count=Product.query.count(),
@@ -1356,7 +1464,7 @@ def admin_dashboard():
                            month_visits=month_visits,
                            unique_month=unique_month,
                            daily_stats=daily_stats,
-                           recent_visits=recent_visits)
+                           ip_stats_today=ip_stats_today)
 
 @app.route("/admin/products")
 @admin_required

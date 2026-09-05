@@ -109,6 +109,7 @@ class PageVisit(db.Model):
     device_type = db.Column(db.String(50), default="Máy tính")
     user_agent = db.Column(db.String(255))
     path = db.Column(db.String(255))
+    duration_seconds = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Notification(db.Model):

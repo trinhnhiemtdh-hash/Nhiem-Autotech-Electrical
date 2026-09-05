@@ -450,5 +450,26 @@
 {% block structured_data %}{% endblock %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+<script>
+// Đo thời lượng khách ở lại trên trang theo thời gian thực (mỗi 25 giây gửi 1 nhịp)
+(function() {
+  if (window.location.pathname.startsWith('/admin')) return;
+  var visitStartTime = Date.now();
+  setInterval(function() {
+    if (document.visibilityState === 'visible') {
+      var elapsedSec = Math.round((Date.now() - visitStartTime) / 1000);
+      fetch('/api/track-duration', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          path: window.location.pathname,
+          seconds: elapsedSec
+        }),
+        keepalive: true
+      }).catch(function() {});
+    }
+  }, 25000);
+})();
+</script>
 </body>
 </html>
