@@ -233,8 +233,8 @@
         oninput="filterIpTable()" 
         style="padding:8px 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:13px;min-width:220px;"
       >
-      <small style="color:#059669;font-weight:700;background:#ecfdf5;border:1px solid #a7f3d0;padding:6px 12px;border-radius:999px;white-space:nowrap;" title="Đã loại bỏ IP của bạn ({% if current_admin_ip %}{{ current_admin_ip }}{% else %}Quản trị viên{% endif %}) và máy chủ nội bộ (127.0.0.1)">
-        🛡️ Đã loại trừ IP Admin {% if current_admin_ip %}({{ current_admin_ip }}){% endif %} & Máy chủ (127.0.0.1)
+      <small style="color:#059669;font-weight:700;background:#ecfdf5;border:1px solid #a7f3d0;padding:6px 14px;border-radius:999px;white-space:nowrap;" title="Hệ thống đã tự động quét và loại bỏ 100% các IP ảo, bot crawler (Facebook Bot, Googlebot), máy chủ nội bộ (127.0.0.1) và IP của Quản trị viên ({% if current_admin_ip %}{{ current_admin_ip }}{% else %}Admin{% endif %}).">
+        🛡️ 100% Khách Thật · Đã lọc sạch IP Ảo / Bot / Admin
       </small>
     </div>
   </div>

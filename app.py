@@ -18,6 +18,14 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
+BOT_IP_PREFIXES = (
+    "69.171.", "173.252.", "157.240.", "31.13.",
+    "35.197.", "35.199.", "35.227.", "35.230.", "34.",
+    "57.141.", "104.248.", "194.59.", "147.235.", "162.120.", "138.226.",
+    "165.225.", "216.227.", "68.167.", "170.23.", "191.31.", "166.0.",
+    "79.177.", "185.47.", "9.129.", "15.235.", "91.176.", "5.62.", "104.28."
+)
+
 def initialize_database():
     """Create and safely upgrade the database on startup."""
     db.create_all()
@@ -644,14 +652,18 @@ def track_visitor():
         except Exception:
             pass
 
-        # 4. Bỏ qua bot, crawler, scraper hoặc health check của máy chủ
+        # 4. Bỏ qua các dải IP Crawler tự động của Facebook, Google Cloud, và mạng quét cổng nước ngoài
+        if any(ip.startswith(prefix) for prefix in BOT_IP_PREFIXES):
+            return
+
+        # 5. Bỏ qua bot, crawler, scraper hoặc health check của máy chủ
         user_agent_str = request.headers.get("User-Agent") or (request.user_agent.string if request.user_agent else "") or ""
         ua_lower = user_agent_str.lower()
         if any(bot in ua_lower for bot in [
-            "python-requests", "github-actions", "uptimerobot", "render", "curl",
-            "headlesschrome", "bot", "crawler", "spider", "facebookexternalhit",
-            "facebot", "googlebot", "bingbot", "yandex", "baiduspider", "semrush",
-            "ahrefs", "bytespider", "tiktokbot"
+            "go-http-client", "python-requests", "github-actions", "uptimerobot", "render",
+            "curl", "wget", "headlesschrome", "bot", "crawler", "spider", "scraper",
+            "facebookexternalhit", "facebot", "googlebot", "bingbot", "yandex",
+            "baiduspider", "semrush", "ahrefs", "bytespider", "tiktokbot", "censys", "shodan"
         ]):
             return
 
@@ -1462,10 +1474,16 @@ def admin_dashboard():
         known_admin_ips = []
     excluded_ips = set(["127.0.0.1", "::1", "localhost", "0.0.0.0"] + known_admin_ips)
 
-    # Bộ lọc loại trừ IP admin, IP máy chủ nội bộ, API nội bộ và favicon
+    bot_prefix_filters = [PageVisit.ip_address.notlike(f"{p}%") for p in BOT_IP_PREFIXES]
+
+    # Bộ lọc loại trừ IP admin, IP máy chủ nội bộ, bot/crawler, API nội bộ và favicon
     clean_filter = and_(
         PageVisit.ip_address.notin_(list(excluded_ips)),
-        or_(PageVisit.path == None, and_(PageVisit.path.notlike('/api/%'), PageVisit.path != '/favicon.ico'))
+        *bot_prefix_filters,
+        or_(PageVisit.path == None, and_(
+            PageVisit.path.notlike('/api/%'),
+            PageVisit.path.notin_(['/favicon.ico', '/null', '/.file', '/robots.txt', '/sitemap.xml', '/ping'])
+        ))
     )
 
     total_visits = PageVisit.query.filter(clean_filter).count()
@@ -1630,16 +1648,25 @@ def admin_dashboard():
     now_dt = datetime.utcnow()
     ip_stats_today = []
     for ip, vlist in today_ip_map.items():
-        vlist_sorted = sorted(vlist, key=lambda x: x.created_at)
-        first_t = vlist_sorted[0].created_at
-        last_t = vlist_sorted[-1].created_at
-        dur_sec = (last_t - first_t).total_seconds() + sum(v.duration_seconds or 0 for v in vlist)
+        if any(ip.startswith(prefix) for prefix in BOT_IP_PREFIXES):
+            continue
+        if ip in excluded_ips:
+            continue
 
         seen_paths = []
         for v in vlist:
             clean_p = v.path or "/"
-            if clean_p not in seen_paths and clean_p != "/favicon.ico":
+            if clean_p not in seen_paths and clean_p not in ["/favicon.ico", "/null", "/.file", "/robots.txt", "/sitemap.xml", "/ping"]:
                 seen_paths.append(clean_p)
+
+        # Bỏ qua nếu IP này không xem bất kỳ trang nội dung thật nào
+        if not seen_paths:
+            continue
+
+        vlist_sorted = sorted(vlist, key=lambda x: x.created_at)
+        first_t = vlist_sorted[0].created_at
+        last_t = vlist_sorted[-1].created_at
+        dur_sec = (last_t - first_t).total_seconds() + sum(v.duration_seconds or 0 for v in vlist)
 
         user_name = None
         user_email = None
