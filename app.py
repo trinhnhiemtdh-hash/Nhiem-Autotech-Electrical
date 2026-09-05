@@ -724,26 +724,39 @@ def api_track_duration():
         db.session.rollback()
     return jsonify({"ok": True})
 
+@app.template_filter('vn_time')
+def vn_time_filter(dt, format_str='%d/%m/%Y %H:%M'):
+    if not dt:
+        return ""
+    from datetime import timedelta
+    # Database lưu mốc UTC, chuyển đổi sang Múi giờ Việt Nam (GMT+7)
+    vn_dt = dt + timedelta(hours=7)
+    return vn_dt.strftime(format_str)
+
 @app.template_filter('time_ago')
 def time_ago_filter(dt):
     if not dt:
         return ""
-    from datetime import datetime
-    now = datetime.utcnow()
-    diff = now - dt
-    seconds = diff.total_seconds()
-    if seconds < 45:
+    from datetime import datetime, timedelta
+    vn_now = datetime.utcnow() + timedelta(hours=7)
+    utc_now = datetime.utcnow()
+    # Tính chênh lệch dù dt được truyền vào ở mốc UTC hay đã cộng 7h
+    diff_vn = abs((vn_now - dt).total_seconds())
+    diff_utc = abs((utc_now - dt).total_seconds())
+    diff_sec = min(diff_vn, diff_utc)
+
+    if diff_sec < 45:
         return "Vừa xong"
-    elif seconds < 3600:
-        mins = max(1, int(seconds // 60))
+    elif diff_sec < 3600:
+        mins = max(1, int(diff_sec // 60))
         return f"{mins} phút trước"
-    elif seconds < 86400:
-        hours = int(seconds // 3600)
+    elif diff_sec < 86400:
+        hours = int(diff_sec // 3600)
         return f"{hours} giờ trước"
-    elif seconds < 172800:
+    elif diff_sec < 172800:
         return "Hôm qua"
     else:
-        days = int(seconds // 86400)
+        days = int(diff_sec // 86400)
         return f"{days} ngày trước"
 
 @app.after_request
@@ -1389,11 +1402,15 @@ def admin_dashboard():
     from datetime import datetime, date, time, timedelta
     from collections import defaultdict
 
-    today_start = datetime.combine(date.today(), time.min)
-    yesterday_start = datetime.combine(date.today() - timedelta(days=1), time.min)
-    yesterday_end = datetime.combine(date.today() - timedelta(days=1), time.max)
-    week_start = datetime.combine(date.today() - timedelta(days=6), time.min)
-    month_start = datetime.combine(date.today() - timedelta(days=29), time.min)
+    # Chuẩn hóa mốc thời gian theo Giờ Việt Nam (GMT+7)
+    vn_now = datetime.utcnow() + timedelta(hours=7)
+    vn_today = vn_now.date()
+
+    today_start = datetime.combine(vn_today, time.min) - timedelta(hours=7)
+    yesterday_start = datetime.combine(vn_today - timedelta(days=1), time.min) - timedelta(hours=7)
+    yesterday_end = datetime.combine(vn_today - timedelta(days=1), time.max) - timedelta(hours=7)
+    week_start = datetime.combine(vn_today - timedelta(days=6), time.min) - timedelta(hours=7)
+    month_start = datetime.combine(vn_today - timedelta(days=29), time.min) - timedelta(hours=7)
 
     # Bộ lọc loại trừ API nội bộ và favicon
     clean_filter = or_(PageVisit.path == None, and_(PageVisit.path.notlike('/api/%'), PageVisit.path != '/favicon.ico'))
@@ -1413,9 +1430,9 @@ def admin_dashboard():
 
     daily_stats = []
     for i in range(7):
-        day_date = date.today() - timedelta(days=i)
-        day_start = datetime.combine(day_date, time.min)
-        day_end = datetime.combine(day_date, time.max)
+        day_date = vn_today - timedelta(days=i)
+        day_start = datetime.combine(day_date, time.min) - timedelta(hours=7)
+        day_end = datetime.combine(day_date, time.max) - timedelta(hours=7)
         v_count = PageVisit.query.filter(PageVisit.created_at >= day_start, PageVisit.created_at <= day_end, clean_filter).count()
         u_count = db.session.query(PageVisit.ip_address).filter(PageVisit.created_at >= day_start, PageVisit.created_at <= day_end, clean_filter).distinct().count()
 
@@ -1598,6 +1615,10 @@ def admin_dashboard():
         traffic_source = parse_traffic_source(ip_referrer, ip_ua)
         is_online = (now_dt - last_t).total_seconds() <= 180
 
+        # Chuyển đổi mốc thời gian sang Giờ Việt Nam (GMT+7)
+        first_t_vn = first_t + timedelta(hours=7)
+        last_t_vn = last_t + timedelta(hours=7)
+
         ip_stats_today.append({
             "ip_address": ip,
             "location": vlist[0].location or "Việt Nam",
@@ -1605,8 +1626,8 @@ def admin_dashboard():
             "user_email": user_email,
             "page_count": len([v for v in vlist if v.path != '/favicon.ico']),
             "paths": seen_paths if seen_paths else ["/"],
-            "first_seen": first_t,
-            "last_seen": last_t,
+            "first_seen": first_t_vn,
+            "last_seen": last_t_vn,
             "duration_formatted": format_visit_duration(dur_sec, len(vlist)),
             "duration_sec": dur_sec,
             "traffic_source": traffic_source,

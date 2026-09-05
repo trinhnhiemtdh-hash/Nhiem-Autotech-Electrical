@@ -33,7 +33,7 @@
         <div style="flex:1;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
             <strong style="color:#0f172a;font-size:14.5px;">{{ n.title }}</strong>
-            <span style="font-size:12px;color:#94a3b8;">{{ n.created_at.strftime('%H:%M - %d/%m/%Y') }}</span>
+            <span style="font-size:12px;color:#94a3b8;">{{ n.created_at|vn_time('%H:%M - %d/%m/%Y') }}</span>
           </div>
           <p style="margin:0 0 6px;font-size:13.5px;color:#334155;line-height:1.5;">{{ n.message }}</p>
           {% if n.link %}

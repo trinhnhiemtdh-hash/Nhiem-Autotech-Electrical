@@ -29,7 +29,7 @@
               <strong>#{{ o.id }}</strong>
               <div style="font-size:11px;color:#64748b;margin-top:2px;">CK: NA{{ o.id }}</div>
             </td>
-            <td>{{ o.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+            <td>{{ o.created_at|vn_time('%d/%m/%Y %H:%M') }}</td>
             <td>
               <div style="display:flex;flex-direction:column;gap:6px;">
                 {% for it in o.items %}
