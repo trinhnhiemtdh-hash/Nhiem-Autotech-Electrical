@@ -61,12 +61,15 @@ def initialize_database():
         
     default_categories = [
         ("Thư viện AutoCAD", "thu-vien-autocad"),
-        ("Khóa học & Layout Tủ điện", "thiet-ke-tu-dien"),
+        ("Thiết kế Tủ điện & Mạch điều khiển", "thiet-ke-tu-dien"),
         ("Mô hình & Đồ án Tự động hóa", "do-an-tu-dong-hoa"),
     ]
     for name, slug in default_categories:
-        if not Category.query.filter_by(slug=slug).first():
+        cat_obj = Category.query.filter_by(slug=slug).first()
+        if not cat_obj:
             db.session.add(Category(name=name, slug=slug))
+        elif slug == "thiet-ke-tu-dien" and "Khóa học" in cat_obj.name:
+            cat_obj.name = "Thiết kế Tủ điện & Mạch điều khiển"
     if not User.query.filter_by(email=app.config["ADMIN_EMAIL"]).first():
         db.session.add(User(name="Administrator", email=app.config["ADMIN_EMAIL"],
                             password_hash=generate_password_hash(app.config["ADMIN_PASSWORD"]), is_admin=True))
