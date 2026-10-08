@@ -231,6 +231,25 @@
       </div>
     </div>
 
+    <!-- BANNER CARD MỤC 3: MÔ HÌNH & ĐỒ ÁN TỰ ĐỘNG HÓA -->
+    <div class="cad-banner-featured-card" style="margin-bottom:30px;border-radius:var(--radius-xl);overflow:hidden;border:1.5px solid var(--border-line);box-shadow:var(--shadow-md);">
+      <a href="{{ url_for('products', category='do-an-tu-dong-hoa') }}" style="display:block;position:relative;line-height:0;">
+        <img src="{{ url_for('static', filename='images/banner_muc_3_do_an_tu_dong_hoa.jpg') }}" alt="Mô hình & Đồ án Tự Động Hóa (Cơ khí - Điện - Code - 3D SolidWorks)" style="width:100%;height:auto;display:block;object-fit:cover;">
+      </a>
+    </div>
+
+    <!-- QUICK MODEL CHIPS (TIÊU BIỂU TRÊN BANNER) -->
+    <div class="brand-chips-scroll" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;margin-bottom:24px;scrollbar-width:thin;">
+      <a href="{{ url_for('products', q='máy phân loại', category='do-an-tu-dong-hoa') }}" class="brand-chip">🤖 Máy Phân Loại</a>
+      <a href="{{ url_for('products', q='băng tải', category='do-an-tu-dong-hoa') }}" class="brand-chip">⚡ Băng Tải + Gắp</a>
+      <a href="{{ url_for('products', q='robot', category='do-an-tu-dong-hoa') }}" class="brand-chip">🦾 Cánh Tay Robot</a>
+      <a href="{{ url_for('products', q='tủ điện', category='do-an-tu-dong-hoa') }}" class="brand-chip">📦 Tủ Điện Điều Khiển</a>
+      <a href="{{ url_for('products', q='dây chuyền', category='do-an-tu-dong-hoa') }}" class="brand-chip">🏭 Dây Chuyền Tự Động</a>
+      <a href="{{ url_for('products', q='SolidWorks', category='do-an-tu-dong-hoa') }}" class="brand-chip">📐 File 3D SolidWorks</a>
+      <a href="{{ url_for('products', q='S7-1200', category='do-an-tu-dong-hoa') }}" class="brand-chip">💻 Code PLC Siemens</a>
+      <a href="{{ url_for('products', q='FX5U', category='do-an-tu-dong-hoa') }}" class="brand-chip">⚙️ Code PLC Mitsubishi</a>
+    </div>
+
     <div class="product-grid">
       {% for p in automation_products %}
         {% include "_product_card.html" %}

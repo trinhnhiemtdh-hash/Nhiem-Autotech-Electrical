@@ -238,5 +238,20 @@
     "description": "Thư viện block CAD thiết bị điện Panasonic: Cầu dao tự động MCB Din-rail, CB cóc, RCBO chống giật, Ổ cắm công tắc dòng Full Color / Wide Series, Ống luồn dây và Tủ điện phân phối dân dụng.",
     "specifications": "Hãng: Panasonic Electric\r\nĐịnh dạng: .DWG.",
     "status": "active"
+  },
+  {
+    "category_slug": "do-an-tu-dong-hoa",
+    "name": "1. Mô Hình Băng Tải Phân Loại Sản Phẩm Tự Động (Full Code PLC S7-1200 + 3D SolidWorks + HMI + Thuyết Minh)",
+    "slug": "mo-hinh-bang-tai-phan-loai-san-pham-s7-1200-solidworks",
+    "sku": "DA-BANG-TAI-PHAN-LOAI-S71200",
+    "price": 199000.0,
+    "stock": 999,
+    "sort_order": 1,
+    "image": "mo-hinh-bang-tai-phan-loai-san-pham-main.jpg",
+    "images": "banner_muc_3_do_an_tu_dong_hoa.jpg,mo-hinh-bang-tai-phan-loai-san-pham-main.jpg",
+    "cad_file": "do-an-bang-tai-phan-loai-s7-1200-hmi.zip",
+    "description": "TRỌN BỘ MÔ HÌNH ĐỒ ÁN TỰ ĐỘNG HÓA: DÂY CHUYỀN BĂNG TẢI PHÂN LOẠI SẢN PHẨM TỰ ĐỘNG\r\n(CƠ KHÍ - ĐIỆN - CODE PLC - BẢN VẼ 3D SOLIDWORKS)\r\n\r\nTrọn bộ hồ sơ thiết kế, lập trình và chế tạo mô hình hệ thống băng tải phân loại sản phẩm theo kích thước / màu sắc / kim loại phục vụ học tập, đồ án tốt nghiệp, nghiên cứu và triển khai thực tế.\r\n\r\nBao gồm đầy đủ các phần:\r\n1. FILE 3D SOLIDWORKS:\r\n- Bản vẽ 3D chi tiết từng cụm chi tiết cơ khí (khung nhôm định hình, con lăn, gối đỡ, cơ cấu gạt/piston khí nén).\r\n- Bản vẽ lắp ráp hoàn chỉnh (.SLDASM, .STEP, .IGES).\r\n- File gốc SolidWorks dễ dàng chỉnh sửa kích thước theo yêu cầu.\r\n\r\n2. CODE LẬP TRÌNH PLC & HMI:\r\n- Chương trình PLC Siemens S7-1200 viết trên phần mềm TIA Portal (V15.1 / V16 / V17 / V18).\r\n- Giao diện điều khiển & giám sát HMI KTP700 / WinCC Runtime chuyên nghiệp.\r\n- Code chú thích chi tiết từng Network, chia khối hàm FC, FB, DB chuẩn công nghiệp.\r\n- Kèm code dự phòng cho dòng PLC Mitsubishi FX3U / FX5U (GX Works 2 / 3).\r\n\r\n3. BẢN VẼ ĐẤU NỐI ĐIỆN & KHÍ NÉN:\r\n- Sơ đồ nguyên lý đấu nối I/O PLC, cảm biến quang, cảm biến từ, xi lanh khí nén, driver động cơ bước/động cơ DC.\r\n- Bản vẽ bố trí thiết bị trong tủ điện điều khiển (.DWG).\r\n- Danh mục BOM bóc tách linh kiện và vật tư thiết bị.\r\n\r\n4. BÁO CÁO THUYẾT MINH:\r\n- File Word thuyết minh đồ án hoàn chỉnh: Cơ sở lý thuyết, tính toán chọn động cơ, lưu đồ thuật toán và hướng dẫn vận hành.",
+    "specifications": "Phần mềm lập trình: TIA Portal V16/V17 (PLC S7-1200), GX Works3\r\nPhần mềm thiết kế 3D: SolidWorks 2020 - 2024 (.SLDASM, .SLDPRT, .STEP)\r\nBản vẽ điện: AutoCAD (.DWG, .PDF)\r\nHMI & SCADA: WinCC Professional / HMI KTP700 Basic\r\nĐịnh dạng tải về: Trọn bộ file nén .ZIP đầy đủ Code, Bản vẽ 3D và Tài liệu thuyết minh\r\nHỗ trợ: Hướng dẫn nạp code & cài đặt qua Zalo 0379 760 905",
+    "status": "active"
   }
 ]

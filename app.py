@@ -81,13 +81,16 @@ def initialize_database():
             with open(json_path, "r", encoding="utf-8") as f:
                 products_data = json.load(f)
             cat_map = {c.slug: c.id for c in Category.query.all()}
-            if Product.query.count() == 0:
-                for item in products_data:
+            existing_slugs = {p.slug for p in Product.query.all()}
+            new_seeded = 0
+            for item in products_data:
+                item_slug = item.get("slug")
+                if item_slug and item_slug not in existing_slugs:
                     cat_id = cat_map.get(item.get("category_slug"), None)
                     p = Product(
                         category_id=cat_id,
                         name=item.get("name"),
-                        slug=item.get("slug"),
+                        slug=item_slug,
                         sku=item.get("sku"),
                         price=item.get("price", 0),
                         stock=item.get("stock", 999),
@@ -100,8 +103,11 @@ def initialize_database():
                         status=item.get("status", "active")
                     )
                     db.session.add(p)
+                    existing_slugs.add(item_slug)
+                    new_seeded += 1
+            if new_seeded > 0:
                 db.session.commit()
-                print(f"[INIT] Auto-seeded {len(products_data)} products into database.")
+                print(f"[INIT] Auto-seeded {new_seeded} new products into database.")
         except Exception as e:
             print(f"[INIT ERROR] Failed to seed products: {e}")
 

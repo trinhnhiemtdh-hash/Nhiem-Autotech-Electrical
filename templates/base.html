@@ -13,12 +13,54 @@
   <meta property="og:description" content="{% block og_description %}Thư viện AutoCAD thiết kế tủ điện full các hãng, bản vẽ mạch điều khiển và layout tủ điện công nghiệp chuẩn tỷ lệ 1:1.{% endblock %}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{ canonical_url or site_url ~ request.path }}">
-  <meta property="og:site_name" content="Nhiệm Autotech">
+  <meta property="og:site_name" content="Autotech Electrical">
   {% block og_image %}<meta property="og:image" content="{{ site_url ~ url_for('static', filename='images/logo.png') }}">{% endblock %}
-  <meta name="application-name" content="Nhiệm Autotech">
-  <meta name="apple-mobile-web-app-title" content="Nhiệm Autotech">
+  <meta name="application-name" content="Autotech Electrical">
+  <meta name="apple-mobile-web-app-title" content="Autotech Electrical">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="{{ canonical_url or site_url ~ request.path }}">
+
+  <!-- Google Site Name & Organization Schema (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": {{ (site_url ~ "/#website")|tojson }},
+        "url": {{ site_url|tojson }},
+        "name": "Autotech Electrical",
+        "alternateName": [
+          "Nhiệm Autotech Electrical",
+          "Nhiệm Autotech",
+          "Thư Viện AutoCAD Thiết Kế Tủ Điện Full Các Hãng",
+          "Mạch Điều Khiển"
+        ],
+        "publisher": {
+          "@id": {{ (site_url ~ "/#organization")|tojson }}
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {{ (site_url ~ url_for('products') ~ '?q={search_term_string}')|tojson }},
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Organization",
+        "@id": {{ (site_url ~ "/#organization")|tojson }},
+        "name": "Autotech Electrical",
+        "alternateName": ["Nhiệm Autotech Electrical", "Nhiệm Autotech"],
+        "url": {{ site_url|tojson }},
+        "logo": {{ (site_url ~ url_for('static', filename='images/logo.jpg'))|tojson }},
+        "telephone": "0379760905",
+        "sameAs": [
+          "https://www.facebook.com/profile.php?id=61593437326233",
+          "https://www.tiktok.com/@nhim.autotech"
+        ]
+      }
+    ]
+  }
+  </script>
   
   <!-- Google Fonts Inter / Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -407,48 +449,6 @@
   </div>
 </footer>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": {{ (site_url ~ "/#website")|tojson }},
-      "url": {{ site_url|tojson }},
-      "name": "Nhiệm Autotech",
-      "alternateName": [
-        "Thư Viện AutoCAD Thiết Kế Tủ Điện Full Các Hãng",
-        "Mạch Điều Khiển",
-        "Nhiệm Autotech Electrical",
-        "Thư Viện AutoCAD Tủ Điện",
-        "Thư Viện Thiết Kế Tủ Điện",
-        "Autotech Electrical"
-      ],
-      "publisher": {
-        "@id": {{ (site_url ~ "/#organization")|tojson }}
-      },
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {{ (site_url ~ url_for('products') ~ '?q={search_term_string}')|tojson }},
-        "query-input": "required name=search_term_string"
-      }
-    },
-    {
-      "@type": "Organization",
-      "@id": {{ (site_url ~ "/#organization")|tojson }},
-      "name": "Nhiệm Autotech Electrical",
-      "alternateName": "Nhiệm Autotech",
-      "url": {{ site_url|tojson }},
-      "logo": {{ (site_url ~ url_for('static', filename='images/logo.jpg'))|tojson }},
-      "telephone": "0379760905",
-      "sameAs": [
-        "https://www.facebook.com/profile.php?id=61593437326233",
-        "https://www.tiktok.com/@nhim.autotech"
-      ]
-    }
-  ]
-}
-</script>
 {% block structured_data %}{% endblock %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
