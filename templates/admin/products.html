@@ -7,7 +7,7 @@
     <h1>Quản lý Thư Viện CAD, Khóa Học & Đồ Án</h1>
     <p>Quản lý toàn bộ các file bản vẽ AutoCAD bán lẻ, khóa học layout tủ điện và đồ án tự động hóa.</p>
   </div>
-  <a class="btn primary" href="{{ url_for('admin_product_add') }}" style="font-size:14px;padding:10px 20px;">
+  <a class="btn primary" href="{{ url_for('admin_product_add', category=selected_category) if selected_category else url_for('admin_product_add') }}" style="font-size:14px;padding:10px 20px;">
     + Đăng File / Khóa Học Mới
   </a>
 </div>
@@ -33,7 +33,7 @@
       <tr>
         <th style="width:70px;">Ảnh</th>
         <th>Tên file / Khóa học / Đồ án</th>
-        <th style="width:170px;">Danh mục</th>
+        <th style="width:190px;">Mục hiển thị</th>
         <th style="width:120px;">Giá bán</th>
         <th style="width:140px;">File đính kèm</th>
         <th style="width:100px;">Trạng thái</th>
@@ -68,9 +68,27 @@
           </td>
           <td>
             {% if p.category %}
-              <span class="badge-cat" style="font-size:11px;padding:3px 8px;border-radius:4px;">
-                {{ p.category.name }}
-              </span>
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <span class="badge-cat" style="font-size:11px;padding:3px 8px;border-radius:4px;font-weight:700;display:inline-block;width:fit-content;
+                  {% if p.category.slug == 'do-an-tu-dong-hoa' %}background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;
+                  {% elif p.category.slug == 'thiet-ke-tu-dien' %}background:#f0f9ff;color:#0284c7;border:1px solid #bae6fd;
+                  {% else %}background:#eff6ff;color:#0369a1;border:1px solid #bfdbfe;{% endif %}">
+                  {% if p.category.slug == 'thu-vien-autocad' %}📐 MỤC 1 · CAD
+                  {% elif p.category.slug == 'thiet-ke-tu-dien' %}⚡ MỤC 2 · TỦ ĐIỆN
+                  {% else %}🤖 MỤC 3 · ĐỒ ÁN{% endif %}
+                </span>
+                <!-- Nhanh chóng chuyển sang mục khác chỉ với 1 click -->
+                <select onchange="if(this.value){ window.location.href=this.value; }" style="font-size:11px;padding:3px 6px;border:1px solid #cbd5e1;border-radius:4px;background:#fff;cursor:pointer;color:#475569;">
+                  <option value="" disabled selected>⇄ Đổi sang mục khác...</option>
+                  {% for c in categories %}
+                    {% if c.id != p.category_id %}
+                      <option value="{{ url_for('admin_product_quick_category', product_id=p.id, category_id=c.id) }}">
+                        ➔ {% if c.slug == 'thu-vien-autocad' %}📐 Mục 1: Thư viện CAD{% elif c.slug == 'thiet-ke-tu-dien' %}⚡ Mục 2: Layout Tủ điện{% else %}🤖 Mục 3: Đồ án Tự động hóa{% endif %}
+                      </option>
+                    {% endif %}
+                  {% endfor %}
+                </select>
+              </div>
             {% else %}
               -
             {% endif %}

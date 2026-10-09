@@ -16,7 +16,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "2. Thư Viện Thiết Bị Điện Công Nghiệp Tổng Hợp (Catalog & Block Đóng Cắt)",
+    "name": "2. Thư Viện Thiết Bị Điện Công Nghiệp Tổng Hợp - MCT,QUẠT,ĐỒNG HỒ, ĐÈN,....",
     "slug": "thu-vien-thiet-bi-dien-cong-nghiep-tong-hop",
     "sku": "LIB-EQUIPMENT-DCN-59K",
     "price": 59000.0,
@@ -34,10 +34,10 @@
     "name": "3. Thư Viện Sơ Đồ Mạch Điều Khiển & Nguyên Lý Điện Công Nghiệp Tổng Hợp",
     "slug": "thu-vien-mach-dieu-khien-dien-cong-nghiep",
     "sku": "LIB-CONTROL-CIRCUIT-59K",
-    "price": 59000.0,
+    "price": 99000.0,
     "stock": 999,
     "sort_order": 3,
-    "image": "thu-vien-mach-dieu-khien-dien-cong-nghiep-main-1787409752-13d810.jpg",
+    "image": "thu-vien-mach-dieu-khien-dien-cong-nghiep-main-1788702649-4e2a7c.jpg",
     "images": "thu-vien-mach-dieu-khien-dien-cong-nghiep-image_2-1787409752-c85d79.jpg,thu-vien-mach-dieu-khien-dien-cong-nghiep-image_3-1787409752-68d3ee.jpg,thu-vien-mach-dieu-khien-dien-cong-nghiep-image_4-1787409752-46a84f.jpg",
     "cad_file": "thu-vien-mach-dieu-khien-dien-cong-nghiep.dwg",
     "description": "Tuyển tập hơn 60 sơ đồ mạch điều khiển và mạch lực chuẩn công nghiệp: Khởi động trực tiếp (DOL), Khởi động Sao - Tam giác tự động bằng Timer, Đảo chiều quay động cơ, Mạch luân phiên 2-3 máy bơm, Mạch phao chống cạn/chống tràn, Mạch khởi động mềm & Biến tần VFD. Mạch đấu nối các thiết bị điện công nghiệp ( đồng hồ đa năng, đồng hồ điện năng, timer, plc, role mực nước,...)",
@@ -49,7 +49,7 @@
     "name": "4. Thư Viện AutoCAD Các Loại Tủ Điện Công Nghiệp (Form Vỏ Tủ, Layout Tủ MSB, DB, ATS, Bù, PCCC)",
     "slug": "thu-vien-autocad-cac-loai-tu-dien-cong-nghiep",
     "sku": "LIB-PANEL-TYPES-59K",
-    "price": 299000.0,
+    "price": 0.0,
     "stock": 999,
     "sort_order": 4,
     "image": "thu-vien-autocad-cac-loai-tu-dien-cong-nghiep-main-1787414404-0e169a.jpg",
@@ -57,11 +57,11 @@
     "cad_file": "form-vo-tu-dien-cac-loai.dwg",
     "description": "Trọn bộ Thư viện AutoCAD các loại tủ điện công nghiệp tiêu chuẩn: Form vỏ tủ điện (tủ đứng 2 lớp cánh, tủ phân phối DB treo tường, tủ ngoài trời có mái che, tủ điều khiển máy), bản vẽ layout bố trí thiết bị bên trong tủ MSB, tủ DB, tủ ATS tự động chuyển nguồn, tủ tụ bù công suất phản kháng và tủ bơm PCCC 3 máy bơm.\r\n\r\nChi tiết bộ bản vẽ bao gồm:\r\n- Form vỏ tủ điện tiêu chuẩn: Kích thước vỏ tủ W900xH1900xD600, W800xH1600xD400, W600xH1000xD300, W400xH600xD200...\r\n- Mặt trước tủ điện (Cánh ngoài đột lỗ đồng hồ hiển thị Volt/Ampe, đèn báo pha R-S-T, công tắc chuyển mạch, nút nhấn Emergency Stop).\r\n- Mặt che thiết bị (Mặt bích cách ly an toàn bảo vệ người vận hành).\r\n- Mặt bố trí thiết bị (Mặt chứa TB: Bố trí CB tổng, các nhánh MCCB, Contactor, Rơ le nhiệt, Thanh cái đồng Busbar, Máng dây đi dây gọn gàng).\r\n- File bản vẽ định dạng .DWG chuẩn tỷ lệ 1:1, tải về mở được ngay trên mọi phiên bản AutoCAD từ 2007 đến 2026.",
     "specifications": "#1 Tủ điện tổng (MSB - Main Switchboard)\r\n#2 Tủ điện phân phối (DB - Distribution Board)\r\n#3 Tủ điện điều khiển lập trình PLC (Programmable Logic Controller Cabinet)\r\n#4 Tủ biến tần (VFD Panel)\r\n#5 Tủ tụ bù (Capacitor Bank Panel)\r\n#6 Tủ trạm biến áp\r\n#7 Tủ điện điều khiển động cơ (MCC - Motor Control Center)\r\n#8 Tủ điều khiển (Control Panel)\r\n#9 Tủ PCCC\r\n#10 Tủ điện công tơ\r\n#11 Tủ SCADA\r\n#12 Tủ RMU và tủ trung thế\r\n#13 Tủ đo lường (Metering Panel)\r\n#14 Tủ điện cưỡng bức\r\n#15 Tủ điện Solar (PV Panel)\r\n#16 Tủ điện ổ cắm tạm\r\n#17 Tủ điều khiển chiếu sáng\r\n#18 Tủ điện module âm tường\r\n#19 Tủ điều khiển motor tăng áp",
-    "status": "active"
+    "status": "hidden"
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "5. Thư Viện AutoCAD Thiết Bị Đóng Cắt Hãng ABB (#1 ABB Library)",
+    "name": "5. Thư Viện AutoCAD Thiết Bị  Hãng ABB -  MCB, MCCB NF, PLC FX, Biến Tần, Contactor",
     "slug": "thu-vien-autocad-hang-abb",
     "sku": "LIB-ABB-49K",
     "price": 49000.0,
@@ -76,7 +76,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "6. Thư Viện AutoCAD hãng MITSUBISHI ( CB,RCBO,MCB,MCCB,PLC,CONTACTER,BIẾN TẦN)",
+    "name": "6. Thư Viện AutoCAD Thiết Bị  Hãng MITSUBISHI - CB,RCBO,MCB,MCCB,PLC,CONTACTER,BIẾN TẦN",
     "slug": "thu-vien-autocad-hang-mitsubishi",
     "sku": "LIB-MITSUBISHI-49K",
     "price": 49000.0,
@@ -106,7 +106,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "8. Thư Viện AutoCAD hãng SCHNEIDER",
+    "name": "8. Thư Viện AutoCAD Thiết Bị Hãng SCHNEIDER - CB,RCBO,MCB,MCCB,CONTACTER,BIẾN TẦN,...",
     "slug": "thu-vien-autocad-hang-schneider",
     "sku": "LIB-SCHNEIDER-49K",
     "price": 49000.0,
@@ -121,7 +121,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "9. Thư Viện AutoCAD Thiết Bị Điện Hãng CHINT",
+    "name": "9. Thư Viện AutoCAD Thiết Bị Điện Hãng CHINT- CB,RCBO,MCB,MCCB,CONTACTER,BIẾN TẦN,...",
     "slug": "thu-vien-autocad-hang-chint",
     "sku": "LIB-CHINT-49K",
     "price": 49000.0,
@@ -136,7 +136,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "10. Thư Viện AutoCAD Thiết Bị Điện Hãng HYUNDAI",
+    "name": "10. Thư Viện AutoCAD Thiết Bị Điện Hãng HYUNDAI - CB,RCBO,MCB,MCCB,CONTACTER,ROLE NHIỆT",
     "slug": "thu-vien-autocad-hang-hyundai",
     "sku": "LIB-HYUNDAI-49K",
     "price": 49000.0,
@@ -151,7 +151,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "11. Thư Viện AutoCAD Thiết Bị SIEMENS & PLC (#7 Siemens Library)",
+    "name": "11. Thư Viện AutoCAD Thiết Bị Hãng SIEMENS - PLC,CB,RCBO,MCB,MCCB,PLC,CONTACTER,...",
     "slug": "thu-vien-autocad-hang-siemens",
     "sku": "LIB-SIEMENS-49K",
     "price": 29000.0,
@@ -166,7 +166,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "12. Thư Viện AutoCAD Thiết Bị Điện Hãng VMC",
+    "name": "12. Thư Viện AutoCAD Thiết Bị Điện Hãng VMC - MCB,MCCB",
     "slug": "thu-vien-autocad-hang-vmc",
     "sku": "LIB-VMC-49K",
     "price": 29000.0,
@@ -181,7 +181,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "13. Thư Viện AutoCAD Thiết Bị Điện Hãng ETEK",
+    "name": "13. Thư Viện AutoCAD Thiết Bị Điện Hãng ETEK - CB,RCBO,MCB,MCCB,PLC,CONTACTER,ROLE NHIỆT",
     "slug": "thu-vien-autocad-hang-etek",
     "sku": "LIB-ETEK-49K",
     "price": 29000.0,
@@ -196,7 +196,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "14. Thư Viện AutoCAD Thiết Bị Điện Hãng HAGER",
+    "name": "14. Thư Viện AutoCAD Thiết Bị Điện Hãng HAGER - MCB,MCCB",
     "slug": "thu-vien-autocad-hang-hager",
     "sku": "LIB-HAGER-49K",
     "price": 29000.0,
@@ -226,7 +226,7 @@
   },
   {
     "category_slug": "thu-vien-autocad",
-    "name": "16. Thư Viện AutoCAD Thiết Bị PANASONIC (#12 Panasonic Library)",
+    "name": "16. Thư Viện AutoCAD Thiết Bị Hãng PANASONIC - MCB,MCCB,...",
     "slug": "thu-vien-autocad-hang-panasonic",
     "sku": "LIB-PANASONIC-49K",
     "price": 29000.0,
@@ -237,6 +237,36 @@
     "cad_file": "thu-vien-autocad-hang-panasonic.dwg",
     "description": "Thư viện block CAD thiết bị điện Panasonic: Cầu dao tự động MCB Din-rail, CB cóc, RCBO chống giật, Ổ cắm công tắc dòng Full Color / Wide Series, Ống luồn dây và Tủ điện phân phối dân dụng.",
     "specifications": "Hãng: Panasonic Electric\r\nĐịnh dạng: .DWG.",
+    "status": "active"
+  },
+  {
+    "category_slug": "do-an-tu-dong-hoa",
+    "name": "1. MÔ HÌNH KHO LƯU KHO TỰ ĐỘNG (PLC – HMI – CAMERA – STEPPER MOTOR)",
+    "slug": "mo-hinh-bang-tai-luu-kho-s7-1200-solidworks",
+    "sku": "#1MHLK1",
+    "price": 49000.0,
+    "stock": 999,
+    "sort_order": 1,
+    "image": "mo-hinh-bang-tai-luu-kho-s7-1200-solidworks-main-1791511021-b1db5e.png",
+    "images": "mo-hinh-bang-tai-luu-kho-s7-1200-solidworks-image_2-1791511021-7b2a90.png,mo-hinh-bang-tai-luu-kho-s7-1200-solidworks-image_3-1791511021-54e3f0.png,mo-hinh-bang-tai-luu-kho-s7-1200-solidworks-image_4-1791511021-419d1c.png,mo-hinh-bang-tai-luu-kho-s7-1200-solidworks-gal-1-1791511021-f2eee3.png",
+    "cad_file": "do-an-bang-tai-phan-loai-s7-1200-hmi.zip",
+    "description": "Mô hình kho lưu trữ tự động PLC – HMI – Camera – Stepper Motor\r\nMô hình mô phỏng hệ thống lưu trữ và truy xuất hàng hóa tự động, ứng dụng trong đào tạo PLC, điều khiển chuyển động và nghiên cứu kho thông minh.\r\n\r\nDịch vụ: Bán file thiết kế 3D SolidWorks, nhận gia công mô hình thực tế, lập trình PLC, thiết kế giao diện HMI, đấu nối điện và tích hợp hệ thống theo yêu cầ",
+    "specifications": "File thiết kế 3d Solidworks",
+    "status": "active"
+  },
+  {
+    "category_slug": "do-an-tu-dong-hoa",
+    "name": "#2 MÔ HÌNH BÃI GỬI XE THÔNG MINH SỬ DỤNG STM32",
+    "slug": "mo-hinh-bai-gui-xe-thong-minh-stm32",
+    "sku": "#2MHBGXTM",
+    "price": 49000.0,
+    "stock": 999,
+    "sort_order": 2,
+    "image": "2-m-h-nh-b-i-g-i-xe-th-ng-minh-s-d-ng-stm32-main-1791518423-8acd41.png",
+    "images": "2-m-h-nh-b-i-g-i-xe-th-ng-minh-s-d-ng-stm32-image_2-1791518423-81a90e.png",
+    "cad_file": "",
+    "description": "MÔ HÌNH BÃI GỬI XE THÔNG MINH SỬ DỤNG STM32\r\n\r\nMô hình bãi gửi xe thông minh ứng dụng vi điều khiển STM32, mô phỏng hệ thống quản lý xe ra vào và điều khiển tự động. Sản phẩm phù hợp cho đồ án sinh viên các ngành Tự động hóa, Cơ điện tử, Điện – Điện tử.\r\n\r\nDịch vụ thực hiện:\r\n\r\nLắp ráp cơ khí: Gia công, lắp đặt khung mô hình và các cơ cấu chuyển động.\r\nLập trình STM32: Viết code điều khiển, xử lý tín hiệu cảm biến và xây dựng thuật toán vận hành theo yêu cầu.\r\nĐấu nối điện: Thiết kế sơ đồ đấu dây, kết nối vi điều khiển với cảm biến, động cơ và các thiết bị ngoại vi.\r\nHỗ trợ kỹ thuật: Hướng dẫn vận hành, kiểm tra và hiệu chỉnh mô hình.",
+    "specifications": "File 3D Solidworks",
     "status": "active"
   },
   {

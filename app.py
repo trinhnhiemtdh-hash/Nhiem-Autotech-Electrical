@@ -1784,6 +1784,32 @@ def admin_categories():
         return redirect(url_for("admin_categories"))
     return render_template("admin/categories.html", categories=Category.query.order_by(Category.name).all())
 
+def vietnamese_slugify(text):
+    if not text:
+        return ""
+    import unicodedata, re
+    text = text.lower().strip()
+    viet_map = {
+        'à': 'a', 'á': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
+        'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
+        'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a',
+        'đ': 'd',
+        'è': 'e', 'é': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ẹ': 'e',
+        'ê': 'e', 'ề': 'e', 'ế': 'e', 'ể': 'e', 'ễ': 'e', 'ệ': 'e',
+        'ì': 'i', 'í': 'i', 'ỉ': 'i', 'ĩ': 'i', 'ị': 'i',
+        'ò': 'o', 'ó': 'o', 'ỏ': 'o', 'õ': 'o', 'ọ': 'o',
+        'ô': 'o', 'ồ': 'o', 'ố': 'o', 'ổ': 'o', 'ỗ': 'o', 'ộ': 'o',
+        'ơ': 'o', 'ờ': 'o', 'ớ': 'o', 'ở': 'o', 'ỡ': 'o', 'ợ': 'o',
+        'ù': 'u', 'ú': 'u', 'ủ': 'u', 'ũ': 'u', 'ụ': 'u',
+        'ư': 'u', 'ừ': 'u', 'ứ': 'u', 'ử': 'u', 'ữ': 'u', 'ự': 'u',
+        'ỳ': 'y', 'ý': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y',
+    }
+    for k, v in viet_map.items():
+        text = text.replace(k, v)
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('utf-8')
+    text = re.sub(r'[^a-z0-9]+', '-', text).strip('-')
+    return text
+
 def save_product_image(fobj, prefix="img"):
     if not fobj or not fobj.filename:
         return None
@@ -1803,18 +1829,35 @@ def save_product_image(fobj, prefix="img"):
 @admin_required
 def admin_product_add():
     categories = Category.query.all()
+    # Hỗ trợ chọn sẵn danh mục theo URL ?category=do-an-tu-dong-hoa hoặc ?category_id=7
+    req_cat = request.args.get("category", "").strip()
+    req_cat_id = request.args.get("category_id", type=int)
+    default_category_id = None
+    if req_cat:
+        matched = Category.query.filter_by(slug=req_cat).first()
+        if matched:
+            default_category_id = matched.id
+    elif req_cat_id:
+        matched = db.session.get(Category, req_cat_id)
+        if matched:
+            default_category_id = matched.id
+
     if request.method == "POST":
         name = request.form["name"].strip()
         slug = request.form.get("slug", "").strip().lower()
         if not slug:
-            import re
-            slug = re.sub(r'[^a-z0-9]+', '-', name.lower()).strip('-')
+            slug = vietnamese_slugify(name)
         price = float(request.form.get("price", 0) or 0)
+        
+        # Nhận diện danh mục được chọn
+        cat_id_val = request.form.get("category_id")
+        selected_cat_id = int(cat_id_val) if cat_id_val else (default_category_id or (categories[0].id if categories else 1))
+        
         product = Product(name=name, slug=slug, sku=request.form.get("sku",""),
                           description=request.form.get("description",""),
                           specifications=request.form.get("specifications",""),
                           price=price, stock=int(request.form.get("stock",999) or 999),
-                          category_id=int(request.form["category_id"]),
+                          category_id=selected_cat_id,
                           video_url=request.form.get("video_url","").strip())
         
         # 1. Main image
@@ -1874,7 +1917,7 @@ def admin_product_add():
         sync_products_to_dump()
         flash(f"Đã đăng '{product.name}' thành công lên danh mục!", "success")
         return redirect(url_for("admin_products"))
-    return render_template("admin/product_add.html", categories=categories)
+    return render_template("admin/product_add.html", categories=categories, default_category_id=default_category_id)
 
 @app.route("/admin/products/edit/<int:product_id>", methods=["GET","POST"])
 @admin_required
@@ -2012,6 +2055,18 @@ def admin_product_delete(product_id):
         sync_products_to_dump()
         flash("Đã xóa sản phẩm khỏi hệ thống.", "info")
     return redirect(url_for("admin_products"))
+
+@app.route("/admin/products/<int:product_id>/quick-category/<int:category_id>", methods=["POST", "GET"])
+@admin_required
+def admin_product_quick_category(product_id, category_id):
+    product = db.session.get(Product, product_id)
+    cat = db.session.get(Category, category_id)
+    if product and cat:
+        product.category_id = cat.id
+        db.session.commit()
+        sync_products_to_dump()
+        flash(f"Đã chuyển '{product.name}' sang '{cat.name}' thành công!", "success")
+    return redirect(request.referrer or url_for("admin_products"))
 
 @app.route("/admin/orders")
 @admin_required

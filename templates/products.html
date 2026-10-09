@@ -83,7 +83,7 @@
   </div>
 
   {% if selected_category == 'thu-vien-autocad' or not selected_category %}
-    <!-- BRAND BANNER HERO -->
+    <!-- BRAND BANNER HERO MỤC 1 -->
     <div class="cad-banner-featured-card" style="margin-bottom:24px;border-radius:var(--radius-xl);overflow:hidden;border:1.5px solid var(--border-line);box-shadow:var(--shadow-md);">
       <img src="{{ url_for('static', filename='images/thu_vien_thiet_bi_dien_brands_banner.jpg') }}" alt="Thư viện thiết bị điện & mẫu tủ điện công nghiệp các hãng" style="width:100%;height:auto;display:block;object-fit:cover;">
     </div>
@@ -105,6 +105,34 @@
       <a href="{{ url_for('products', q='khung tên', category='thu-vien-autocad') }}" class="brand-chip {% if q=='khung tên' %}active{% endif %}">📋 Form Khung Tên</a>
       <a href="{{ url_for('products', q='vỏ tủ', category='thu-vien-autocad') }}" class="brand-chip {% if q=='vỏ tủ' %}active{% endif %}">📦 Form Vỏ Tủ</a>
       <a href="{{ url_for('products', q='mạch điều khiển', category='thu-vien-autocad') }}" class="brand-chip {% if q=='mạch điều khiển' %}active{% endif %}">🔌 Mạch Điều Khiển</a>
+    </div>
+  {% elif selected_category == 'thiet-ke-tu-dien' %}
+    <!-- BANNER CARD MỤC 2 -->
+    <div class="cad-banner-featured-card" style="margin-bottom:24px;border-radius:var(--radius-xl);overflow:hidden;border:1.5px solid var(--border-line);box-shadow:var(--shadow-md);">
+      <img src="{{ url_for('static', filename='images/banner_muc_2_thiet_ke_tu_dien.jpg') }}" alt="Thư viện thiết bị điện & thiết kế các loại tủ điện công nghiệp" style="width:100%;height:auto;display:block;object-fit:cover;">
+    </div>
+    <div class="brand-chips-scroll" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;margin-bottom:28px;scrollbar-width:thin;">
+      <a href="{{ url_for('products', q='MSB', category='thiet-ke-tu-dien') }}" class="brand-chip {% if q=='MSB' %}active{% endif %}">⚡ Tủ MSB Phân Phối</a>
+      <a href="{{ url_for('products', q='ATS', category='thiet-ke-tu-dien') }}" class="brand-chip {% if q=='ATS' %}active{% endif %}">🔄 Tủ Chuyển Nguồn ATS</a>
+      <a href="{{ url_for('products', q='DB', category='thiet-ke-tu-dien') }}" class="brand-chip {% if q=='DB' %}active{% endif %}">📦 Tủ Tầng DB</a>
+      <a href="{{ url_for('products', q='tụ bù', category='thiet-ke-tu-dien') }}" class="brand-chip {% if q=='tụ bù' %}active{% endif %}">📈 Tủ Bù Công Suất</a>
+      <a href="{{ url_for('products', q='PCCC', category='thiet-ke-tu-dien') }}" class="brand-chip {% if q=='PCCC' %}active{% endif %}">🚒 Tủ Bơm PCCC</a>
+      <a href="{{ url_for('products', q='MCC', category='thiet-ke-tu-dien') }}" class="brand-chip {% if q=='MCC' %}active{% endif %}">⚙️ Tủ Điều Khiển Động Cơ MCC</a>
+    </div>
+  {% elif selected_category == 'do-an-tu-dong-hoa' %}
+    <!-- BANNER CARD MỤC 3 -->
+    <div class="cad-banner-featured-card" style="margin-bottom:24px;border-radius:var(--radius-xl);overflow:hidden;border:1.5px solid var(--border-line);box-shadow:var(--shadow-md);">
+      <img src="{{ url_for('static', filename='images/banner_muc_3_do_an_tu_dong_hoa.jpg') }}" alt="Mô hình & Đồ án Tự Động Hóa (Cơ khí - Điện - Code - 3D SolidWorks)" style="width:100%;height:auto;display:block;object-fit:cover;">
+    </div>
+    <div class="brand-chips-scroll" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;margin-bottom:28px;scrollbar-width:thin;">
+      <a href="{{ url_for('products', q='máy phân loại', category='do-an-tu-dong-hoa') }}" class="brand-chip {% if q=='máy phân loại' %}active{% endif %}">🤖 Máy Phân Loại</a>
+      <a href="{{ url_for('products', q='băng tải', category='do-an-tu-dong-hoa') }}" class="brand-chip {% if q=='băng tải' %}active{% endif %}">⚡ Băng Tải + Gắp</a>
+      <a href="{{ url_for('products', q='kho lưu kho', category='do-an-tu-dong-hoa') }}" class="brand-chip {% if q=='kho lưu kho' %}active{% endif %}">🏬 Kho Lưu Kho Tự Động</a>
+      <a href="{{ url_for('products', q='bãi gửi xe', category='do-an-tu-dong-hoa') }}" class="brand-chip {% if q=='bãi gửi xe' %}active{% endif %}">🚗 Bãi Gửi Xe STM32</a>
+      <a href="{{ url_for('products', q='robot', category='do-an-tu-dong-hoa') }}" class="brand-chip {% if q=='robot' %}active{% endif %}">🦾 Cánh Tay Robot</a>
+      <a href="{{ url_for('products', q='SolidWorks', category='do-an-tu-dong-hoa') }}" class="brand-chip {% if q=='SolidWorks' %}active{% endif %}">📐 File 3D SolidWorks</a>
+      <a href="{{ url_for('products', q='S7-1200', category='do-an-tu-dong-hoa') }}" class="brand-chip {% if q=='S7-1200' %}active{% endif %}">💻 Code PLC Siemens</a>
+      <a href="{{ url_for('products', q='STM32', category='do-an-tu-dong-hoa') }}" class="brand-chip {% if q=='STM32' %}active{% endif %}">🔬 Vi Điều Khiển STM32</a>
     </div>
   {% endif %}
 

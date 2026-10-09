@@ -16,26 +16,46 @@
       <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
         Tên file / Khóa học / Đồ án <span style="color:#ef4444;">*</span>
       </label>
-      <input type="text" required name="name" placeholder="Ví dụ: Thư viện Block CAD MCB 3P Schneider (File DWG)" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14.5px;">
+      <input type="text" id="product-name-input" required name="name" placeholder="Ví dụ: #2 Mô Hình Bãi Gửi Xe Thông Minh Sử Dụng STM32 hoặc Thư viện AutoCAD ABB..." style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14.5px;">
+    </div>
+
+    <!-- 3 CARDS CHỌN MỤC CHÍNH (TRÁNH NHẦM LẪN GIỮA MỤC 1, 2, 3) -->
+    <div class="form-group" style="margin-bottom:24px;">
+      <label style="display:block;font-weight:800;margin-bottom:10px;color:#0f172a;font-size:15px;">
+        Chọn Mục Hiển Thị Trên Website <span style="color:#ef4444;">*</span>
+      </label>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:14px;" id="category-cards-wrap">
+        {% for c in categories %}
+          {% set is_selected = (default_category_id == c.id) or (not default_category_id and loop.first) %}
+          <label class="category-card-choice" data-slug="{{ c.slug }}" data-id="{{ c.id }}" style="display:block;cursor:pointer;padding:16px;border-radius:12px;border:2px solid {% if is_selected %}{% if c.slug == 'do-an-tu-dong-hoa' %}#7c3aed{% elif c.slug == 'thiet-ke-tu-dien' %}#0284c7{% else %}#0ea5e9{% endif %}{% else %}#e2e8f0{% endif %};background:{% if is_selected %}#f8fafc{% else %}#fff{% endif %};transition:all 0.2s ease;position:relative;box-shadow:{% if is_selected %}0 4px 12px rgba(0,0,0,0.06){% else %}none{% endif %};">
+            <input type="radio" name="category_id" value="{{ c.id }}" {% if is_selected %}checked{% endif %} required style="position:absolute;top:16px;right:16px;width:18px;height:18px;">
+            <div style="font-size:26px;margin-bottom:8px;">
+              {% if c.slug == 'thu-vien-autocad' %}📐
+              {% elif c.slug == 'thiet-ke-tu-dien' %}⚡
+              {% else %}🤖{% endif %}
+            </div>
+            <div style="font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;color:{% if c.slug == 'do-an-tu-dong-hoa' %}#7c3aed{% elif c.slug == 'thiet-ke-tu-dien' %}#0284c7{% else %}#0ea5e9{% endif %};">
+              {% if c.slug == 'thu-vien-autocad' %}MỤC 1 · THƯ VIỆN CAD
+              {% elif c.slug == 'thiet-ke-tu-dien' %}MỤC 2 · LAYOUT TỦ ĐIỆN
+              {% else %}MỤC 3 · TỰ ĐỘNG HÓA{% endif %}
+            </div>
+            <div style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px;line-height:1.3;">
+              {{ c.name }}
+            </div>
+            <div style="font-size:12px;color:#64748b;line-height:1.4;">
+              {% if c.slug == 'thu-vien-autocad' %}Bán lẻ từng file bản vẽ AutoCAD (.DWG) các hãng đóng cắt.
+              {% elif c.slug == 'thiet-ke-tu-dien' %}Bản vẽ thiết kế tủ MSB, DB, ATS, tụ bù và sơ đồ mạch.
+              {% else %}Đồ án PLC S7-1200, SolidWorks 3D, STM32, Arduino, Băng tải, Robot...{% endif %}
+            </div>
+          </label>
+        {% endfor %}
+      </div>
+      <div id="smart-category-notice" style="display:none;margin-top:10px;padding:8px 14px;border-radius:8px;background:#f5f3ff;border:1.5px solid #c4b5fd;color:#6d28d9;font-size:13px;font-weight:700;">
+        💡 Hệ thống đã tự động nhận diện từ khóa và chọn <strong>MỤC 3: Mô hình & Đồ án Tự động hóa</strong>!
+      </div>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
-      <div class="form-group">
-        <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
-          Danh mục chính <span style="color:#ef4444;">*</span>
-        </label>
-        <select name="category_id" required style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14.5px;font-weight:600;">
-          {% for c in categories %}
-            <option value="{{ c.id }}">
-              {% if c.slug == 'thu-vien-autocad' %}📐 1. {{ c.name }} (Bán lẻ từng file)
-              {% elif c.slug == 'thiet-ke-tu-dien' %}⚡ 2. {{ c.name }}
-              {% else %}🤖 3. {{ c.name }}{% endif %}
-            </option>
-          {% endfor %}
-        </select>
-        <small style="color:#64748b;font-size:12px;display:block;margin-top:4px;">Chọn 1 trong 3 nhóm mục chính trên website.</small>
-      </div>
-
       <div class="form-group">
         <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
           Giá bán (VNĐ) <span style="color:#ef4444;">*</span>
@@ -43,22 +63,20 @@
         <input type="number" step="1000" min="0" required name="price" value="49000" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14.5px;font-weight:700;color:#ff7a00;">
         <small style="color:#64748b;font-size:12px;display:block;margin-top:4px;">Giá thanh toán qua mã VietQR (VD: 49000, 199000, 350000...).</small>
       </div>
-    </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
       <div class="form-group">
         <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
           Mã SKU / Ký hiệu tài liệu
         </label>
-        <input type="text" name="sku" placeholder="VD: CAD-SCH-01, MSB-1600A, PLC-S71200" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14px;">
+        <input type="text" name="sku" placeholder="VD: CAD-SCH-01, MSB-1600A, DA-STM32-01" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14px;">
       </div>
+    </div>
 
-      <div class="form-group">
-        <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
-          Đường dẫn URL thân thiện (Slug - để trống tự tạo)
-        </label>
-        <input type="text" name="slug" placeholder="VD: thu-vien-block-cad-mcb-schneider" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14px;">
-      </div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label style="display:block;font-weight:700;margin-bottom:6px;color:#0f172a;">
+        Đường dẫn URL thân thiện (Slug - để trống tự tạo tự động)
+      </label>
+      <input type="text" name="slug" placeholder="VD: mo-hinh-bai-gui-xe-thong-minh-stm32" style="width:100%;padding:12px 16px;border:1.5px solid var(--border-line);border-radius:var(--radius-md);font-size:14px;">
     </div>
 
     <div style="background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:var(--radius-lg);padding:20px;margin-bottom:24px;">
@@ -166,4 +184,86 @@
     </div>
   </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const cards = document.querySelectorAll('.category-card-choice');
+  const nameInput = document.getElementById('product-name-input');
+  const notice = document.getElementById('smart-category-notice');
+  let userManuallyPicked = false;
+
+  function updateCardStyles() {
+    cards.forEach(card => {
+      const radio = card.querySelector('input[type="radio"]');
+      const slug = card.getAttribute('data-slug');
+      if (radio && radio.checked) {
+        card.style.background = '#f8fafc';
+        card.style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)';
+        if (slug === 'do-an-tu-dong-hoa') {
+          card.style.borderColor = '#7c3aed';
+          card.style.background = '#faf5ff';
+        } else if (slug === 'thiet-ke-tu-dien') {
+          card.style.borderColor = '#0284c7';
+          card.style.background = '#f0f9ff';
+        } else {
+          card.style.borderColor = '#0284c7';
+          card.style.background = '#f8fafc';
+        }
+      } else {
+        card.style.background = '#fff';
+        card.style.borderColor = '#e2e8f0';
+        card.style.boxShadow = 'none';
+      }
+    });
+  }
+
+  cards.forEach(card => {
+    card.addEventListener('click', function() {
+      userManuallyPicked = true;
+      const radio = card.querySelector('input[type="radio"]');
+      if (radio) {
+        radio.checked = true;
+        updateCardStyles();
+      }
+    });
+  });
+
+  // Tự động nhận diện danh mục thông minh theo từ khóa nhập vào tiêu đề
+  if (nameInput) {
+    nameInput.addEventListener('input', function() {
+      if (userManuallyPicked) return; // Nếu người dùng đã tự tay bấm chọn thì tôn trọng lựa chọn của họ
+      const val = nameInput.value.toLowerCase();
+      
+      const m3Keywords = ['mô hình', 'mo hinh', 'đồ án', 'do an', 'plc', 's7-1200', 's7 1200', 'solidworks', 'stm32', 'arduino', 'băng tải', 'bang tai', 'robot', 'scada', 'tia portal', 'kho lưu kho', 'kho luu kho', 'phan loai', 'phân loại'];
+      const m2Keywords = ['msb', 'tủ điện', 'tu dien', 'ats', 'tụ bù', 'tu bu', 'layout tủ', 'layout tu', 'vỏ tủ', 'vo tu', 'form tủ', 'mạch điều khiển', 'mach dieu khien', 'khóa học'];
+
+      let targetSlug = null;
+      if (m3Keywords.some(k => val.includes(k))) {
+        targetSlug = 'do-an-tu-dong-hoa';
+      } else if (m2Keywords.some(k => val.includes(k))) {
+        targetSlug = 'thiet-ke-tu-dien';
+      }
+
+      if (targetSlug) {
+        cards.forEach(c => {
+          if (c.getAttribute('data-slug') === targetSlug) {
+            const r = c.querySelector('input[type="radio"]');
+            if (r) {
+              r.checked = true;
+              updateCardStyles();
+            }
+          }
+        });
+        if (notice && targetSlug === 'do-an-tu-dong-hoa') {
+          notice.style.display = 'block';
+        } else if (notice) {
+          notice.style.display = 'none';
+        }
+      }
+    });
+  }
+
+  updateCardStyles();
+});
+</script>
 {% endblock %}
