@@ -1967,6 +1967,39 @@ def admin_dashboard():
                 "badge_border": "#bae6fd"
             }
 
+        # ChatGPT / Trí tuệ nhân tạo OpenAI
+        if "chatgpt" in ref_lower or "openai" in ref_lower:
+            return {
+                "source": "chatgpt",
+                "name": "ChatGPT (OpenAI)",
+                "icon": "🤖",
+                "badge_bg": "#ecfdf5",
+                "badge_color": "#047857",
+                "badge_border": "#a7f3d0"
+            }
+
+        # Yahoo Tìm kiếm
+        if "yahoo.com" in ref_lower:
+            return {
+                "source": "yahoo",
+                "name": "Yahoo Tìm Kiếm",
+                "icon": "🟣",
+                "badge_bg": "#f5f3ff",
+                "badge_color": "#6b21a8",
+                "badge_border": "#ddd6fe"
+            }
+
+        # Chuyển hướng tên miền cũ Render hoặc tiền tố www
+        if any(dom in ref_lower for dom in ["autotech-electrical.onrender.com", "www.nhiemautotech.io.vn", "onrender.com"]):
+            return {
+                "source": "redirect",
+                "name": "Chuyển tiếp (Render / WWW)",
+                "icon": "🔄",
+                "badge_bg": "#f8fafc",
+                "badge_color": "#475569",
+                "badge_border": "#cbd5e1"
+            }
+
         if not ref_lower:
             return {
                 "source": "direct",
