@@ -28,7 +28,17 @@ BOT_IP_PREFIXES = (
     "35.197.", "35.199.", "35.227.", "35.230.", "34.",
     "57.141.", "104.248.", "194.59.", "147.235.", "162.120.", "138.226.",
     "165.225.", "216.227.", "68.167.", "170.23.", "191.31.", "166.0.",
-    "79.177.", "185.47.", "9.129.", "15.235.", "91.176.", "5.62.", "104.28."
+    "79.177.", "185.47.", "9.129.", "15.235.", "91.176.", "5.62.", "104.28.",
+    "103.59.", "162.216."
+)
+
+SCANNER_PATH_PATTERNS = (
+    "/wp-", "wp-content", "wp-includes", "wp-admin", "xmlrpc", "wlwmanifest",
+    ".php", ".env", ".git", ".well-known", "cgi-bin", "phpmyadmin", "config.",
+    "/feed", "/rss", "actuator", "/owa", "/autodiscover", "/vendor", "/telescope",
+    "/install", "/setup", "/backup", "/dump", "/eval-stdin", "/shell", "/hnap1",
+    "/boaform", "/dns-query", "/stalker_portal", "/ipfs/", "/asset-manifest.json",
+    "webdav", "invoker", "jmx-console"
 )
 
 def save_file_to_cloud(filename, file_bytes, asset_type="image", mime_type=None):
@@ -842,7 +852,7 @@ def redirect_to_custom_domain():
 
 @app.before_request
 def track_visitor():
-    # Loại trừ toàn bộ static, admin, api, favicon và hình ảnh để số liệu không bị ảo
+    req_path_lower = (request.path or "").lower()
     if (
         request.path.startswith("/static")
         or request.path.startswith("/admin")
@@ -851,6 +861,7 @@ def track_visitor():
         or request.path.endswith(".ico")
         or request.path.endswith(".png")
         or request.path.endswith(".jpg")
+        or any(p in req_path_lower for p in SCANNER_PATH_PATTERNS)
     ):
         return
     # 1. Bỏ qua nếu là Admin đang có phiên đăng nhập
@@ -1721,11 +1732,15 @@ def admin_dashboard():
     excluded_ips = set(["127.0.0.1", "::1", "localhost", "0.0.0.0"] + known_admin_ips)
 
     bot_prefix_filters = [PageVisit.ip_address.notlike(f"{p}%") for p in BOT_IP_PREFIXES]
+    scanner_path_filters = [
+        PageVisit.path.notlike(f"%{p}%") for p in ["/wp-", ".php", ".env", "/ipfs/", "xmlrpc", "cgi-bin", "phpmyadmin", "boaform"]
+    ]
 
-    # Bộ lọc loại trừ IP admin, IP máy chủ nội bộ, bot/crawler, API nội bộ và favicon
+    # Bộ lọc loại trừ IP admin, IP máy chủ nội bộ, bot/crawler, scanner rác, API nội bộ và favicon
     clean_filter = and_(
         PageVisit.ip_address.notin_(list(excluded_ips)),
         *bot_prefix_filters,
+        *scanner_path_filters,
         or_(PageVisit.path == None, and_(
             PageVisit.path.notlike('/api/%'),
             PageVisit.path.notin_(['/favicon.ico', '/null', '/.file', '/robots.txt', '/sitemap.xml', '/ping'])
@@ -1905,8 +1920,8 @@ def admin_dashboard():
             if clean_p not in seen_paths and clean_p not in ["/favicon.ico", "/null", "/.file", "/robots.txt", "/sitemap.xml", "/ping"]:
                 seen_paths.append(clean_p)
 
-        # Bỏ qua nếu IP này không xem bất kỳ trang nội dung thật nào
-        if not seen_paths:
+        # Bỏ qua nếu IP này không xem bất kỳ trang nội dung thật nào hoặc chỉ quét đường dẫn bot rác
+        if not seen_paths or all(any(p in path.lower() for p in SCANNER_PATH_PATTERNS) for path in seen_paths):
             continue
 
         vlist_sorted = sorted(vlist, key=lambda x: x.created_at)
@@ -1945,9 +1960,18 @@ def admin_dashboard():
         first_t_vn = first_t + timedelta(hours=7)
         last_t_vn = last_t + timedelta(hours=7)
 
+        raw_loc = vlist[0].location or "Việt Nam"
+        loc_str = raw_loc.lower()
+        is_vn = any(kw in loc_str for kw in [
+            "việt nam", "vietnam", "viet nam", "hà nội", "hanoi", "hồ chí minh", "ho chi minh",
+            "đà nẵng", "da nang", "hải phòng", "hai phong", "cần thơ", "can tho",
+            "bình dương", "đồng nai", "vũng tàu", "bắc ninh", "nam định", "thái bình"
+        ]) or ("🇻🇳" in raw_loc)
+
         ip_stats_today.append({
             "ip_address": ip,
-            "location": vlist[0].location or "Việt Nam",
+            "location": raw_loc,
+            "is_vietnam": is_vn,
             "user_name": user_name,
             "user_email": user_email,
             "page_count": len([v for v in vlist if v.path != '/favicon.ico']),
@@ -1962,6 +1986,7 @@ def admin_dashboard():
         })
 
     ip_stats_today.sort(key=lambda x: x["last_seen"], reverse=True)
+    vn_visitors_count = len([x for x in ip_stats_today if x.get("is_vietnam")])
 
     return render_template("admin/dashboard.html",
                            product_count=Product.query.count(),
@@ -1983,6 +2008,7 @@ def admin_dashboard():
                            unique_month=unique_month,
                            daily_stats=daily_stats,
                            ip_stats_today=ip_stats_today,
+                           vn_visitors_count=vn_visitors_count,
                            current_admin_ip=current_admin_ip)
 
 @app.route("/admin/products")
