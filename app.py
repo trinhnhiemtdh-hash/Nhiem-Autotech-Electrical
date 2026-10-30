@@ -18,6 +18,9 @@ app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
+
 BOT_IP_PREFIXES = (
     "66.249.", "64.233.", "72.14.", "209.85.", "216.58.", "172.217.",  # Google & Googlebot Crawlers
     "54.81.", "142.147.", "157.245.", "52.", "54.", "3.8", "3.9",      # Datacenter automated scanners
@@ -823,12 +826,19 @@ def redirect_to_custom_domain():
     # Keep health check /ping directly accessible
     if request.path == "/ping":
         return None
-    # Tự động chuyển hướng 301 sang tên miền chính thức khi truy cập qua domain onrender.com
-    host = request.host.lower()
-    if "autotech-electrical.onrender.com" in host:
+    # Tự động chuyển hướng 301 vĩnh viễn sang tên miền chính thức khi truy cập qua bất kỳ domain onrender.com nào
+    raw_host = (
+        request.headers.get("X-Forwarded-Host")
+        or request.headers.get("Host")
+        or request.host
+        or ""
+    )
+    host = raw_host.lower().split(":")[0]
+    if "onrender.com" in host or "autotech-electrical" in host:
         query = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
         return redirect(f"https://nhiemautotech.io.vn{request.path}{query}", code=301)
     return None
+
 
 @app.before_request
 def track_visitor():
