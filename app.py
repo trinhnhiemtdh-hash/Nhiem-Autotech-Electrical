@@ -1484,6 +1484,33 @@ def checkout():
         add_notification("new_order", f"🔥 ĐƠN HÀNG MỚI #{order.id}", f"Khách {customer_name} ({phone}) vừa đặt đơn #{order.id} trị giá {total:,.0f} đ.", link=url_for("admin_orders"))
         send_admin_new_order_email(order)
 
+        # Tự động ghi nhận lượt truy cập của khách vào PageVisit kèm User ID và cập nhật các lượt xem trước đó
+        try:
+            client_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+            if client_ip and "," in client_ip:
+                client_ip = client_ip.split(",")[0].strip()
+            if client_ip:
+                ua_str = request.headers.get("User-Agent") or ""
+                # Cập nhật toàn bộ các lượt xem trước đó của IP này thành user_id của khách
+                PageVisit.query.filter(
+                    PageVisit.ip_address == client_ip,
+                    PageVisit.user_id.is_(None)
+                ).update({"user_id": user.id}, synchronize_session=False)
+
+                db.session.add(PageVisit(
+                    user_id=user.id,
+                    ip_address=client_ip[:50],
+                    location=get_location_name(client_ip),
+                    device_type=get_device_type(ua_str),
+                    user_agent=ua_str[:250],
+                    path=f"/payment/{order.id}",
+                    duration_seconds=30,
+                    referrer=f"Đặt hàng #{order.id}"
+                ))
+                db.session.commit()
+        except Exception:
+            db.session.rollback()
+
         # Clear cart
         session["cart"] = {}
         flash(f"Tạo đơn hàng #{order.id} thành công! Quý khách vui lòng quét mã QR Vietcombank để thanh toán.", "success")
@@ -2001,10 +2028,15 @@ def admin_dashboard():
 
         user_name = None
         user_email = None
+        user_orders = []
         for v in vlist:
             if v.user:
                 user_name = v.user.name
                 user_email = v.user.email
+                try:
+                    user_orders = Order.query.filter_by(user_id=v.user.id).order_by(Order.id.desc()).all()
+                except Exception:
+                    user_orders = []
                 break
 
         # Tìm nguồn referrer hoặc User-Agent bên ngoài ban đầu của IP này
@@ -2044,6 +2076,7 @@ def admin_dashboard():
             "is_vietnam": is_vn,
             "user_name": user_name,
             "user_email": user_email,
+            "orders": user_orders,
             "page_count": len([v for v in vlist if v.path != '/favicon.ico']),
             "paths": seen_paths if seen_paths else ["/"],
             "first_seen": first_t_vn,
