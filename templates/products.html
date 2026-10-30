@@ -55,7 +55,14 @@
         {% endif %}
       </h1>
     </div>
-    <a class="btn primary" href="{{ url_for('quote') }}">Yêu cầu báo giá / Thiết kế riêng</a>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      {% if session.get('is_admin') %}
+        <a class="btn" href="{{ url_for('admin_product_add', category=selected_category) if selected_category else url_for('admin_product_add') }}" style="background:#7c3aed;color:#fff;font-weight:700;padding:10px 18px;border-radius:var(--radius-md);box-shadow:0 4px 14px rgba(124,58,237,0.35);text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
+          <span>⚡ + Đăng sản phẩm mới vào {% if selected_category == 'do-an-tu-dong-hoa' %}MỤC 3 (Đồ án 3D){% elif selected_category == 'thiet-ke-tu-dien' %}MỤC 2 (Tủ điện){% elif selected_category == 'thu-vien-autocad' %}MỤC 1 (Thư viện CAD){% else %}Website{% endif %}</span>
+        </a>
+      {% endif %}
+      <a class="btn primary" href="{{ url_for('quote') }}">Yêu cầu báo giá / Thiết kế riêng</a>
+    </div>
   </div>
 
   <!-- Search Bar -->

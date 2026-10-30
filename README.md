@@ -48,25 +48,25 @@ Admin:
 
 ## 5. Đưa website lên Google
 
-Khi triển khai, đặt biến môi trường `SITE_URL` thành tên miền HTTPS thật, ví dụ:
+Khi triển khai, đặt biến môi trường `SITE_URL` thành tên miền chính thức:
 
 ```powershell
-$env:SITE_URL="https://www.tenmiencuaban.vn"
+$env:SITE_URL="https://nhiemautotech.io.vn"
 ```
 
 Để bật thanh toán QR xác nhận thủ công, cấu hình thông tin tài khoản nhận tiền:
 
 ```powershell
-$env:BANK_ID="MB"
-$env:BANK_ACCOUNT="0123456789"
-$env:BANK_ACCOUNT_NAME="NGUYEN VAN A"
+$env:BANK_ID="VCB"
+$env:BANK_ACCOUNT="1016703323"
+$env:BANK_ACCOUNT_NAME="TRINH DUC NHIEM"
 ```
 
 Khách tạo đơn, quét QR và chuyển khoản với nội dung `NA<ma-don>`. Trong Admin →
 Đơn hàng, đổi trạng thái thành `Đã thanh toán` để mở quyền tải file CAD.
 
 Sau đó xác minh tên miền trong Google Search Console và gửi sitemap tại
-`https://www.tenmiencuaban.vn/sitemap.xml`. Không gửi sitemap có địa chỉ
+`https://nhiemautotech.io.vn/sitemap.xml`. Không gửi sitemap có địa chỉ
 `127.0.0.1` vì Google không truy cập được máy tính của bạn.
 
 ## 6. Chức năng hiện có

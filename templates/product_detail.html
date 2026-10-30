@@ -115,18 +115,18 @@
 
       <div class="video-responsive-wrap" style="position:relative;width:100%;max-width:860px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 12px 30px rgba(0,0,0,0.6);">
         {% if product.video_file %}
-          <video controls playsinline style="width:100%;max-height:500px;display:block;outline:none;" poster="{{ url_for('static', filename='uploads/images/' + product.image) if product.image else '' }}">
-            <source src="{{ url_for('static', filename='uploads/videos/' + product.video_file) }}" type="video/mp4">
+          <video controls playsinline preload="metadata" style="width:100%;max-height:500px;display:block;outline:none;" poster="{{ url_for('static', filename='uploads/images/' + product.image) if product.image else '' }}">
+            <source src="{{ url_for('static', filename='uploads/videos/' + product.video_file) }}">
             Trình duyệt của bạn không hỗ trợ phát video HTML5.
           </video>
         {% elif product.youtube_embed_url %}
           <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
             <iframe src="{{ product.youtube_embed_url }}" title="Video giới thiệu {{ product.name }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"></iframe>
           </div>
-        {% else %}
+        {% elif product.video_url %}
           <div style="padding:20px;text-align:center;">
             <a href="{{ product.video_url }}" target="_blank" rel="noopener noreferrer" class="btn primary" style="font-size:15px;padding:12px 24px;">
-              ▶ Mở Xem Video Trực Tiếp
+              ▶ Mở Xem Video Hướng Dẫn Trực Tiếp
             </a>
           </div>
         {% endif %}

@@ -135,9 +135,26 @@ function toggleLiveChat(forceState) {
       const input = document.getElementById("chatInput");
       if (input) input.focus();
     }, 200);
+
+    // Kích hoạt lắng nghe tin nhắn khi mở khung chat
+    if (!clientPollTimer) {
+      pollAdminMessages();
+      clientPollTimer = setInterval(pollAdminMessages, 6000);
+    }
   } else {
     win.classList.remove("active");
     btn.classList.remove("active");
+
+    // Nếu khách chưa từng chat thì tắt hẳn polling để máy chủ chạy siêu tốc
+    const history = getChatHistory();
+    if (history.length === 0 && clientPollTimer) {
+      clearInterval(clientPollTimer);
+      clientPollTimer = null;
+    } else if (clientPollTimer) {
+      // Nếu đã từng chat, giảm tần suất xuống 15 giây khi thu nhỏ khung chat
+      clearInterval(clientPollTimer);
+      clientPollTimer = setInterval(pollAdminMessages, 15000);
+    }
   }
 }
 
@@ -397,9 +414,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // Khôi phục lịch sử chat cũ của khách
   renderSavedMessages();
 
-  // Bắt đầu lắng nghe phản hồi của Admin định kỳ 3.5 giây
-  pollAdminMessages();
-  clientPollTimer = setInterval(pollAdminMessages, 3500);
+  // CHỈ lắng nghe phản hồi của Admin NẾU khách này ĐÃ TỪNG gửi tin nhắn trước đó
+  const history = getChatHistory();
+  if (history && history.length > 0) {
+    pollAdminMessages();
+    clientPollTimer = setInterval(pollAdminMessages, 10000);
+  }
 
   // Hiển thị gợi ý sau 3 giây nếu chưa bị đóng
   if (!sessionStorage.getItem(CHAT_TEASER_DISMISSED_KEY)) {

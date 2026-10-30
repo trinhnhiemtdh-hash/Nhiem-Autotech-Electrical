@@ -141,7 +141,12 @@
         <div class="section-eyebrow">MỤC 1 · THƯ VIỆN BẢN VẼ BÁN LẺ TỪNG HÃNG</div>
         <h2 class="section-title">Thư Viện AutoCAD Thiết Bị Điện & Mẫu Tủ Điện Công Nghiệp</h2>
       </div>
-      <div class="section-header-actions">
+      <div class="section-header-actions" style="display:flex;gap:10px;align-items:center;">
+        {% if session.get('is_admin') %}
+          <a href="{{ url_for('admin_product_add', category='thu-vien-autocad') }}" style="font-size:12px;background:#fff7ed;color:#ea580c;padding:6px 12px;border-radius:6px;font-weight:700;border:1px solid #fed7aa;text-decoration:none;">
+            + Thêm MỤC 1
+          </a>
+        {% endif %}
         <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="btn-view-all">
           <span>Xem tất cả file CAD ({{ cad_products|length }}+) →</span>
         </a>
@@ -192,7 +197,12 @@
         <div class="section-eyebrow">MỤC 2 · THIẾT KẾ THỰC TẾ</div>
         <h2 class="section-title">Thiết Kế Các Loại Tủ Điện Công Nghiệp & Mạch Điều Khiển (MSB, DB, ATS, Bù)</h2>
       </div>
-      <div class="section-header-actions">
+      <div class="section-header-actions" style="display:flex;gap:10px;align-items:center;">
+        {% if session.get('is_admin') %}
+          <a href="{{ url_for('admin_product_add', category='thiet-ke-tu-dien') }}" style="font-size:12px;background:#f0f9ff;color:#0284c7;padding:6px 12px;border-radius:6px;font-weight:700;border:1px solid #bae6fd;text-decoration:none;">
+            + Thêm MỤC 2
+          </a>
+        {% endif %}
         <a href="{{ url_for('products', category='thiet-ke-tu-dien') }}" class="btn-view-all">
           <span>Xem tất cả bản vẽ & layout ({{ panel_products|length }}+) →</span>
         </a>
@@ -224,7 +234,12 @@
         <div class="section-eyebrow">MỤC 3 · PLC & VẼ 3D CƠ KHÍ</div>
         <h2 class="section-title">Mô Hình & Đồ Án Tự Động Hóa (Full Code + 3D SolidWorks)</h2>
       </div>
-      <div class="section-header-actions">
+      <div class="section-header-actions" style="display:flex;gap:10px;align-items:center;">
+        {% if session.get('is_admin') %}
+          <a href="{{ url_for('admin_product_add', category='do-an-tu-dong-hoa') }}" style="font-size:12px;background:#f5f3ff;color:#7c3aed;padding:6px 12px;border-radius:6px;font-weight:700;border:1px solid #ddd6fe;text-decoration:none;">
+            + Thêm MỤC 3
+          </a>
+        {% endif %}
         <a href="{{ url_for('products', category='do-an-tu-dong-hoa') }}" class="btn-view-all">
           <span>Xem tất cả đồ án & 3D ({{ automation_products|length }}+) →</span>
         </a>

@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from sqlalchemy import or_, and_, inspect, text
-from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit, Notification, ChatMessage, AdminIP
+from models import db, User, Category, Product, Order, OrderItem, Contact, Download, PageVisit, Notification, ChatMessage, AdminIP, CloudAsset
 from config import Config
 from functools import wraps
 from pathlib import Path
@@ -19,12 +19,132 @@ app.config.from_object(Config)
 db.init_app(app)
 
 BOT_IP_PREFIXES = (
+    "66.249.", "64.233.", "72.14.", "209.85.", "216.58.", "172.217.",  # Google & Googlebot Crawlers
+    "54.81.", "142.147.", "157.245.", "52.", "54.", "3.8", "3.9",      # Datacenter automated scanners
     "69.171.", "173.252.", "157.240.", "31.13.",
     "35.197.", "35.199.", "35.227.", "35.230.", "34.",
     "57.141.", "104.248.", "194.59.", "147.235.", "162.120.", "138.226.",
     "165.225.", "216.227.", "68.167.", "170.23.", "191.31.", "166.0.",
     "79.177.", "185.47.", "9.129.", "15.235.", "91.176.", "5.62.", "104.28."
 )
+
+def save_file_to_cloud(filename, file_bytes, asset_type="image", mime_type=None):
+    """Save or update file binary to CloudAsset table in Supabase PostgreSQL."""
+    if not filename or not file_bytes:
+        return None
+    try:
+        import mimetypes
+        if not mime_type:
+            mime_type, _ = mimetypes.guess_type(filename)
+            if not mime_type:
+                mime_type = "application/octet-stream"
+        
+        # Hỗ trợ lưu file ảnh, tài liệu CAD và video dung lượng lên tới 100MB vào Đám mây Supabase
+        if len(file_bytes) > 100 * 1024 * 1024:
+            print(f"[CLOUD ASSET WARN] File '{filename}' ({len(file_bytes)} bytes) > 100MB. Saved to local disk.")
+            return None
+
+        asset = CloudAsset.query.filter_by(filename=filename).first()
+        if not asset:
+            asset = CloudAsset(
+                filename=filename,
+                asset_type=asset_type,
+                mime_type=mime_type,
+                file_size=len(file_bytes),
+                data=file_bytes
+            )
+            db.session.add(asset)
+        else:
+            asset.data = file_bytes
+            asset.file_size = len(file_bytes)
+            asset.asset_type = asset_type
+            asset.mime_type = mime_type
+        db.session.commit()
+        print(f"[CLOUD ASSET] Saved '{filename}' ({len(file_bytes)} bytes) to Supabase Cloud.")
+        return asset
+    except Exception as e:
+        db.session.rollback()
+        print(f"[CLOUD ASSET ERROR] Could not save '{filename}' to Supabase: {e}")
+        return None
+
+def restore_all_cloud_assets_to_local():
+    """Tự động kéo toàn bộ ảnh, video và file CAD từ CloudAsset (Supabase) về ổ đĩa cục bộ static/uploads/ ngay khi khởi động.
+    Đảm bảo mỗi khi cập nhật code mới hoặc Render dựng container mới thì 100% ảnh và file đã có sẵn ngay lập tức!"""
+    try:
+        upload_base = Path(app.config["UPLOAD_FOLDER"])
+        folder_map = {"image": "images", "video": "videos", "cad": "cad"}
+        
+        # Chỉ truy vấn siêu dữ liệu (id, filename, asset_type) trước để kiểm tra siêu tốc (<0.1s)
+        cloud_assets_meta = db.session.query(CloudAsset.id, CloudAsset.filename, CloudAsset.asset_type).all()
+        missing_items = []
+        for aid, fname, atype in cloud_assets_meta:
+            folder = folder_map.get(atype, "images")
+            target_dir = upload_base / folder
+            target_file = target_dir / fname
+            if not target_file.exists():
+                missing_items.append((aid, fname, folder))
+                
+        if not missing_items:
+            print(f"[CLOUD RESTORE] Ready: All {len(cloud_assets_meta)} files from CloudAsset verified on disk.")
+            return
+            
+        print(f"[CLOUD RESTORE] Syncing {len(missing_items)} missing files from Supabase Cloud to disk...")
+        restored = 0
+        for aid, fname, folder in missing_items:
+            try:
+                asset = db.session.get(CloudAsset, aid)
+                if asset and asset.data:
+                    target_dir = upload_base / folder
+                    target_dir.mkdir(parents=True, exist_ok=True)
+                    target_file = target_dir / fname
+                    target_file.write_bytes(asset.data)
+                    restored += 1
+            except Exception as fe:
+                print(f"[CLOUD RESTORE WARN] Could not restore '{fname}': {fe}")
+                
+        print(f"[CLOUD RESTORE] Successfully restored {restored}/{len(missing_items)} files from Supabase Cloud.")
+    except Exception as e:
+        print(f"[CLOUD RESTORE ERROR] Exception restoring assets: {e}")
+
+def sync_local_uploads_to_cloud():
+    """Scan local uploads and ensure any missing file in CloudAsset is automatically synced to Supabase."""
+    try:
+        import mimetypes
+        existing_filenames = {row[0] for row in db.session.query(CloudAsset.filename).all()}
+        upload_base = Path(app.config["UPLOAD_FOLDER"])
+        synced_count = 0
+
+        for folder, asset_type in [("images", "image"), ("videos", "video"), ("cad", "cad")]:
+            target_dir = upload_base / folder
+            if not target_dir.exists():
+                continue
+            for fpath in target_dir.iterdir():
+                if fpath.is_file() and not fpath.name.startswith("."):
+                    fname = fpath.name
+                    if fname not in existing_filenames:
+                        try:
+                            f_bytes = fpath.read_bytes()
+                            if len(f_bytes) <= 100 * 1024 * 1024:
+                                m_type, _ = mimetypes.guess_type(fname)
+                                asset = CloudAsset(
+                                    filename=fname,
+                                    asset_type=asset_type,
+                                    mime_type=m_type or "application/octet-stream",
+                                    file_size=len(f_bytes),
+                                    data=f_bytes
+                                )
+                                db.session.add(asset)
+                                existing_filenames.add(fname)
+                                synced_count += 1
+                        except Exception as fe:
+                            print(f"[CLOUD SYNC WARN] Could not read {fname}: {fe}")
+
+        if synced_count > 0:
+            db.session.commit()
+            print(f"[CLOUD ASSET SYNC] Auto-synced {synced_count} new local files to Supabase Cloud.")
+    except Exception as e:
+        db.session.rollback()
+        print(f"[CLOUD ASSET SYNC ERROR] {e}")
 
 def initialize_database():
     """Create and safely upgrade the database on startup."""
@@ -76,16 +196,14 @@ def initialize_database():
     db.session.commit()
     
     json_path = Path(__file__).resolve().parent / "products_dump.json"
-    if json_path.exists():
+    if json_path.exists() and Product.query.count() == 0:
         try:
             with open(json_path, "r", encoding="utf-8") as f:
                 products_data = json.load(f)
             cat_map = {c.slug: c.id for c in Category.query.all()}
-            existing_slugs = {p.slug for p in Product.query.all()}
-            new_seeded = 0
             for item in products_data:
                 item_slug = item.get("slug")
-                if item_slug and item_slug not in existing_slugs:
+                if item_slug:
                     cat_id = cat_map.get(item.get("category_slug"), None)
                     p = Product(
                         category_id=cat_id,
@@ -97,19 +215,19 @@ def initialize_database():
                         sort_order=item.get("sort_order", 0),
                         image=item.get("image", ""),
                         images=item.get("images", ""),
+                        video_file=item.get("video_file", "") or None,
+                        video_url=item.get("video_url", "") or None,
                         cad_file=item.get("cad_file", ""),
                         description=item.get("description", ""),
                         specifications=item.get("specifications", ""),
                         status=item.get("status", "active")
                     )
                     db.session.add(p)
-                    existing_slugs.add(item_slug)
-                    new_seeded += 1
-            if new_seeded > 0:
-                db.session.commit()
-                print(f"[INIT] Auto-seeded {new_seeded} new products into database.")
+            db.session.commit()
+            print(f"[INIT] Auto-restored {len(products_data)} products into empty database.")
         except Exception as e:
-            print(f"[INIT ERROR] Failed to seed products: {e}")
+            db.session.rollback()
+            print(f"[INIT ERROR] Failed to restore products: {e}")
 
     # Auto-restore Orders if table is empty
     orders_json_path = Path(__file__).resolve().parent / "orders_dump.json"
@@ -196,10 +314,21 @@ def initialize_database():
             db.session.rollback()
             print(f"[INIT ERROR] Failed to restore visits: {e}")
 
+    # 1. Kéo toàn bộ ảnh, video, file CAD từ Supabase Cloud về ổ đĩa cục bộ ngay khi khởi động
+    restore_all_cloud_assets_to_local()
+
+    # 2. Auto-sync any local uploads to Supabase Cloud
+    sync_local_uploads_to_cloud()
+
+    # 3. Đồng bộ danh sách sản phẩm thực tế vào dump file dự phòng
+    sync_products_to_dump()
+
 def sync_products_to_dump():
     """Sync all current DB products to products_dump.json so user price changes and product updates persist across deployments."""
     try:
         products = Product.query.order_by(Product.id.asc()).all()
+        if not products:
+            return
         cat_map = {c.id: c.slug for c in Category.query.all()}
         dump_list = []
         for p in products:
@@ -207,12 +336,14 @@ def sync_products_to_dump():
                 "category_slug": cat_map.get(p.category_id, ""),
                 "name": p.name,
                 "slug": p.slug,
-                "sku": p.sku,
-                "price": p.price,
-                "stock": p.stock,
-                "sort_order": p.sort_order,
+                "sku": p.sku or "",
+                "price": p.price or 0,
+                "stock": p.stock or 999,
+                "sort_order": p.sort_order or 0,
                 "image": p.image or "",
                 "images": p.images or "",
+                "video_file": p.video_file or "",
+                "video_url": p.video_url or "",
                 "cad_file": p.cad_file or "",
                 "description": p.description or "",
                 "specifications": p.specifications or "",
@@ -235,7 +366,8 @@ def start_self_ping():
         time.sleep(20)
         while True:
             try:
-                target_url = "https://autotech-electrical.onrender.com/ping"
+                base_site = (app.config.get("SITE_URL") or "https://nhiemautotech.io.vn").rstrip("/")
+                target_url = f"{base_site}/ping"
                 req = urllib.request.Request(target_url, headers={"User-Agent": "NhiemAutotechSelfPing/1.0"})
                 with urllib.request.urlopen(req, timeout=10) as resp:
                     print(f"[KEEP-ALIVE] Self ping status: {resp.status}")
@@ -250,6 +382,53 @@ start_self_ping()
 
 ALLOWED_DOCS = {"dwg", "dxf", "pdf", "zip", "rar", "7z", "sldprt", "sldasm", "step", "stp", "iges", "igs", "xlsx", "docx", "pptx", "mp4", "zap", "mwp", "cxp"}
 ALLOWED_VIDEOS = {"mp4", "webm", "mov", "m4v", "avi", "mkv"}
+
+@app.route("/static/uploads/<folder>/<path:filename>")
+def serve_upload(folder, filename):
+    folder_safe = secure_filename(folder)
+    base_upload_dir = Path(app.config["UPLOAD_FOLDER"]).resolve()
+    upload_dir = (base_upload_dir / folder_safe).resolve()
+    if not str(upload_dir).startswith(str(base_upload_dir)):
+        abort(403)
+        
+    file_path = (upload_dir / filename).resolve()
+    # 1. Nếu file đã có sẵn trên ổ đĩa máy chủ, phục vụ trực tiếp kèm cache trình duyệt
+    if file_path.exists() and file_path.is_file():
+        resp = send_from_directory(upload_dir, filename)
+        resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+        return resp
+        
+    # 2. Nếu file BỊ MẤT trên máy tính (lỡ tay xóa hoặc Render khởi động lại container mới):
+    # Tự động kéo file từ Đám mây Supabase về và ghi lại vào ổ đĩa, sau đó phục vụ ngay lập tức!
+    try:
+        asset = CloudAsset.query.filter_by(filename=filename).first()
+        if asset and asset.data:
+            upload_dir.mkdir(parents=True, exist_ok=True)
+            file_path.write_bytes(asset.data)
+            print(f"[CLOUD RESTORE] Đã tự động phục hồi file '{filename}' từ Đám mây Supabase về máy chủ.")
+            resp = send_from_directory(upload_dir, filename)
+            resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+            return resp
+    except Exception as e:
+        print(f"[CLOUD RESTORE ERROR] Lỗi khi phục hồi '{filename}': {e}")
+        
+    # 3. Phục hồi dự phòng nếu ảnh hoàn toàn không có: hiển thị ảnh banner mặc định thay vì icon lỗi vỡ ảnh
+    if folder == "images":
+        default_banner = upload_dir / "thu_vien_thiet_bi_dien_brands_banner.jpg"
+        if default_banner.exists():
+            resp = send_from_directory(upload_dir, default_banner.name)
+            resp.headers["Cache-Control"] = "public, max-age=604800, immutable"
+            return resp
+            
+    abort(404)
+
+@app.after_request
+def add_browser_caching(response):
+    """Tự động thêm Cache-Control cho CSS, JS, Fonts, Ảnh để trình duyệt tải trang thứ 2 gần như 0ms."""
+    if request.path.startswith("/static/"):
+        if "max-age" not in response.headers.get("Cache-Control", ""):
+            response.headers["Cache-Control"] = "public, max-age=604800, immutable"
+    return response
 
 def public_url(endpoint, **values):
     """Build a canonical public URL, independent of local development host."""
@@ -284,8 +463,16 @@ def send_order_paid_email(order):
             dl_url = public_url("cad_download", product_id=p.id, order_id=order.id)
             download_html = f'<div style="margin-top:8px;"><a href="{dl_url}" style="background:#ff7a00;color:#ffffff;padding:8px 18px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;font-size:13px;box-shadow:0 2px 6px rgba(255,122,0,0.25);">⬇ Tải file CAD ({p.cad_file})</a></div>'
             
-            # Check if file exists on disk to attach
+            # Check if file exists on disk to attach (auto-restore from Cloud if missing)
             file_on_disk = cad_dir / p.cad_file
+            if not file_on_disk.exists():
+                try:
+                    asset = CloudAsset.query.filter_by(filename=p.cad_file).first()
+                    if asset and asset.data:
+                        cad_dir.mkdir(parents=True, exist_ok=True)
+                        file_on_disk.write_bytes(asset.data)
+                except Exception as ce:
+                    print(f"[MAIL ATTACH RESTORE ERROR] {ce}")
             if file_on_disk.exists() and file_on_disk.is_file():
                 if file_on_disk.stat().st_size <= 24 * 1024 * 1024:
                     attached_files.append((p.cad_file, file_on_disk))
@@ -586,6 +773,28 @@ def get_device_type(ua_str):
 
 _IP_LOCATION_CACHE = {}
 
+def _async_resolve_ip_location(ip):
+    """Tra cứu vị trí IP trong luồng nền (background thread), không làm nghẽn trang web của khách."""
+    if not ip or ip in _IP_LOCATION_CACHE:
+        return
+    try:
+        import urllib.request
+        req = urllib.request.Request(f"http://ip-api.com/json/{ip}", headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=1.5) as res:
+            data = json.loads(res.read().decode("utf-8"))
+            if data.get("status") == "success":
+                city = data.get("city", "")
+                region = data.get("regionName", "")
+                country = data.get("country", "")
+                loc_parts = []
+                if city: loc_parts.append(city)
+                if region and region != city: loc_parts.append(region)
+                if country: loc_parts.append("Việt Nam" if country == "Vietnam" else country)
+                if loc_parts:
+                    _IP_LOCATION_CACHE[ip] = "📍 " + ", ".join(loc_parts)
+    except Exception:
+        pass
+
 def get_location_name(ip):
     if not ip or ip in ["127.0.0.1", "::1", "localhost"] or ip.startswith("192.168.") or ip.startswith("10."):
         return "🏠 Nội bộ (Localhost)"
@@ -593,30 +802,10 @@ def get_location_name(ip):
     if ip in _IP_LOCATION_CACHE:
         return _IP_LOCATION_CACHE[ip]
 
-    location_str = "🇻🇳 Việt Nam"
-    try:
-        import urllib.request
-        req = urllib.request.Request(f"http://ip-api.com/json/{ip}", headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=2.0) as res:
-            data = json.loads(res.read().decode("utf-8"))
-            if data.get("status") == "success":
-                city = data.get("city", "")
-                region = data.get("regionName", "")
-                country = data.get("country", "")
-                loc_parts = []
-                if city:
-                    loc_parts.append(city)
-                if region and region != city:
-                    loc_parts.append(region)
-                if country:
-                    loc_parts.append("Việt Nam" if country == "Vietnam" else country)
-                if loc_parts:
-                    location_str = "📍 " + ", ".join(loc_parts)
-    except Exception:
-        pass
-
-    _IP_LOCATION_CACHE[ip] = location_str
-    return location_str
+    # Non-blocking: Trả về kết quả mặc định ngay lập tức trong 0.0001s, chạy luồng ngầm để tra cứu
+    import threading
+    threading.Thread(target=_async_resolve_ip_location, args=(ip,), daemon=True).start()
+    return "🇻🇳 Việt Nam"
 
 @app.context_processor
 def inject_admin_badges():
@@ -628,6 +817,18 @@ def inject_admin_badges():
         except Exception:
             return {"unread_notifs": 0, "unread_chats": 0}
     return {"unread_notifs": 0, "unread_chats": 0}
+
+@app.before_request
+def redirect_to_custom_domain():
+    # Keep health check /ping directly accessible
+    if request.path == "/ping":
+        return None
+    # Tự động chuyển hướng 301 sang tên miền chính thức khi truy cập qua domain onrender.com
+    host = request.host.lower()
+    if "autotech-electrical.onrender.com" in host:
+        query = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
+        return redirect(f"https://nhiemautotech.io.vn{request.path}{query}", code=301)
+    return None
 
 @app.before_request
 def track_visitor():
@@ -705,7 +906,7 @@ def track_visitor():
                 detected_ref = f"utm:{u_src}"
 
         # Xác định referrer có hiệu lực
-        is_internal = any(domain in incoming_ref.lower() for domain in ["autotech-electrical", "127.0.0.1", "localhost"])
+        is_internal = any(domain in incoming_ref.lower() for domain in ["nhiemautotech", "autotech-electrical", "127.0.0.1", "localhost"])
         saved_entry_ref = session.get("entry_referrer")
 
         if detected_ref:
@@ -835,11 +1036,13 @@ def inject_globals():
     items, total = cart_items()
     unread_notifs = 0
     recent_notifs = []
-    try:
-        unread_notifs = Notification.query.filter_by(is_read=False).count()
-        recent_notifs = Notification.query.order_by(Notification.created_at.desc()).limit(6).all()
-    except Exception:
-        pass
+    # Chỉ truy vấn thông báo khi là Admin đang đăng nhập (tiết kiệm 2 câu SQL cho khách vãng lai)
+    if session.get("is_admin"):
+        try:
+            unread_notifs = Notification.query.filter_by(is_read=False).count()
+            recent_notifs = Notification.query.order_by(Notification.created_at.desc()).limit(6).all()
+        except Exception:
+            pass
 
     return {
         "cart_count": sum(x[1] for x in items),
@@ -924,7 +1127,10 @@ def products():
 
 @app.route("/product/<slug>")
 def product_detail(slug):
-    product = Product.query.filter_by(slug=slug, status="active").first_or_404()
+    if session.get("is_admin"):
+        product = Product.query.filter_by(slug=slug).first_or_404()
+    else:
+        product = Product.query.filter_by(slug=slug, status="active").first_or_404()
     description = (product.description or f"Thông tin, giá và báo giá {product.name} tại Nhiệm Autotech.").strip()
     return render_template("product_detail.html", product=product, seo_description=description[:160],
                            canonical_url=public_url("product_detail", slug=product.slug))
@@ -964,14 +1170,14 @@ def google_verify_file():
 
 @app.route("/robots.txt")
 def robots_txt():
-    base_url = (app.config.get("SITE_URL") or "https://autotech-electrical.onrender.com").rstrip("/")
+    base_url = (app.config.get("SITE_URL") or "https://nhiemautotech.io.vn").rstrip("/")
     content = f"User-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /checkout\nDisallow: /payment/\nDisallow: /cart\n\nSitemap: {base_url}/sitemap.xml\n"
     return Response(content, mimetype="text/plain; charset=utf-8")
 
 @app.route("/sitemap.xml")
 def sitemap_xml():
     try:
-        base_url = (app.config.get("SITE_URL") or "https://autotech-electrical.onrender.com").rstrip("/")
+        base_url = (app.config.get("SITE_URL") or "https://nhiemautotech.io.vn").rstrip("/")
         static_pages = [
             ("", "daily", "1.0"),
             ("/products", "daily", "0.9"),
@@ -1003,7 +1209,7 @@ def sitemap_xml():
         response.headers["Content-Type"] = "application/xml; charset=utf-8"
         return response
     except Exception as e:
-        fallback_xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://autotech-electrical.onrender.com/</loc><priority>1.0</priority></url>\n</urlset>'
+        fallback_xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url><loc>https://nhiemautotech.io.vn/</loc><priority>1.0</priority></url>\n</urlset>'
         response = Response(fallback_xml, mimetype="application/xml")
         response.headers["Content-Type"] = "application/xml; charset=utf-8"
         return response
@@ -1028,6 +1234,15 @@ def cad_download(product_id):
     if session.get("is_admin"):
         path = Path(app.config["UPLOAD_FOLDER"]) / "cad"
         file_path = path / product.cad_file
+        if not file_path.exists():
+            try:
+                asset = CloudAsset.query.filter_by(filename=product.cad_file).first()
+                if asset and asset.data:
+                    path.mkdir(parents=True, exist_ok=True)
+                    file_path.write_bytes(asset.data)
+                    print(f"[CAD RESTORE] Đã tự động phục hồi '{product.cad_file}' từ Đám mây Supabase.")
+            except Exception as ce:
+                print(f"[CAD RESTORE ERROR] {ce}")
         if not file_path.exists():
             abort(404)
         return send_from_directory(path, product.cad_file, as_attachment=True)
@@ -1056,6 +1271,15 @@ def cad_download(product_id):
 
     path = Path(app.config["UPLOAD_FOLDER"]) / "cad"
     file_path = path / product.cad_file
+    if not file_path.exists():
+        try:
+            asset = CloudAsset.query.filter_by(filename=product.cad_file).first()
+            if asset and asset.data:
+                path.mkdir(parents=True, exist_ok=True)
+                file_path.write_bytes(asset.data)
+                print(f"[CAD RESTORE] Đã tự động phục hồi '{product.cad_file}' từ Đám mây Supabase.")
+        except Exception as ce:
+            print(f"[CAD RESTORE ERROR] {ce}")
     if not file_path.exists():
         abort(404)
     if user_id:
@@ -1221,6 +1445,7 @@ def payment_notify_paid(order_id):
     return redirect(url_for("payment", order_id=order.id))
 
 @app.route("/tra-cuu-don-hang", methods=["GET", "POST"])
+@app.route("/order-lookup", methods=["GET", "POST"])
 def order_lookup():
     orders = None
     q = request.form.get("q", "").strip() if request.method == "POST" else request.args.get("q", "").strip()
@@ -1390,6 +1615,7 @@ def api_chat_poll():
 
 
 @app.route("/login", methods=["GET","POST"])
+@app.route("/admin/login", methods=["GET","POST"])
 def login():
     if request.method == "POST":
         user = User.query.filter_by(email=request.form["email"].lower().strip()).first()
@@ -1439,6 +1665,7 @@ def account_orders():
 
 # ADMIN
 @app.route("/admin")
+@app.route("/admin/dashboard")
 @admin_required
 def admin_dashboard():
     cat_autocad = Category.query.filter_by(slug="thu-vien-autocad").first()
@@ -1692,7 +1919,7 @@ def admin_dashboard():
             if v.user_agent and not ip_ua:
                 ip_ua = v.user_agent
             r = (v.referrer or "").strip()
-            if r and not any(internal in r.lower() for internal in ["autotech-electrical", "127.0.0.1", "localhost"]):
+            if r and not any(internal in r.lower() for internal in ["nhiemautotech", "autotech-electrical", "127.0.0.1", "localhost"]):
                 ip_referrer = r
                 break
         if not ip_referrer:
@@ -1777,10 +2004,16 @@ def admin_categories():
         filename = f"category-{category.id}{ext}"
         image_path = Path(app.config["UPLOAD_FOLDER"]) / "images"
         image_path.mkdir(parents=True, exist_ok=True)
-        image.save(image_path / filename)
+        img_bytes = image.read()
+        image.seek(0)
+        with open(image_path / filename, "wb") as cf:
+            cf.write(img_bytes)
+        import mimetypes
+        m_type, _ = mimetypes.guess_type(filename)
+        save_file_to_cloud(filename, img_bytes, asset_type="image", mime_type=m_type or "image/jpeg")
         category.image = filename
         db.session.commit()
-        flash("Đã cập nhật ảnh danh mục.", "success")
+        flash("Đã cập nhật ảnh danh mục (đã đồng bộ lên đám mây).", "success")
         return redirect(url_for("admin_categories"))
     return render_template("admin/categories.html", categories=Category.query.order_by(Category.name).all())
 
@@ -1788,7 +2021,7 @@ def vietnamese_slugify(text):
     if not text:
         return ""
     import unicodedata, re
-    text = text.lower().strip()
+    text = unicodedata.normalize('NFC', text).lower().strip()
     viet_map = {
         'à': 'a', 'á': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
         'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
@@ -1817,17 +2050,57 @@ def save_product_image(fobj, prefix="img"):
     ext = Path(orig_name).suffix.lower()
     if not ext or ext not in [".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg"]:
         ext = ".jpg"
-    import uuid, time, re
+    import uuid, time, re, mimetypes, io
     clean_prefix = re.sub(r'[^a-zA-Z0-9_-]+', '-', prefix).strip('-') or 'img'
     fname = f"{clean_prefix}-{int(time.time())}-{uuid.uuid4().hex[:6]}{ext}"
     img_dir = Path(app.config["UPLOAD_FOLDER"]) / "images"
     img_dir.mkdir(parents=True, exist_ok=True)
-    fobj.save(img_dir / fname)
+    raw_bytes = fobj.read()
+    fobj.seek(0)
+
+    # Tự động nén và resize ảnh thông minh bằng Pillow nếu là ảnh chụp từ điện thoại nặng
+    final_bytes = raw_bytes
+    if ext in [".jpg", ".jpeg", ".png", ".webp"]:
+        try:
+            from PIL import Image, ImageOps
+            im = Image.open(io.BytesIO(raw_bytes))
+            im = ImageOps.exif_transpose(im) # Tự động xoay đúng chiều nếu chụp bằng iPhone/Android
+
+            # Thu nhỏ nếu chiều rộng hoặc chiều cao vượt quá 1600px
+            max_size = 1600
+            if im.width > max_size or im.height > max_size:
+                im.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+
+            out_io = io.BytesIO()
+            if ext in [".jpg", ".jpeg"]:
+                if im.mode in ("RGBA", "P"):
+                    im = im.convert("RGB")
+                im.save(out_io, format="JPEG", quality=85, optimize=True)
+            elif ext == ".png":
+                # Nén tối ưu PNG
+                im.save(out_io, format="PNG", optimize=True)
+            elif ext == ".webp":
+                im.save(out_io, format="WEBP", quality=85)
+
+            compressed_data = out_io.getvalue()
+            if compressed_data and len(compressed_data) < len(raw_bytes):
+                final_bytes = compressed_data
+                print(f"[IMAGE COMPRESS] Tự động nén '{fname}' từ {len(raw_bytes)} bytes xuống còn {len(final_bytes)} bytes.")
+        except Exception as pe:
+            print(f"[IMAGE COMPRESS WARN] Bỏ qua nén cho {fname}: {pe}")
+            final_bytes = raw_bytes
+
+    with open(img_dir / fname, "wb") as f:
+        f.write(final_bytes)
+    m_type, _ = mimetypes.guess_type(fname)
+    save_file_to_cloud(fname, final_bytes, asset_type="image", mime_type=m_type or "image/jpeg")
     return fname
+
 
 @app.route("/admin/products/add", methods=["GET","POST"])
 @admin_required
 def admin_product_add():
+    import unicodedata, re
     categories = Category.query.all()
     # Hỗ trợ chọn sẵn danh mục theo URL ?category=do-an-tu-dong-hoa hoặc ?category_id=7
     req_cat = request.args.get("category", "").strip()
@@ -1841,6 +2114,18 @@ def admin_product_add():
         matched = db.session.get(Category, req_cat_id)
         if matched:
             default_category_id = matched.id
+    else:
+        # Kiểm tra referrer nếu người dùng vừa bấm từ trang mục 1/2/3
+        ref = request.referrer or ""
+        if "category=do-an-tu-dong-hoa" in ref or "do-an-tu-dong-hoa" in ref:
+            c3 = Category.query.filter_by(slug="do-an-tu-dong-hoa").first()
+            if c3: default_category_id = c3.id
+        elif "category=thiet-ke-tu-dien" in ref or "thiet-ke-tu-dien" in ref:
+            c2 = Category.query.filter_by(slug="thiet-ke-tu-dien").first()
+            if c2: default_category_id = c2.id
+        elif "category=thu-vien-autocad" in ref or "thu-vien-autocad" in ref:
+            c1 = Category.query.filter_by(slug="thu-vien-autocad").first()
+            if c1: default_category_id = c1.id
 
     if request.method == "POST":
         name = request.form["name"].strip()
@@ -1849,15 +2134,64 @@ def admin_product_add():
             slug = vietnamese_slugify(name)
         price = float(request.form.get("price", 0) or 0)
         
-        # Nhận diện danh mục được chọn
+        # Nhận diện danh mục được chọn từ form
         cat_id_val = request.form.get("category_id")
-        selected_cat_id = int(cat_id_val) if cat_id_val else (default_category_id or (categories[0].id if categories else 1))
+        selected_cat_id = int(cat_id_val) if cat_id_val else default_category_id
+        
+        # BACKEND SMART DETECTION / SANITY CHECK:
+        # Tự động bảo vệ tránh đăng nhầm danh mục khi người dùng thêm sản phẩm
+        cat_by_slug = {c.slug: c.id for c in categories}
+        cat_c3_id = cat_by_slug.get("do-an-tu-dong-hoa")
+        cat_c2_id = cat_by_slug.get("thiet-ke-tu-dien")
+        cat_c1_id = cat_by_slug.get("thu-vien-autocad")
+        
+        name_nfc = unicodedata.normalize("NFC", name).lower()
+        name_ascii = vietnamese_slugify(name)
+        
+        # Từ khóa và tiền tố nhận diện Mục 3 (Tự Động Hóa & Đồ Án)
+        m3_keys = [
+            "mo hinh", "mô hình", "do an", "đồ án", "solidworks", "stm32", "arduino",
+            "bang tai", "băng tải", "phan loai", "phân loại", "camera", "trai cay", "trái cây",
+            "bai gui xe", "bãi gửi xe", "kho luu kho", "kho lưu kho", "robot", "scada",
+            "tia portal", "plc s7", "s7-1200", "s7-1500"
+        ]
+        is_m3_prefix = any(name_nfc.startswith(p) for p in ["3.", "3 ", "#3", "mục 3", "muc 3"])
+        is_m3_keyword = any(k in name_nfc or k in name_ascii for k in m3_keys)
+        
+        # Từ khóa và tiền tố nhận diện Mục 2 (Thiết Kế Tủ Điện & Mạch Điều Khiển)
+        m2_keys = [
+            "layout tu", "layout tủ", "tu msb", "tủ msb", "tu ats", "tủ ats",
+            "tu bu", "tủ bù", "tu pccc", "tủ pccc", "tu db", "tủ db", "form tu", "form vỏ tủ",
+            "mach dieu khien", "mạch điều khiển"
+        ]
+        is_m2_prefix = any(name_nfc.startswith(p) for p in ["2.", "2 ", "#2", "mục 2", "muc 2"])
+        is_m2_keyword = any(k in name_nfc or k in name_ascii for k in m2_keys)
+        
+        # Nếu sản phẩm rõ ràng thuộc Mục 3 nhưng bị gán nhầm sang Mục 1:
+        if (is_m3_prefix or is_m3_keyword) and cat_c3_id:
+            if not selected_cat_id or selected_cat_id == cat_c1_id:
+                selected_cat_id = cat_c3_id
+        # Nếu sản phẩm rõ ràng thuộc Mục 2 nhưng bị gán nhầm sang Mục 1:
+        elif (is_m2_prefix or is_m2_keyword) and cat_c2_id:
+            if not selected_cat_id or selected_cat_id == cat_c1_id:
+                selected_cat_id = cat_c2_id
+        
+        if not selected_cat_id:
+            selected_cat_id = default_category_id or (categories[0].id if categories else 1)
+        
+        # Tự động suy luận thứ tự sort_order nếu tên bắt đầu bằng số thứ tự (ví dụ: 1., 2., 3.)
+        sort_order = int(request.form.get("sort_order", 0) or 0)
+        if sort_order == 0:
+            match_num = re.match(r'^(?:#)?(\d+)[\.\s\-]', name.strip())
+            if match_num:
+                sort_order = int(match_num.group(1))
         
         product = Product(name=name, slug=slug, sku=request.form.get("sku",""),
                           description=request.form.get("description",""),
                           specifications=request.form.get("specifications",""),
                           price=price, stock=int(request.form.get("stock",999) or 999),
                           category_id=selected_cat_id,
+                          sort_order=sort_order,
                           video_url=request.form.get("video_url","").strip())
         
         # 1. Main image
@@ -1892,11 +2226,16 @@ def admin_product_add():
         if video and video.filename:
             ext = Path(video.filename).suffix.lower().lstrip(".")
             if ext in ALLOWED_VIDEOS:
-                import time, uuid
+                import time, uuid, mimetypes
                 v_filename = f"{slug}-video-{int(time.time())}.{ext}"
                 video_path = Path(app.config["UPLOAD_FOLDER"]) / "videos"
                 video_path.mkdir(parents=True, exist_ok=True)
-                video.save(video_path / v_filename)
+                v_bytes = video.read()
+                video.seek(0)
+                with open(video_path / v_filename, "wb") as vf:
+                    vf.write(v_bytes)
+                v_mime, _ = mimetypes.guess_type(v_filename)
+                save_file_to_cloud(v_filename, v_bytes, asset_type="video", mime_type=v_mime or f"video/{ext}")
                 product.video_file = v_filename
 
         # 5. CAD file
@@ -1906,10 +2245,16 @@ def admin_product_add():
             if ext not in ALLOWED_DOCS:
                 flash(f"Định dạng file .{ext} chưa được hỗ trợ. Hãy nén dạng .zip hoặc .rar hoặc .dwg", "danger")
                 return render_template("admin/product_add.html", categories=categories)
+            import mimetypes
             filename = f"{slug}-{secure_filename(cad.filename)}"
             cad_path = Path(app.config["UPLOAD_FOLDER"]) / "cad"
             cad_path.mkdir(parents=True, exist_ok=True)
-            cad.save(cad_path / filename)
+            c_bytes = cad.read()
+            cad.seek(0)
+            with open(cad_path / filename, "wb") as cf:
+                cf.write(c_bytes)
+            c_mime, _ = mimetypes.guess_type(filename)
+            save_file_to_cloud(filename, c_bytes, asset_type="cad", mime_type=c_mime or "application/octet-stream")
             product.cad_file = filename
             
         db.session.add(product)
@@ -1978,11 +2323,16 @@ def admin_product_edit(product_id):
         if video and video.filename:
             ext = Path(video.filename).suffix.lower().lstrip(".")
             if ext in ALLOWED_VIDEOS:
-                import time
+                import time, mimetypes
                 v_filename = f"{product.slug}-video-{int(time.time())}.{ext}"
                 video_path = Path(app.config["UPLOAD_FOLDER"]) / "videos"
                 video_path.mkdir(parents=True, exist_ok=True)
-                video.save(video_path / v_filename)
+                v_bytes = video.read()
+                video.seek(0)
+                with open(video_path / v_filename, "wb") as vf:
+                    vf.write(v_bytes)
+                v_mime, _ = mimetypes.guess_type(v_filename)
+                save_file_to_cloud(v_filename, v_bytes, asset_type="video", mime_type=v_mime or f"video/{ext}")
                 product.video_file = v_filename
 
         # 6. CAD file update
@@ -1992,10 +2342,16 @@ def admin_product_edit(product_id):
             if ext not in ALLOWED_DOCS:
                 flash(f"Định dạng file .{ext} chưa được hỗ trợ.", "danger")
                 return render_template("admin/product_edit.html", product=product, categories=categories)
+            import mimetypes
             filename = f"{product.slug}-{secure_filename(cad.filename)}"
             cad_path = Path(app.config["UPLOAD_FOLDER"]) / "cad"
             cad_path.mkdir(parents=True, exist_ok=True)
-            cad.save(cad_path / filename)
+            c_bytes = cad.read()
+            cad.seek(0)
+            with open(cad_path / filename, "wb") as cf:
+                cf.write(c_bytes)
+            c_mime, _ = mimetypes.guess_type(filename)
+            save_file_to_cloud(filename, c_bytes, asset_type="cad", mime_type=c_mime or "application/octet-stream")
             product.cad_file = filename
             
         db.session.commit()

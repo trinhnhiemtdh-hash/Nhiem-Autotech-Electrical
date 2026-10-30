@@ -27,27 +27,29 @@
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:14px;" id="edit-category-cards-wrap">
         {% for c in categories %}
           {% set is_selected = (product.category_id == c.id) %}
-          <label class="edit-category-card-choice" data-slug="{{ c.slug }}" data-id="{{ c.id }}" style="display:block;cursor:pointer;padding:16px;border-radius:12px;border:2px solid {% if is_selected %}{% if c.slug == 'do-an-tu-dong-hoa' %}#7c3aed{% elif c.slug == 'thiet-ke-tu-dien' %}#0284c7{% else %}#0ea5e9{% endif %}{% else %}#e2e8f0{% endif %};background:{% if is_selected %}#f8fafc{% else %}#fff{% endif %};transition:all 0.2s ease;position:relative;box-shadow:{% if is_selected %}0 4px 12px rgba(0,0,0,0.06){% else %}none{% endif %};">
-            <input type="radio" name="category_id" value="{{ c.id }}" {% if is_selected %}checked{% endif %} required style="position:absolute;top:16px;right:16px;width:18px;height:18px;">
-            <div style="font-size:26px;margin-bottom:8px;">
-              {% if c.slug == 'thu-vien-autocad' %}📐
-              {% elif c.slug == 'thiet-ke-tu-dien' %}⚡
-              {% else %}🤖{% endif %}
-            </div>
-            <div style="font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;color:{% if c.slug == 'do-an-tu-dong-hoa' %}#7c3aed{% elif c.slug == 'thiet-ke-tu-dien' %}#0284c7{% else %}#0ea5e9{% endif %};">
-              {% if c.slug == 'thu-vien-autocad' %}MỤC 1 · THƯ VIỆN CAD
-              {% elif c.slug == 'thiet-ke-tu-dien' %}MỤC 2 · LAYOUT TỦ ĐIỆN
-              {% else %}MỤC 3 · TỰ ĐỘNG HÓA{% endif %}
-            </div>
-            <div style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px;line-height:1.3;">
-              {{ c.name }}
-            </div>
-            <div style="font-size:12px;color:#64748b;line-height:1.4;">
-              {% if c.slug == 'thu-vien-autocad' %}Bán lẻ từng file bản vẽ AutoCAD (.DWG) các hãng đóng cắt.
-              {% elif c.slug == 'thiet-ke-tu-dien' %}Bản vẽ thiết kế tủ MSB, DB, ATS, tụ bù và sơ đồ mạch.
-              {% else %}Đồ án PLC S7-1200, SolidWorks 3D, STM32, Arduino, Băng tải, Robot...{% endif %}
-            </div>
-          </label>
+          <div class="edit-category-card-choice" data-slug="{{ c.slug }}" data-id="{{ c.id }}" style="display:block;cursor:pointer;padding:16px;border-radius:12px;border:2px solid {% if is_selected %}{% if c.slug == 'do-an-tu-dong-hoa' %}#7c3aed{% elif c.slug == 'thiet-ke-tu-dien' %}#0284c7{% else %}#0ea5e9{% endif %}{% else %}#e2e8f0{% endif %};background:{% if is_selected %}{% if c.slug == 'do-an-tu-dong-hoa' %}#faf5ff{% elif c.slug == 'thiet-ke-tu-dien' %}#f0f9ff{% else %}#f8fafc{% endif %}{% else %}#fff{% endif %};transition:all 0.2s ease;position:relative;box-shadow:{% if is_selected %}0 4px 12px rgba(0,0,0,0.06){% else %}none{% endif %};">
+            <input type="radio" id="edit-cat-radio-{{ c.id }}" name="category_id" value="{{ c.id }}" {% if is_selected %}checked{% endif %} required style="position:absolute;top:16px;right:16px;width:20px;height:20px;cursor:pointer;accent-color:{% if c.slug == 'do-an-tu-dong-hoa' %}#7c3aed{% elif c.slug == 'thiet-ke-tu-dien' %}#0284c7{% else %}#0ea5e9{% endif %};">
+            <label for="edit-cat-radio-{{ c.id }}" style="cursor:pointer;display:block;margin:0;">
+              <div style="font-size:26px;margin-bottom:8px;">
+                {% if c.slug == 'thu-vien-autocad' %}📐
+                {% elif c.slug == 'thiet-ke-tu-dien' %}⚡
+                {% else %}🤖{% endif %}
+              </div>
+              <div style="font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:4px;color:{% if c.slug == 'do-an-tu-dong-hoa' %}#7c3aed{% elif c.slug == 'thiet-ke-tu-dien' %}#0284c7{% else %}#0ea5e9{% endif %};">
+                {% if c.slug == 'thu-vien-autocad' %}MỤC 1 · THƯ VIỆN CAD
+                {% elif c.slug == 'thiet-ke-tu-dien' %}MỤC 2 · LAYOUT TỦ ĐIỆN
+                {% else %}MỤC 3 · TỰ ĐỘNG HÓA{% endif %}
+              </div>
+              <div style="font-size:15px;font-weight:700;color:#0f172a;margin-bottom:4px;line-height:1.3;">
+                {{ c.name }}
+              </div>
+              <div style="font-size:12px;color:#64748b;line-height:1.4;">
+                {% if c.slug == 'thu-vien-autocad' %}Bán lẻ từng file bản vẽ AutoCAD (.DWG) các hãng đóng cắt.
+                {% elif c.slug == 'thiet-ke-tu-dien' %}Bản vẽ thiết kế tủ MSB, DB, ATS, tụ bù và sơ đồ mạch.
+                {% else %}Đồ án PLC S7-1200, SolidWorks 3D, STM32, Arduino, Băng tải, Robot...{% endif %}
+              </div>
+            </label>
+          </div>
         {% endfor %}
       </div>
     </div>
@@ -88,7 +90,13 @@
     </div>
 
     <div style="background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:var(--radius-lg);padding:22px;margin-bottom:24px;">
-      <h4 style="margin:0 0 14px;color:#0f172a;font-size:15px;">📁 Quản Lý File Đính Kèm & Ảnh Bìa Sản Phẩm</h4>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+        <h4 style="margin:0;color:#0f172a;font-size:15px;">📁 Quản Lý File Đính Kèm & Ảnh Bìa Sản Phẩm</h4>
+        <span style="display:inline-flex;align-items:center;gap:6px;background:#ecfdf5;color:#047857;border:1px solid #a7f3d0;padding:4px 12px;border-radius:20px;font-size:11.5px;font-weight:700;">
+          <span style="width:7px;height:7px;background:#10b981;border-radius:50%;"></span>
+          ☁️ Đám Mây Tự Động: Mọi ảnh & file đều được lưu trên Supabase Cloud an toàn tuyệt đối
+        </span>
+      </div>
       
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:18px;">
         <div class="form-group">
@@ -251,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
           card.style.borderColor = '#0284c7';
           card.style.background = '#f0f9ff';
         } else {
-          card.style.borderColor = '#0284c7';
+          card.style.borderColor = '#0ea5e9';
           card.style.background = '#f8fafc';
         }
       } else {
@@ -262,6 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  const radios = document.querySelectorAll('input[name="category_id"]');
   cards.forEach(card => {
     card.addEventListener('click', function() {
       const radio = card.querySelector('input[type="radio"]');
@@ -270,6 +279,10 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCardStyles();
       }
     });
+  });
+
+  radios.forEach(radio => {
+    radio.addEventListener('change', updateCardStyles);
   });
 
   updateCardStyles();

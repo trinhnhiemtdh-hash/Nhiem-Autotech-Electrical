@@ -13,10 +13,10 @@
   <meta property="og:description" content="{% block og_description %}Thư viện AutoCAD thiết kế tủ điện full các hãng, bản vẽ mạch điều khiển và layout tủ điện công nghiệp chuẩn tỷ lệ 1:1.{% endblock %}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="{{ canonical_url or site_url ~ request.path }}">
-  <meta property="og:site_name" content="Autotech Electrical">
+  <meta property="og:site_name" content="Nhiệm Autotech Electrical">
   {% block og_image %}<meta property="og:image" content="{{ site_url ~ url_for('static', filename='images/logo.png') }}">{% endblock %}
-  <meta name="application-name" content="Autotech Electrical">
-  <meta name="apple-mobile-web-app-title" content="Autotech Electrical">
+  <meta name="application-name" content="Nhiệm Autotech Electrical">
+  <meta name="apple-mobile-web-app-title" content="Nhiệm Autotech Electrical">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="{{ canonical_url or site_url ~ request.path }}">
 
@@ -29,12 +29,11 @@
         "@type": "WebSite",
         "@id": {{ (site_url ~ "/#website")|tojson }},
         "url": {{ site_url|tojson }},
-        "name": "Autotech Electrical",
+        "name": "Nhiệm Autotech Electrical",
         "alternateName": [
-          "Nhiệm Autotech Electrical",
           "Nhiệm Autotech",
-          "Thư Viện AutoCAD Thiết Kế Tủ Điện Full Các Hãng",
-          "Mạch Điều Khiển"
+          "Autotech Electrical",
+          "Thư Viện AutoCAD Thiết Kế Tủ Điện Full Các Hãng"
         ],
         "publisher": {
           "@id": {{ (site_url ~ "/#organization")|tojson }}

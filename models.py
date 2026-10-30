@@ -138,3 +138,13 @@ class AdminIP(db.Model):
     ip_address = db.Column(db.String(50), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class CloudAsset(db.Model):
+    __tablename__ = "cloud_asset"
+    id = db.Column(db.Integer, primary_key=True)
+    filename = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    asset_type = db.Column(db.String(50), default="image") # 'image', 'video', 'cad'
+    mime_type = db.Column(db.String(100), default="image/jpeg")
+    file_size = db.Column(db.Integer, default=0)
+    data = db.Column(db.LargeBinary, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+

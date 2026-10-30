@@ -4,3 +4,8 @@ __pycache__/
 .env
 flask-server*.log
 Nhiem-Autotech-Electrical/
+static/uploads/videos/*.mp4
+static/uploads/videos/*.mov
+static/uploads/videos/*.avi
+static/uploads/images/test_crop*.png
+

@@ -6,9 +6,13 @@
   <div>
     <h1>Quản lý Thư Viện CAD, Khóa Học & Đồ Án</h1>
     <p>Quản lý toàn bộ các file bản vẽ AutoCAD bán lẻ, khóa học layout tủ điện và đồ án tự động hóa.</p>
+    <div style="display:inline-flex;align-items:center;gap:8px;background:#ecfdf5;color:#047857;border:1.5px solid #a7f3d0;padding:5px 14px;border-radius:999px;font-size:12.5px;font-weight:700;margin-top:6px;">
+      <span style="display:inline-block;width:8px;height:8px;background:#10b981;border-radius:50%;box-shadow:0 0 0 3px rgba(16,185,129,0.2);"></span>
+      <span>☁️ Đám Mây Tự Động (Supabase Cloud): ĐANG BẬT — Ảnh & File luôn an toàn, không lo mất file máy tính</span>
+    </div>
   </div>
   <a class="btn primary" href="{{ url_for('admin_product_add', category=selected_category) if selected_category else url_for('admin_product_add') }}" style="font-size:14px;padding:10px 20px;">
-    + Đăng File / Khóa Học Mới
+    + Đăng File / Khóa Học Mới {% if selected_category == 'do-an-tu-dong-hoa' %}Vào MỤC 3{% elif selected_category == 'thiet-ke-tu-dien' %}Vào MỤC 2{% elif selected_category == 'thu-vien-autocad' %}Vào MỤC 1{% endif %}
   </a>
 </div>
 
@@ -19,10 +23,10 @@
   </a>
   {% for c in categories %}
     <a href="{{ url_for('admin_products', category=c.slug) }}" class="btn {% if selected_category == c.slug %}primary{% else %}ghost{% endif %}" style="font-size:12.5px;padding:6px 14px;">
-      {% if c.slug == 'thu-vien-autocad' %}📐
-      {% elif c.slug == 'thiet-ke-tu-dien' %}⚡
-      {% else %}🤖{% endif %}
-      {{ c.name }}
+      {% if c.slug == 'thu-vien-autocad' %}📐 MỤC 1 · CAD
+      {% elif c.slug == 'thiet-ke-tu-dien' %}⚡ MỤC 2 · TỦ ĐIỆN
+      {% else %}🤖 MỤC 3 · TỰ ĐỘNG HÓA{% endif %}
+      ({{ c.products|length if c.products is defined else '' }})
     </a>
   {% endfor %}
 </div>
