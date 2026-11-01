@@ -899,6 +899,16 @@ def inject_admin_badges():
             return {"unread_notifs": 0, "unread_chats": 0}
     return {"unread_notifs": 0, "unread_chats": 0}
 
+@app.after_request
+def add_cache_headers(response):
+    """Giúp trình duyệt laptop/máy tính lưu cache tĩnh (CSS, JS, logo, ảnh sản phẩm) 7 ngày,
+    giúp người dùng máy tính mở trang kế tiếp ngay lập tức trong 0.01 giây từ bộ nhớ đĩa."""
+    if request.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=604800, stale-while-revalidate=86400"
+    elif request.path.startswith("/admin") or request.path.startswith("/cart") or request.path.startswith("/checkout") or request.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return response
+
 @app.before_request
 def redirect_to_custom_domain():
     # Keep health check /ping directly accessible

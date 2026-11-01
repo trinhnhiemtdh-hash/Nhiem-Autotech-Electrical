@@ -470,53 +470,5 @@
 {% block structured_data %}{% endblock %}
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
-<script>
-// Đo thời lượng khách ở lại trên trang theo thời gian thực (mỗi 25 giây gửi 1 nhịp)
-(function() {
-  if (window.location.pathname.startsWith('/admin')) return;
-  var visitStartTime = Date.now();
-  setInterval(function() {
-    if (document.visibilityState === 'visible') {
-      var elapsedSec = Math.round((Date.now() - visitStartTime) / 1000);
-      fetch('/api/track-duration', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          path: window.location.pathname,
-          seconds: elapsedSec
-        }),
-        keepalive: true
-      }).catch(function() {});
-    }
-  }, 25000);
-})();
-</script>
-<!-- Tải trước trang nhẹ nhàng trên máy tính (chống nghẽn mạng trên điện thoại) -->
-<script>
-(function() {
-  if ('ontouchstart' in window) return; // Bỏ qua điện thoại để tránh nghẽn mạng 4G khi vuốt màn hình
-  var prefetched = {};
-  var hoverTimer = null;
-  document.addEventListener('mouseover', function(e) {
-    var a = e.target.closest('a');
-    if (!a || !a.href || prefetched[a.href]) return;
-    if (a.href.startsWith(window.location.origin) && !a.href.includes('/admin') && !a.href.includes('/logout') && !a.href.includes('#')) {
-      clearTimeout(hoverTimer);
-      hoverTimer = setTimeout(function() {
-        if (!prefetched[a.href]) {
-          prefetched[a.href] = true;
-          var link = document.createElement('link');
-          link.rel = 'prefetch';
-          link.href = a.href;
-          document.head.appendChild(link);
-        }
-      }, 120);
-    }
-  }, { passive: true });
-  document.addEventListener('mouseout', function() {
-    clearTimeout(hoverTimer);
-  }, { passive: true });
-})();
-</script>
 </body>
 </html>
