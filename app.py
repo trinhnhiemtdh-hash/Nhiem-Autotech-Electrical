@@ -922,7 +922,7 @@ def redirect_to_custom_domain():
         or ""
     )
     host = raw_host.lower().split(":")[0]
-    if "onrender.com" in host or "autotech-electrical" in host:
+    if "onrender.com" in host or "autotech-electrical" in host or host.startswith("www."):
         query = f"?{request.query_string.decode('utf-8')}" if request.query_string else ""
         return redirect(f"https://nhiemautotech.io.vn{request.path}{query}", code=301)
     return None
