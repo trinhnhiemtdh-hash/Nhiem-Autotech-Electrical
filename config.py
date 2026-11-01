@@ -11,6 +11,13 @@ class Config:
         raw_db_url = raw_db_url.replace("postgres://", "postgresql://", 1)
     SQLALCHEMY_DATABASE_URI = raw_db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 10,
+        "max_overflow": 20,
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
+        "pool_timeout": 15,
+    }
     UPLOAD_FOLDER = str(BASE_DIR / "static" / "uploads")
     ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "trinhnhiemtdh@gmail.com")
     ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Admin@123456")

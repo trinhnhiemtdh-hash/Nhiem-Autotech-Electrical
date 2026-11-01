@@ -491,41 +491,31 @@
   }, 25000);
 })();
 </script>
-<!-- Instant.page: Tự động tải trước trang khi rê chuột (hover 65ms) hoặc chạm màn hình, giúp mở trang TỨC THÌ (0ms) -->
-<script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module" integrity="sha384-jnZyxPjiipYXnSU0RKnNe2ugR602RRunYmbcDVr9On5kyyo3Ne5WB3l2kyfFYJnK"></script>
+<!-- Tải trước trang nhẹ nhàng trên máy tính (chống nghẽn mạng trên điện thoại) -->
 <script>
-// Tải trước (Prefetch) thông minh ngay khi rê chuột vào bất kỳ liên kết nội bộ nào
 (function() {
+  if ('ontouchstart' in window) return; // Bỏ qua điện thoại để tránh nghẽn mạng 4G khi vuốt màn hình
   var prefetched = {};
-  function prefetchUrl(url) {
-    if (!url || prefetched[url]) return;
-    if (url.startsWith(window.location.origin) && !url.includes('/admin') && !url.includes('/logout') && !url.includes('#') && !url.includes('/payment')) {
-      prefetched[url] = true;
-      var link = document.createElement('link');
-      link.rel = 'prefetch';
-      link.href = url;
-      document.head.appendChild(link);
-    }
-  }
-
+  var hoverTimer = null;
   document.addEventListener('mouseover', function(e) {
     var a = e.target.closest('a');
-    if (a && a.href) prefetchUrl(a.href);
+    if (!a || !a.href || prefetched[a.href]) return;
+    if (a.href.startsWith(window.location.origin) && !a.href.includes('/admin') && !a.href.includes('/logout') && !a.href.includes('#')) {
+      clearTimeout(hoverTimer);
+      hoverTimer = setTimeout(function() {
+        if (!prefetched[a.href]) {
+          prefetched[a.href] = true;
+          var link = document.createElement('link');
+          link.rel = 'prefetch';
+          link.href = a.href;
+          document.head.appendChild(link);
+        }
+      }, 120);
+    }
   }, { passive: true });
-
-  document.addEventListener('touchstart', function(e) {
-    var a = e.target.closest('a');
-    if (a && a.href) prefetchUrl(a.href);
+  document.addEventListener('mouseout', function() {
+    clearTimeout(hoverTimer);
   }, { passive: true });
-
-  // Tải trước sẵn 3 trang quan trọng sau khi web đã tải xong 1.5 giây
-  window.addEventListener('load', function() {
-    setTimeout(function() {
-      ['/products', '/cad-library', '/thiet-ke-tu-dien'].forEach(function(p) {
-        prefetchUrl(window.location.origin + p);
-      });
-    }, 1500);
-  });
 })();
 </script>
 </body>

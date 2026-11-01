@@ -9,7 +9,7 @@ from pathlib import Path
 from datetime import timezone
 from urllib.parse import quote as url_quote, urlencode
 from xml.sax.saxutils import escape
-import os, json, smtplib
+import os, json, smtplib, gzip
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.application import MIMEApplication
@@ -327,14 +327,17 @@ def initialize_database():
             db.session.rollback()
             print(f"[INIT ERROR] Failed to restore visits: {e}")
 
-    # 1. Kéo toàn bộ ảnh, video, file CAD từ Supabase Cloud về ổ đĩa cục bộ ngay khi khởi động
-    restore_all_cloud_assets_to_local()
-
-    # 2. Auto-sync any local uploads to Supabase Cloud
-    sync_local_uploads_to_cloud()
-
-    # 3. Đồng bộ danh sách sản phẩm thực tế vào dump file dự phòng
-    sync_products_to_dump()
+    # 1-3. Chạy đồng bộ đám mây trong luồng ngầm để máy chủ phản hồi khách hàng ngay lập tức 0ms
+    def _bg_cloud_sync(app_ctx):
+        with app_ctx:
+            try:
+                restore_all_cloud_assets_to_local()
+                sync_local_uploads_to_cloud()
+                sync_products_to_dump()
+            except Exception as be:
+                print(f"[BG SYNC ERROR] {be}")
+    import threading
+    threading.Thread(target=_bg_cloud_sync, args=(app.app_context(),), daemon=True).start()
 
 def sync_products_to_dump():
     """Sync all current DB products to products_dump.json so user price changes and product updates persist across deployments."""
@@ -436,11 +439,28 @@ def serve_upload(folder, filename):
     abort(404)
 
 @app.after_request
-def add_browser_caching(response):
-    """Tự động thêm Cache-Control cho CSS, JS, Fonts, Ảnh để trình duyệt tải trang thứ 2 gần như 0ms."""
+def add_browser_caching_and_compression(response):
+    """Tự động thêm Cache-Control và nén GZIP siêu tốc giúp giảm 80% dung lượng tải trang."""
     if request.path.startswith("/static/"):
         if "max-age" not in response.headers.get("Cache-Control", ""):
             response.headers["Cache-Control"] = "public, max-age=604800, immutable"
+
+    # Tự động nén GZIP cho HTML, CSS, JS, JSON, SVG (giảm 80% dung lượng tải qua mạng)
+    accept_encoding = request.headers.get("Accept-Encoding", "")
+    if "gzip" in accept_encoding.lower() and 200 <= response.status_code < 300:
+        content_type = response.headers.get("Content-Type", "")
+        if any(ct in content_type for ct in ["text/html", "text/css", "application/javascript", "application/json", "text/javascript", "image/svg+xml"]):
+            try:
+                response.direct_passthrough = False
+                data = response.get_data()
+                if len(data) > 400:
+                    compressed = gzip.compress(data, compresslevel=6)
+                    response.set_data(compressed)
+                    response.headers["Content-Encoding"] = "gzip"
+                    response.headers["Content-Length"] = len(compressed)
+                    response.headers["Vary"] = "Accept-Encoding"
+            except Exception:
+                pass
     return response
 
 def public_url(endpoint, **values):
@@ -910,6 +930,9 @@ def track_visitor():
         or request.path.endswith(".png")
         or request.path.endswith(".jpg")
         or any(p in req_path_lower for p in SCANNER_PATH_PATTERNS)
+        or request.headers.get("Purpose") == "prefetch"
+        or request.headers.get("Sec-Purpose") == "prefetch"
+        or request.headers.get("X-Purpose") == "preview"
     ):
         return
     # 1. Bỏ qua nếu là Admin đang có phiên đăng nhập
