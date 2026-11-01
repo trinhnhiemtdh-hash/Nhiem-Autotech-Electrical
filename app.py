@@ -1204,29 +1204,25 @@ def products():
     q = request.args.get("q", "").strip()
     category = request.args.get("category", "").strip()
 
-    if not q and not category:
-        from sqlalchemy.orm import joinedload
-        prods, cats = get_cached_catalog("all_active_products", 300, lambda: (
-            Product.query.options(joinedload(Product.category)).filter_by(status="active").order_by(Product.sort_order.asc(), Product.id.asc()).all(),
-            Category.query.all()
-        ))
-        return render_template("products.html", products=prods, categories=cats, q=q,
-                               selected_category=category, canonical_url=public_url("products"))
+    cache_key = f"prod_catalog_cat_{category}_q_{q}"
 
-    from sqlalchemy.orm import joinedload
-    query = Product.query.options(joinedload(Product.category)).filter_by(status="active")
-    if q:
-        pattern = f"%{q}%"
-        query = query.outerjoin(Category).filter(or_(
-            Product.name.ilike(pattern), Product.sku.ilike(pattern),
-            Product.description.ilike(pattern), Product.specifications.ilike(pattern),
-            Category.name.ilike(pattern),
-        ))
-    if category:
-        if not q:
-            query = query.join(Category)
-        query = query.filter(Category.slug == category)
-    products = query.distinct().order_by(Product.sort_order.asc(), Product.id.asc()).all()
+    def fetch_products():
+        from sqlalchemy.orm import joinedload
+        query = Product.query.options(joinedload(Product.category)).filter_by(status="active")
+        if q:
+            pattern = f"%{q}%"
+            query = query.outerjoin(Category).filter(or_(
+                Product.name.ilike(pattern), Product.sku.ilike(pattern),
+                Product.description.ilike(pattern), Product.specifications.ilike(pattern),
+                Category.name.ilike(pattern),
+            ))
+        if category:
+            if not q:
+                query = query.join(Category)
+            query = query.filter(Category.slug == category)
+        return query.distinct().order_by(Product.sort_order.asc(), Product.id.asc()).all()
+
+    products = get_cached_catalog(cache_key, 300, fetch_products)
     categories = get_cached_catalog("all_categories", 300, lambda: Category.query.all())
     return render_template("products.html", products=products, categories=categories, q=q,
                            selected_category=category, canonical_url=public_url("products"))
