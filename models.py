@@ -38,16 +38,38 @@ class Product(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     @property
-    def youtube_embed_url(self):
+    def video_info(self):
         if not self.video_url:
             return None
         import re
         url = self.video_url.strip()
-        # Youtube watch
-        m = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11}).*', url)
-        if m:
-            return f"https://www.youtube-nocookie.com/embed/{m.group(1)}?rel=0&vq=hd1080&enablejsapi=1&playsinline=1"
-        return url
+        # TikTok video
+        if 'tiktok.com' in url.lower():
+            m = re.search(r'/video/(\d+)', url)
+            if m:
+                return {'platform': 'tiktok', 'embed_url': f"https://www.tiktok.com/player/v1/{m.group(1)}", 'raw_url': url}
+            return {'platform': 'tiktok', 'embed_url': None, 'raw_url': url}
+        # YouTube video
+        if 'youtu.be' in url or 'youtube.com' in url:
+            m = re.search(r'(?:v=|\/embed\/|\/shorts\/|youtu\.be\/)([a-zA-Z0-9_-]{11})', url)
+            if m:
+                return {'platform': 'youtube', 'embed_url': f"https://www.youtube-nocookie.com/embed/{m.group(1)}?rel=0&playsinline=1", 'raw_url': url}
+            return {'platform': 'youtube', 'embed_url': None, 'raw_url': url}
+        return {'platform': 'other', 'embed_url': None, 'raw_url': url}
+
+    @property
+    def youtube_embed_url(self):
+        info = self.video_info
+        if info and info['platform'] == 'youtube':
+            return info['embed_url']
+        return None
+
+    @property
+    def tiktok_embed_url(self):
+        info = self.video_info
+        if info and info['platform'] == 'tiktok':
+            return info['embed_url']
+        return None
 
     @property
     def gallery_list(self):
