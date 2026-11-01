@@ -1815,7 +1815,19 @@ button, input, select, textarea {
 }
 
 .btn-youtube {
-  background: linear-gradient(135deg, #ff0000, #cc0000);
+  background: linear-gradient(135deg, #ff0000, #cc0000) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(255, 0, 0, 0.4) !important;
+}
+
+.btn-youtube:hover {
+  background: linear-gradient(135deg, #e60000, #b30000) !important;
+  box-shadow: 0 10px 24px rgba(255, 0, 0, 0.6) !important;
+  transform: scale(1.08) !important;
+}
+
+.btn-youtube svg {
+  fill: #ffffff !important;
 }
 
 .zalo-text-icon {
