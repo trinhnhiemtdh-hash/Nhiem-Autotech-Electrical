@@ -67,7 +67,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.4">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.5">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/electrical.css') }}?v=2.3">
   <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}?v=4">
   <link rel="shortcut icon" href="{{ url_for('favicon') }}">
@@ -163,6 +163,22 @@
         <span></span><span></span><span></span>
       </button>
     </div>
+
+    <!-- MOBILE 3-CATEGORY SWITCHER (Thanh chuyển nhanh 3 mục trên điện thoại thay cho ô tìm kiếm) -->
+    <nav class="mobile-category-nav" id="mobileCategoryNav" aria-label="3 Mục Sản Phẩm Chính">
+      <a href="{{ url_for('index') }}#showcase-muc-1" class="mob-cat-link mob-cat-1" data-target="showcase-muc-1">
+        <span class="mob-cat-icon">📐</span>
+        <span class="mob-cat-title">MỤC 1 · CAD</span>
+      </a>
+      <a href="{{ url_for('index') }}#showcase-muc-2" class="mob-cat-link mob-cat-2" data-target="showcase-muc-2">
+        <span class="mob-cat-icon">⚡</span>
+        <span class="mob-cat-title">MỤC 2 · TỦ ĐIỆN</span>
+      </a>
+      <a href="{{ url_for('index') }}#showcase-muc-3" class="mob-cat-link mob-cat-3" data-target="showcase-muc-3">
+        <span class="mob-cat-icon">🤖</span>
+        <span class="mob-cat-title">MỤC 3 · ĐỒ ÁN 3D</span>
+      </a>
+    </nav>
   </div>
 
   <!-- NAVIGATION BAR (DESKTOP) -->
@@ -468,7 +484,7 @@
 </footer>
 
 {% block structured_data %}{% endblock %}
-<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}?v=2.5"></script>
 <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
 </body>
 </html>
