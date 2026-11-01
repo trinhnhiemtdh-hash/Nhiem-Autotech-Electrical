@@ -57,7 +57,6 @@
             </div>
           {% endfor %}
         </div>
-        <small style="color:#64748b;font-size:12px;display:block;">💡 Bấm vào từng ảnh nhỏ để xem trước các góc bản vẽ khác nhau.</small>
       {% endif %}
     </div>
 
@@ -104,55 +103,28 @@
 
   <!-- VIDEO DEMO / REVIEW SECTION (IF HAS VIDEO) -->
   {% if product.video_file or product.video_url %}
-    <section class="video-preview-box" style="margin-top:36px;background:#0b1120;border:1.5px solid #1e293b;border-radius:var(--radius-xl);padding:28px;color:#fff;box-shadow:var(--shadow-lg);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
-        <div style="display:flex;align-items:center;gap:10px;">
-          <span style="background:#ef4444;color:#fff;font-size:12px;font-weight:900;padding:4px 10px;border-radius:4px;letter-spacing:0.05em;">VIDEO DEMO</span>
-          <h3 style="margin:0;font-size:19px;color:#fff;">🎬 Video Ngắn Giới Thiệu & Hướng Dẫn Thực Tế</h3>
-        </div>
-        <span style="font-size:13px;color:#94a3b8;">Xem trực quan thao tác mở file, bóc tách và chạy mô phỏng</span>
+    <section class="video-preview-box" style="margin-top:36px;background:#0b1120;border:1.5px solid #1e293b;border-radius:var(--radius-xl);padding:24px;color:#fff;box-shadow:var(--shadow-lg);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+        <span style="background:#ef4444;color:#fff;font-size:12px;font-weight:900;padding:4px 10px;border-radius:4px;letter-spacing:0.05em;">VIDEO DEMO</span>
+        <h3 style="margin:0;font-size:18px;color:#fff;">🎬 Video Giới Thiệu & Mô Phỏng</h3>
       </div>
 
       <div class="video-responsive-wrap" style="position:relative;width:100%;max-width:860px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;box-shadow:0 12px 30px rgba(0,0,0,0.6);">
         {% if product.video_file %}
-          <div style="background:#000;text-align:center;position:relative;">
-            <video controls playsinline preload="auto" controlslist="nodownload" style="width:100%;max-height:550px;display:block;margin:0 auto;outline:none;object-fit:contain;image-rendering:-webkit-optimize-contrast;image-rendering:crisp-edges;" poster="{{ url_for('static', filename='uploads/images/' + product.image) if product.image else '' }}">
+          <div style="background:#000;text-align:center;">
+            <video controls playsinline preload="auto" controlslist="nodownload" style="width:100%;max-height:550px;display:block;margin:0 auto;outline:none;object-fit:contain;" poster="{{ url_for('static', filename='uploads/images/' + product.image) if product.image else '' }}">
               <source src="{{ url_for('static', filename='uploads/videos/' + product.video_file) }}" type="video/mp4">
               Trình duyệt của bạn không hỗ trợ phát video HTML5.
             </video>
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:12px 16px;background:#0f172a;border-top:1px solid #1e293b;font-size:13px;color:#cbd5e1;">
-              <span style="color:#10b981;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                Video gốc sắc nét 100% (Phát trực tiếp từ máy chủ không qua nén)
-              </span>
-              <span style="color:#94a3b8;font-size:12px;">💡 Bấm góc phải [ ⛶ ] để phóng to toàn màn hình</span>
-            </div>
           </div>
         {% elif product.youtube_embed_url %}
           <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background:#000;">
             <iframe id="ytVideoPlayer" src="{{ product.youtube_embed_url }}" title="Video giới thiệu {{ product.name }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"></iframe>
           </div>
-          <div style="padding:14px 18px;background:#0f172a;border-top:1px solid #1e293b;color:#cbd5e1;font-size:13px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-              <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:260px;">
-                <span style="background:#0284c7;color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:4px;letter-spacing:0.04em;white-space:nowrap;">HD 1080p</span>
-                <span style="line-height:1.5;">Hệ thống tự động kích hoạt chế độ sắc nét <strong>Full HD 1080p</strong> để đọc rõ sơ đồ và thông số.</span>
-              </div>
-              {% if product.video_url %}
-                <a href="{{ product.video_url }}" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:8px;background:#ef4444;color:#ffffff;text-decoration:none;font-weight:700;font-size:13px;padding:9px 16px;border-radius:8px;box-shadow:0 4px 12px rgba(239,68,68,0.35);transition:all 0.2s ease;">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                  <span>Mở Xem Trên App YouTube (Nét Nhất) ↗</span>
-                </a>
-              {% endif %}
-            </div>
-            <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #334155;color:#94a3b8;font-size:12px;line-height:1.5;">
-              💡 <em>Lưu ý trên điện thoại:</em> Nếu bấm bánh răng (⚙️) trong khung video mà hiện chữ "Đăng nhập", đó là do trình duyệt điện thoại chặn cookie theo dõi. <strong>Anh không cần đăng nhập</strong> — chỉ cần bấm nút đỏ <strong>"Mở Xem Trên App YouTube"</strong> ở trên là video tự động phát ở độ phân giải cao nhất (1080p/2K/4K) mà không bị hỏi đăng nhập.
-            </div>
-          </div>
         {% elif product.video_url %}
-          <div style="padding:20px;text-align:center;">
+          <div style="padding:24px;text-align:center;">
             <a href="{{ product.video_url }}" target="_blank" rel="noopener noreferrer" class="btn primary" style="font-size:15px;padding:12px 24px;">
-              ▶ Mở Xem Video Hướng Dẫn Trực Tiếp
+              ▶ Mở Xem Video
             </a>
           </div>
         {% endif %}
@@ -205,8 +177,6 @@
     <!-- Modal Footer info -->
     <div style="margin-top:12px;color:#e2e8f0;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;background:rgba(15,23,42,0.7);padding:6px 16px;border-radius:20px;">
       <span id="lightboxCounter">Ảnh 1/1</span>
-      <span>·</span>
-      <span>Chạm ra ngoài hoặc bấm <strong style="color:#ef4444;">✕ Đóng</strong></span>
     </div>
   </div>
 </div>
