@@ -67,7 +67,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.3">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.4">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/electrical.css') }}?v=2.3">
   <link rel="icon" type="image/jpeg" href="{{ url_for('static', filename='images/logo.jpg') }}?v=4">
   <link rel="shortcut icon" href="{{ url_for('favicon') }}">
@@ -185,7 +185,7 @@
 
         <li class="menu-item">
           <a href="{{ url_for('products', category='do-an-tu-dong-hoa') }}" class="menu-link {% if request.args.get('category') == 'do-an-tu-dong-hoa' %}active{% endif %}">
-            🤖 Đồ Án Tự Động Hóa & 3D
+            🤖 File 3D SolidWorks & Đồ Án
           </a>
         </li>
 
@@ -222,7 +222,7 @@
     <a href="{{ url_for('index') }}" class="drawer-link">🏠 Trang chủ</a>
     <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="drawer-link">📐 1. Thư viện AutoCAD (.DWG)</a>
     <a href="{{ url_for('products', category='thiet-ke-tu-dien') }}" class="drawer-link">⚡ 2. Thiết Kế Tủ Điện & Mạch Điều Khiển</a>
-    <a href="{{ url_for('products', category='do-an-tu-dong-hoa') }}" class="drawer-link">🤖 3. Mô hình & Đồ án Tự động hóa</a>
+    <a href="{{ url_for('products', category='do-an-tu-dong-hoa') }}" class="drawer-link">🤖 3. File 3D SolidWorks & Đồ Án</a>
     <a href="{{ url_for('order_lookup') }}" class="drawer-link">🔍 Tra cứu đơn hàng & Tải file</a>
     <a href="{{ url_for('quote') }}" class="drawer-link">📝 Yêu cầu báo giá & Tư vấn</a>
     <a href="{{ url_for('contact') }}" class="drawer-link">📞 Liên hệ trực tiếp</a>

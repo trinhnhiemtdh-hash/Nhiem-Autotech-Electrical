@@ -48,53 +48,96 @@
 
     <!-- 3 MAIN PILLARS / 3 MỤC CHÍNH TẬP TRUNG -->
     <div class="hero-pillars-grid">
-      <!-- MỤC 1: Thư Viện AutoCAD -->
+      <!-- MỤC 1: Thư Viện AutoCAD Cho Thiết Kế Tủ Điện -->
       <div class="hero-pillar-card pillar-card-cad">
         <div class="hero-pillar-head pillar-color-cad">
           <div class="pillar-top-meta">
             <span class="pillar-badge">MỤC 1</span>
-            <span class="pillar-sub-tag">BÁN LẺ TỪNG FILE</span>
+            <span class="pillar-sub-tag">FULL 12+ HÃNG LỚN</span>
           </div>
           <div class="pillar-icon-box">📐</div>
-          <h3>1. Thư Viện AutoCAD DWG</h3>
-          <p>Bán từng file riêng biệt giá từ 49k - 199k, tải file .DWG / .DXF / .PDF chuẩn tỷ lệ 1:1</p>
+          <h3>1. Thư Viện AutoCAD Cho Thiết Kế Tủ Điện</h3>
+          <p>Full thư viện block CAD thiết bị điện đóng cắt & điều khiển các hãng chuẩn tỷ lệ 1:1</p>
         </div>
         <div class="hero-pillar-content">
-          <ul class="hero-checklist">
-            <li><strong>✓ Trọn bộ All-in-One 12+ hãng lớn:</strong> 199.000 đ</li>
-            <li><strong>✓ 12 Thư viện của 12 hãng riêng:</strong> 49.000 đ/hãng</li>
-            <li><strong>✓ Sơ đồ mạch điều khiển & tủ điện:</strong> 59.000 đ</li>
-            <li><strong>✓ Block MCB, MCCB, ACB, Biến tần, Khởi động từ</strong></li>
-            <li><strong>✓ Tương thích mọi bản AutoCAD từ 2007 - 2026</strong></li>
-          </ul>
+          <div class="pillar-content-main">
+            <div class="pillar-label">⚡ Đầy đủ các hãng có sẵn trong thư viện:</div>
+            <div class="pillar-tags-grid">
+              <a href="{{ url_for('products', q='Mitsubishi', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ Mitsubishi</a>
+              <a href="{{ url_for('products', q='ABB', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ ABB</a>
+              <a href="{{ url_for('products', q='Schneider', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ Schneider</a>
+              <a href="{{ url_for('products', q='LS', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ LS Electric</a>
+              <a href="{{ url_for('products', q='Siemens', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ Siemens</a>
+              <a href="{{ url_for('products', q='Chint', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ Chint</a>
+              <a href="{{ url_for('products', q='Hyundai', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ Hyundai</a>
+              <a href="{{ url_for('products', q='Omron', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ Omron</a>
+              <a href="{{ url_for('products', q='Panasonic', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ Panasonic</a>
+              <a href="{{ url_for('products', q='Hager', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ Hager</a>
+              <a href="{{ url_for('products', q='Etek', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ Etek</a>
+              <a href="{{ url_for('products', q='VMC', category='thu-vien-autocad') }}" class="pillar-tag tag-cad">⚡ VMC</a>
+            </div>
+            <div class="pillar-feature-list">
+              <div class="pillar-feature-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Đầy đủ thiết bị:</strong> MCB, MCCB, ACB, Biến tần, Contactor, Rơ le nhiệt, Đồng hồ đo</span>
+              </div>
+              <div class="pillar-feature-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Đi kèm:</strong> Form vỏ tủ điện tiêu chuẩn, khung tên bản vẽ chuẩn tỷ lệ 1:1 (.DWG)</span>
+              </div>
+            </div>
+          </div>
           <div class="hero-pillar-action">
             <a href="{{ url_for('products', category='thu-vien-autocad') }}" class="btn-pillar-cad">
-              Khám Phá Thư Viện CAD (15 Gói) →
+              Khám Phá Thư Viện CAD Các Hãng →
             </a>
           </div>
         </div>
       </div>
 
-      <!-- MỤC 2: Thiết Kế Tủ Điện & Mạch Điều Khiển -->
+      <!-- MỤC 2: Thiết Kế Tủ Điện Công Nghiệp & Mạch Điều Khiển -->
       <div class="hero-pillar-card pillar-card-panel featured-hero-card">
         <div class="pillar-featured-tag">🔥 BÁN CHẠY NHẤT</div>
         <div class="hero-pillar-head pillar-color-panel">
           <div class="pillar-top-meta">
             <span class="pillar-badge">MỤC 2</span>
-            <span class="pillar-sub-tag">THIẾT KẾ THỰC TẾ</span>
+            <span class="pillar-sub-tag">BẢN VẼ & LAYOUT THỰC TẾ</span>
           </div>
           <div class="pillar-icon-box">⚡</div>
-          <h3>2. Thiết Kế Tủ Điện & Mạch Điều Khiển</h3>
-          <p>Bản vẽ layout tủ điện công nghiệp tiêu chuẩn & sơ đồ nguyên lý mạch điều khiển tổng hợp</p>
+          <h3>2. Thiết Kế Tủ Điện Công Nghiệp & Mạch Điều Khiển</h3>
+          <p>Bản vẽ layout bố trí thiết bị tủ điện công nghiệp tiêu chuẩn & sơ đồ nguyên lý mạch điều khiển</p>
         </div>
         <div class="hero-pillar-content">
-          <ul class="hero-checklist">
-            <li><strong>✓ Bản vẽ Layout Tủ tổng MSB 1600A:</strong> Kèm bóc tách Busbar</li>
-            <li><strong>✓ Sơ đồ mạch điều khiển:</strong> PLC, Khởi động từ, Biến tần</li>
-            <li><strong>✓ Bản vẽ Tủ phân phối DB & Tủ ATS:</strong> Tự động chuyển nguồn</li>
-            <li><strong>✓ Bản vẽ Tủ bơm PCCC:</strong> 3 máy bơm (Điện + Diesel + Bù)</li>
-            <li><strong>✓ Form vỏ tủ, thanh cái đồng và BOM dự toán vật tư chuẩn</strong></li>
-          </ul>
+          <div class="pillar-content-main">
+            <div class="pillar-label">📋 Các loại tủ điện thiết kế có sẵn:</div>
+            <div class="pillar-tags-grid">
+              <a href="{{ url_for('products', q='MSB', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#1 Tủ tổng MSB</a>
+              <a href="{{ url_for('products', q='DB', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#2 Tủ phân phối DB</a>
+              <a href="{{ url_for('products', q='PLC', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#3 Tủ điều khiển PLC</a>
+              <a href="{{ url_for('products', q='biến tần', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#4 Tủ biến tần VFD</a>
+              <a href="{{ url_for('products', q='tụ bù', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#5 Tủ tụ bù</a>
+              <a href="{{ url_for('products', q='trạm biến áp', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#6 Tủ trạm biến áp</a>
+              <a href="{{ url_for('products', q='MCC', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#7 Tủ động cơ MCC</a>
+              <a href="{{ url_for('products', q='điều khiển', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#8 Tủ điều khiển</a>
+              <a href="{{ url_for('products', q='công tơ', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#10 Tủ công tơ</a>
+              <a href="{{ url_for('products', q='RMU', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#12 Tủ RMU & trung thế</a>
+              <a href="{{ url_for('products', q='khởi động mềm', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#13 Tủ khởi động mềm</a>
+              <a href="{{ url_for('products', q='Solar', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">#15 Tủ Solar</a>
+              <a href="{{ url_for('products', q='ATS', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">Tủ ATS chuyển nguồn</a>
+              <a href="{{ url_for('products', q='PCCC', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">Tủ bơm PCCC</a>
+              <a href="{{ url_for('products', q='chiếu sáng', category='thiet-ke-tu-dien') }}" class="pillar-tag tag-panel">Tủ chiếu sáng</a>
+            </div>
+            <div class="pillar-feature-list">
+              <div class="pillar-feature-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Bản vẽ layout:</strong> Mặt trước, mặt che, mặt bố trí thiết bị & sơ đồ nguyên lý</span>
+              </div>
+              <div class="pillar-feature-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Đi kèm:</strong> Bóc tách Busbar thanh cái đồng, phụ kiện vỏ tủ & BOM vật tư</span>
+              </div>
+            </div>
+          </div>
           <div class="hero-pillar-action">
             <a href="{{ url_for('products', category='thiet-ke-tu-dien') }}" class="btn-pillar-panel">
               Xem Bản Vẽ & Layout Tủ Điện →
@@ -103,28 +146,42 @@
         </div>
       </div>
 
-      <!-- MỤC 3: Mô Hình & Đồ Án Tự Động Hóa -->
+      <!-- MỤC 3: File 3D SolidWorks & Mô Hình Đồ Án Tự Động Hóa -->
       <div class="hero-pillar-card pillar-card-auto">
         <div class="hero-pillar-head pillar-color-auto">
           <div class="pillar-top-meta">
             <span class="pillar-badge">MỤC 3</span>
-            <span class="pillar-sub-tag">FULL CODE + 3D SOLIDWORKS</span>
+            <span class="pillar-sub-tag">BÁN FILE 3D SOLIDWORKS</span>
           </div>
           <div class="pillar-icon-box">🤖</div>
-          <h3>3. Mô Hình & Đồ Án Tự Động Hóa</h3>
-          <p>Full source code PLC, Giao diện HMI/SCADA, Bản vẽ cơ khí 3D SolidWorks & Thuyết minh</p>
+          <h3>3. File 3D SolidWorks & Đồ Án Tự Động Hóa</h3>
+          <p>Bán file 3D SolidWorks cơ khí & trọn bộ mô hình đồ án tự động hóa thực tế</p>
         </div>
         <div class="hero-pillar-content">
-          <ul class="hero-checklist">
-            <li><strong>✓ Lập trình PLC Siemens S7-1200 / S7-1500</strong> (TIA Portal)</li>
-            <li><strong>✓ Lập trình PLC Mitsubishi FX3U / FX5U / Q</strong> (GX Works)</li>
-            <li><strong>✓ Bản vẽ thiết kế cơ khí 3D SolidWorks</strong> (.SLDASM, .STEP)</li>
-            <li><strong>✓ SCADA giám sát PC</strong> (WinCC, C# WinForm .NET)</li>
-            <li><strong>✓ Kèm file thuyết minh báo cáo đồ án hoàn chỉnh</strong></li>
-          </ul>
+          <div class="pillar-content-main">
+            <div class="pillar-label">📐 File 3D SolidWorks & Đồ án tiêu biểu:</div>
+            <div class="pillar-tags-grid">
+              <a href="{{ url_for('products', q='SolidWorks', category='do-an-tu-dong-hoa') }}" class="pillar-tag tag-auto">📐 File 3D SolidWorks (.SLDASM, .STEP)</a>
+              <a href="{{ url_for('products', q='kho lưu kho', category='do-an-tu-dong-hoa') }}" class="pillar-tag tag-auto">🏬 Mô hình Kho lưu trữ tự động</a>
+              <a href="{{ url_for('products', q='bãi gửi xe', category='do-an-tu-dong-hoa') }}" class="pillar-tag tag-auto">🚗 Bãi gửi xe thông minh STM32</a>
+              <a href="{{ url_for('products', q='máy phân loại', category='do-an-tu-dong-hoa') }}" class="pillar-tag tag-auto">🍎 Máy phân loại sản phẩm bằng Camera</a>
+              <a href="{{ url_for('products', q='robot', category='do-an-tu-dong-hoa') }}" class="pillar-tag tag-auto">🦾 Cánh tay Robot công nghiệp</a>
+              <a href="{{ url_for('products', q='băng tải', category='do-an-tu-dong-hoa') }}" class="pillar-tag tag-auto">⚡ Hệ thống Băng tải phân loại & đóng gói</a>
+            </div>
+            <div class="pillar-feature-list">
+              <div class="pillar-feature-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Bán file 3D SolidWorks:</strong> Chuẩn cơ khí chính xác, bóc tách chi tiết từng cụm</span>
+              </div>
+              <div class="pillar-feature-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                <span><strong>Trọn gói đồ án:</strong> Full Code PLC + Giao diện HMI/SCADA + Thuyết minh báo cáo</span>
+              </div>
+            </div>
+          </div>
           <div class="hero-pillar-action">
             <a href="{{ url_for('products', category='do-an-tu-dong-hoa') }}" class="btn-pillar-auto">
-              Xem Đồ Án Tự Động Hóa & 3D →
+              Xem File 3D SolidWorks & Đồ Án →
             </a>
           </div>
         </div>
@@ -210,10 +267,29 @@
     </div>
 
     <!-- BANNER CARD MỤC 2: THIẾT KẾ CÁC LOẠI TỦ ĐIỆN CÔNG NGHIỆP -->
-    <div class="cad-banner-featured-card" style="margin-bottom:30px;border-radius:var(--radius-xl);overflow:hidden;border:1.5px solid var(--border-line);box-shadow:var(--shadow-md);">
+    <div class="cad-banner-featured-card" style="margin-bottom:20px;border-radius:var(--radius-xl);overflow:hidden;border:1.5px solid var(--border-line);box-shadow:var(--shadow-md);">
       <a href="{{ url_for('products', category='thiet-ke-tu-dien') }}" style="display:block;position:relative;line-height:0;">
         <img src="{{ url_for('static', filename='images/banner_muc_2_thiet_ke_tu_dien.jpg') }}" alt="Thư viện thiết bị điện & thiết kế các loại tủ điện công nghiệp" style="width:100%;height:auto;display:block;object-fit:cover;">
       </a>
+    </div>
+
+    <!-- QUICK PANEL CHIPS (CÁC LOẠI TỦ ĐIỆN CÓ SẴN) -->
+    <div class="brand-chips-scroll" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;margin-bottom:24px;scrollbar-width:thin;">
+      <a href="{{ url_for('products', q='MSB', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #1 Tủ Tổng MSB</a>
+      <a href="{{ url_for('products', q='DB', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #2 Tủ Phân Phối DB</a>
+      <a href="{{ url_for('products', q='PLC', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #3 Tủ Điều Khiển PLC</a>
+      <a href="{{ url_for('products', q='biến tần', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #4 Tủ Biến Tần VFD</a>
+      <a href="{{ url_for('products', q='tụ bù', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #5 Tủ Tụ Bù</a>
+      <a href="{{ url_for('products', q='trạm biến áp', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #6 Tủ Trạm Biến Áp</a>
+      <a href="{{ url_for('products', q='MCC', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #7 Tủ Động Cơ MCC</a>
+      <a href="{{ url_for('products', q='điều khiển', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #8 Tủ Điều Khiển</a>
+      <a href="{{ url_for('products', q='công tơ', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #10 Tủ Công Tơ</a>
+      <a href="{{ url_for('products', q='RMU', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #12 Tủ RMU & Trung Thế</a>
+      <a href="{{ url_for('products', q='khởi động mềm', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #13 Tủ Khởi Động Mềm</a>
+      <a href="{{ url_for('products', q='Solar', category='thiet-ke-tu-dien') }}" class="brand-chip">⚡ #15 Tủ Solar</a>
+      <a href="{{ url_for('products', q='ATS', category='thiet-ke-tu-dien') }}" class="brand-chip">📋 Tủ ATS Chuyển Nguồn</a>
+      <a href="{{ url_for('products', q='PCCC', category='thiet-ke-tu-dien') }}" class="brand-chip">🚒 Tủ Bơm PCCC</a>
+      <a href="{{ url_for('products', q='chiếu sáng', category='thiet-ke-tu-dien') }}" class="brand-chip">💡 Tủ Chiếu Sáng</a>
     </div>
 
     <div class="product-grid">
@@ -226,13 +302,13 @@
   </div>
 </section>
 
-<!-- SHOWCASE 3: MÔ HÌNH & ĐỒ ÁN TỰ ĐỘNG HÓA -->
+<!-- SHOWCASE 3: FILE 3D SOLIDWORKS & ĐỒ ÁN TỰ ĐỘNG HÓA -->
 <section class="section-container">
   <div class="container">
     <div class="section-header-modern">
       <div class="section-title-wrap">
-        <div class="section-eyebrow">MỤC 3 · PLC & VẼ 3D CƠ KHÍ</div>
-        <h2 class="section-title">Mô Hình & Đồ Án Tự Động Hóa (Full Code + 3D SolidWorks)</h2>
+        <div class="section-eyebrow">MỤC 3 · BÁN FILE 3D SOLIDWORKS & ĐỒ ÁN</div>
+        <h2 class="section-title">File 3D SolidWorks & Mô Hình Đồ Án Tự Động Hóa (Cơ Khí - PLC - SCADA)</h2>
       </div>
       <div class="section-header-actions" style="display:flex;gap:10px;align-items:center;">
         {% if session.get('is_admin') %}
