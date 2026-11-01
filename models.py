@@ -46,7 +46,7 @@ class Product(db.Model):
         # Youtube watch
         m = re.search(r'(?:v=|\/)([0-9A-Za-z_-]{11}).*', url)
         if m:
-            return f"https://www.youtube.com/embed/{m.group(1)}"
+            return f"https://www.youtube.com/embed/{m.group(1)}?rel=0&vq=hd1080&enablejsapi=1&playsinline=1"
         return url
 
     @property

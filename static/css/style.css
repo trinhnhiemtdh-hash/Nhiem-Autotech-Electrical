@@ -1814,6 +1814,10 @@ button, input, select, textarea {
   background: #000000;
 }
 
+.btn-youtube {
+  background: linear-gradient(135deg, #ff0000, #cc0000);
+}
+
 .zalo-text-icon {
   font-weight: 900;
   font-size: 12px;
@@ -2890,6 +2894,7 @@ button, input, select, textarea {
 .zalo-btn { background: #0088ff; }
 .fb-btn { background: #1877f2; }
 .tt-btn { background: #1e293b; border: 1px solid #334155; }
+.yt-btn { background: #ff0000; }
 
 .footer-bottom {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
