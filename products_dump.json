@@ -321,5 +321,39 @@
     "description": "Mô hình mô phỏng hệ thống phân loại trái cây tự động bằng camera, kết hợp PLC Siemens để xử lý tín hiệu và điều khiển hệ thống băng tải, cơ cấu phân loại.\r\nLắp ráp cơ khí: Thiết kế, lắp đặt khung máy, băng tải và cơ cấu phân loại.\r\nLập trình PLC Siemens: Xây dựng chương trình điều khiển, vận hành băng tải và phối hợp các cơ cấu tự động.\r\nTích hợp camera: Xử lý tín hiệu nhận dạng, phục vụ quá trình phân loại trái cây theo yêu cầu.\r\nĐấu nối điện: Lắp đặt tủ điện, đấu nối PLC, cảm biến, động cơ và các thiết bị điều khiển.",
     "specifications": "File 3D Solidworks",
     "status": "active"
+  },
+  {
+    "category_slug": "thiet-ke-tu-dien",
+    "name": "1. Tủ Điện Phân Phối DB (Form Trong Nhà và Form Ngoài Trời + Sơ Đồ Nguyên Lý)",
+    "slug": "1-tu-dien-phan-phoi-db-form-trong-nha-va-form-ngoai-troi-so-do-nguyen-ly",
+    "sku": "MSB-1600A-F2B",
+    "price": 199000.0,
+    "stock": 999,
+    "sort_order": 1,
+    "image": "1-tu-dien-phan-phoi-db-form-trong-nha-va-form-ngoai-troi-so-do-nguyen-ly-main-1793528017-da1d6a.png",
+    "images": "[\"1-tu-dien-phan-phoi-db-form-trong-nha-va-form-ngoai-troi-so-do-nguyen-ly-gal-1-1793528020-3445bf.png\", \"1-tu-dien-phan-phoi-db-form-trong-nha-va-form-ngoai-troi-so-do-nguyen-ly-gal-2-1793528024-fa4e56.png\", \"1-tu-dien-phan-phoi-db-form-trong-nha-va-form-ngoai-troi-so-do-nguyen-ly-gal-3-1793528029-b8b21b.png\", \"1-tu-dien-phan-phoi-db-form-trong-nha-va-form-ngoai-troi-so-do-nguyen-ly-gal-4-1793528032-da551b.png\"]",
+    "video_file": "",
+    "video_url": "",
+    "cad_file": "",
+    "description": "Bộ bản vẽ thiết kế tủ điện phân phối DB bao gồm form tủ trong nhà và form ngoài trời, layout bố trí thiết bị và sơ đồ nguyên lý chi tiết chuẩn công nghiệp.",
+    "specifications": "- Định dạng: Bản vẽ kỹ thuật AutoCAD .DWG\n- Tiêu chuẩn: IEC / TCVN, Form tủ điện công nghiệp\n- Bao gồm: Form trong nhà, ngoài trời & sơ đồ nguyên lý tủ DB\n- Tương thích: AutoCAD 2007 - 2026",
+    "status": "active"
+  },
+  {
+    "category_slug": "thiet-ke-tu-dien",
+    "name": "Test Thêm Sản Phẩm Mục 2 Tủ Bù",
+    "slug": "test-them-san-pham-muc-2",
+    "sku": "",
+    "price": 250000.0,
+    "stock": 999,
+    "sort_order": 0,
+    "image": "",
+    "images": "",
+    "video_file": "",
+    "video_url": "",
+    "cad_file": "",
+    "description": "Mô tả thử nghiệm kiểm tra tính năng thêm sản phẩm mục 2",
+    "specifications": "DWG, PDF",
+    "status": "active"
   }
 ]

@@ -6,7 +6,7 @@ from models import db, User, Category, Product, Order, OrderItem, Contact, Downl
 from config import Config
 from functools import wraps
 from pathlib import Path
-from datetime import timezone
+from datetime import datetime, timezone
 from urllib.parse import quote as url_quote, urlencode
 from xml.sax.saxutils import escape
 import os, json, smtplib, gzip
@@ -2334,52 +2334,41 @@ def admin_product_add():
         slug = request.form.get("slug", "").strip().lower()
         if not slug:
             slug = vietnamese_slugify(name)
+        
+        # Đảm bảo slug luôn là DUY NHẤT trong Database, không bao giờ bị lỗi 500 trùng slug
+        base_slug = slug or "tai-nguyen"
+        candidate_slug = base_slug
+        c_slug = 1
+        while Product.query.filter_by(slug=candidate_slug).first():
+            candidate_slug = f"{base_slug}-{c_slug}"
+            c_slug += 1
+        slug = candidate_slug
+
         price = float(request.form.get("price", 0) or 0)
         
-        # Nhận diện danh mục được chọn từ form
+        # Nhận diện danh mục được chọn từ form: ƯU TIÊN TUYỆT ĐỐI lựa chọn của Admin
         cat_id_val = request.form.get("category_id")
-        selected_cat_id = int(cat_id_val) if cat_id_val else default_category_id
+        selected_cat_id = int(cat_id_val) if (cat_id_val and str(cat_id_val).isdigit()) else default_category_id
         
-        # BACKEND SMART DETECTION / SANITY CHECK:
-        # Tự động bảo vệ tránh đăng nhầm danh mục khi người dùng thêm sản phẩm
-        cat_by_slug = {c.slug: c.id for c in categories}
-        cat_c3_id = cat_by_slug.get("do-an-tu-dong-hoa")
-        cat_c2_id = cat_by_slug.get("thiet-ke-tu-dien")
-        cat_c1_id = cat_by_slug.get("thu-vien-autocad")
-        
-        name_nfc = unicodedata.normalize("NFC", name).lower()
-        name_ascii = vietnamese_slugify(name)
-        
-        # Từ khóa và tiền tố nhận diện Mục 3 (Tự Động Hóa & Đồ Án)
-        m3_keys = [
-            "mo hinh", "mô hình", "do an", "đồ án", "solidworks", "stm32", "arduino",
-            "bang tai", "băng tải", "phan loai", "phân loại", "camera", "trai cay", "trái cây",
-            "bai gui xe", "bãi gửi xe", "kho luu kho", "kho lưu kho", "robot", "scada",
-            "tia portal", "plc s7", "s7-1200", "s7-1500"
-        ]
-        is_m3_prefix = any(name_nfc.startswith(p) for p in ["3.", "3 ", "#3", "mục 3", "muc 3"])
-        is_m3_keyword = any(k in name_nfc or k in name_ascii for k in m3_keys)
-        
-        # Từ khóa và tiền tố nhận diện Mục 2 (Thiết Kế Tủ Điện & Mạch Điều Khiển)
-        m2_keys = [
-            "layout tu", "layout tủ", "tu msb", "tủ msb", "tu ats", "tủ ats",
-            "tu bu", "tủ bù", "tu pccc", "tủ pccc", "tu db", "tủ db", "form tu", "form vỏ tủ",
-            "mach dieu khien", "mạch điều khiển"
-        ]
-        is_m2_prefix = any(name_nfc.startswith(p) for p in ["2.", "2 ", "#2", "mục 2", "muc 2"])
-        is_m2_keyword = any(k in name_nfc or k in name_ascii for k in m2_keys)
-        
-        # Nếu sản phẩm rõ ràng thuộc Mục 3 nhưng bị gán nhầm sang Mục 1:
-        if (is_m3_prefix or is_m3_keyword) and cat_c3_id:
-            if not selected_cat_id or selected_cat_id == cat_c1_id:
-                selected_cat_id = cat_c3_id
-        # Nếu sản phẩm rõ ràng thuộc Mục 2 nhưng bị gán nhầm sang Mục 1:
-        elif (is_m2_prefix or is_m2_keyword) and cat_c2_id:
-            if not selected_cat_id or selected_cat_id == cat_c1_id:
-                selected_cat_id = cat_c2_id
-        
+        # Chỉ tự động suy luận danh mục NẾU người dùng chưa chọn
         if not selected_cat_id:
-            selected_cat_id = default_category_id or (categories[0].id if categories else 1)
+            cat_by_slug = {c.slug: c.id for c in categories}
+            cat_c3_id = cat_by_slug.get("do-an-tu-dong-hoa")
+            cat_c2_id = cat_by_slug.get("thiet-ke-tu-dien")
+            cat_c1_id = cat_by_slug.get("thu-vien-autocad")
+            
+            name_nfc = unicodedata.normalize("NFC", name).lower()
+            name_ascii = vietnamese_slugify(name)
+            
+            m3_keys = ["mo hinh", "mô hình", "do an", "đồ án", "solidworks", "stm32", "arduino", "bang tai", "băng tải", "robot"]
+            m2_keys = ["tu dien", "tủ điện", "layout tu", "layout tủ", "msb", "ats", "tu bu", "tủ bù", "pccc", "db", "bien tan", "mạch điều khiển"]
+            
+            if any(k in name_nfc or k in name_ascii for k in m2_keys):
+                selected_cat_id = cat_c2_id
+            elif any(k in name_nfc or k in name_ascii for k in m3_keys):
+                selected_cat_id = cat_c3_id
+            else:
+                selected_cat_id = cat_c1_id or (categories[0].id if categories else 1)
         
         # Tự động suy luận thứ tự sort_order nếu tên bắt đầu bằng số thứ tự (ví dụ: 1., 2., 3.)
         sort_order = int(request.form.get("sort_order", 0) or 0)
@@ -2388,12 +2377,14 @@ def admin_product_add():
             if match_num:
                 sort_order = int(match_num.group(1))
         
-        product = Product(name=name, slug=slug, sku=request.form.get("sku",""),
-                          description=request.form.get("description",""),
-                          specifications=request.form.get("specifications",""),
+        product = Product(name=name, slug=slug, sku=request.form.get("sku","").strip(),
+                          description=request.form.get("description","").strip(),
+                          specifications=request.form.get("specifications","").strip(),
                           price=price, stock=int(request.form.get("stock",999) or 999),
                           category_id=selected_cat_id,
                           sort_order=sort_order,
+                          status="active",
+                          created_at=datetime.utcnow(),
                           video_url=request.form.get("video_url","").strip())
         
         # 1. Main image
@@ -2446,7 +2437,7 @@ def admin_product_add():
             ext = Path(cad.filename).suffix.lower().lstrip(".")
             if ext not in ALLOWED_DOCS:
                 flash(f"Định dạng file .{ext} chưa được hỗ trợ. Hãy nén dạng .zip hoặc .rar hoặc .dwg", "danger")
-                return render_template("admin/product_add.html", categories=categories)
+                return render_template("admin/product_add.html", categories=categories, default_category_id=selected_cat_id)
             import mimetypes
             filename = f"{slug}-{secure_filename(cad.filename)}"
             cad_path = Path(app.config["UPLOAD_FOLDER"]) / "cad"
@@ -2459,12 +2450,19 @@ def admin_product_add():
             save_file_to_cloud(filename, c_bytes, asset_type="cad", mime_type=c_mime or "application/octet-stream")
             product.cad_file = filename
             
-        db.session.add(product)
-        db.session.commit()
-        clear_catalog_cache()
-        sync_products_to_dump()
-        flash(f"Đã đăng '{product.name}' thành công lên danh mục!", "success")
-        return redirect(url_for("admin_products"))
+        try:
+            db.session.add(product)
+            db.session.commit()
+            clear_catalog_cache()
+            sync_products_to_dump()
+            flash(f"Đã đăng '{product.name}' thành công lên danh mục!", "success")
+            target_cat = db.session.get(Category, selected_cat_id)
+            return redirect(url_for("admin_products", category=target_cat.slug if target_cat else None))
+        except Exception as e:
+            db.session.rollback()
+            print(f"[PRODUCT ADD ERROR] {e}")
+            flash(f"Lỗi khi lưu sản phẩm vào cơ sở dữ liệu: {e}", "danger")
+            return render_template("admin/product_add.html", categories=categories, default_category_id=selected_cat_id)
     return render_template("admin/product_add.html", categories=categories, default_category_id=default_category_id)
 
 @app.route("/admin/products/edit/<int:product_id>", methods=["GET","POST"])
@@ -2477,8 +2475,15 @@ def admin_product_edit(product_id):
     if request.method == "POST":
         product.name = request.form["name"].strip()
         slug = request.form.get("slug", "").strip().lower()
-        if slug:
-            product.slug = slug
+        if not slug:
+            slug = vietnamese_slugify(product.name)
+        base_slug = slug or "tai-nguyen"
+        candidate_slug = base_slug
+        c_slug = 1
+        while Product.query.filter(Product.slug == candidate_slug, Product.id != product.id).first():
+            candidate_slug = f"{base_slug}-{c_slug}"
+            c_slug += 1
+        product.slug = candidate_slug
         product.sku = request.form.get("sku","").strip()
         product.price = float(request.form.get("price", 0) or 0)
         product.stock = int(request.form.get("stock", 999) or 999)
@@ -2557,11 +2562,18 @@ def admin_product_edit(product_id):
             save_file_to_cloud(filename, c_bytes, asset_type="cad", mime_type=c_mime or "application/octet-stream")
             product.cad_file = filename
             
-        db.session.commit()
-        clear_catalog_cache()
-        sync_products_to_dump()
-        flash(f"Đã cập nhật '{product.name}' thành công!", "success")
-        return redirect(url_for("admin_products"))
+        try:
+            db.session.commit()
+            clear_catalog_cache()
+            sync_products_to_dump()
+            flash(f"Đã cập nhật '{product.name}' thành công!", "success")
+            target_cat = db.session.get(Category, product.category_id)
+            return redirect(url_for("admin_products", category=target_cat.slug if target_cat else None))
+        except Exception as e:
+            db.session.rollback()
+            print(f"[PRODUCT EDIT ERROR] {e}")
+            flash(f"Lỗi khi cập nhật sản phẩm: {e}", "danger")
+            return render_template("admin/product_edit.html", product=product, categories=categories)
     return render_template("admin/product_edit.html", product=product, categories=categories)
 
 @app.route("/admin/products/<int:product_id>/delete-video", methods=["GET", "POST"])

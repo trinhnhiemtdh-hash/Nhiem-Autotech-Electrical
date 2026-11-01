@@ -52,8 +52,17 @@
           </div>
         {% endfor %}
       </div>
-      <div id="smart-category-notice" style="display:{% if default_category_id == 7 %}block{% else %}none{% endif %};margin-top:10px;padding:8px 14px;border-radius:8px;background:#f5f3ff;border:1.5px solid #c4b5fd;color:#6d28d9;font-size:13px;font-weight:700;">
-        💡 Đang chọn: <strong>MỤC 3: Mô hình & Đồ án Tự động hóa</strong>
+      <div id="smart-category-notice" style="display:block;margin-top:10px;padding:10px 16px;border-radius:8px;font-size:13.5px;font-weight:700;
+        {% if default_category_id == 6 %}background:#f0f9ff;border:1.5px solid #bae6fd;color:#0284c7;
+        {% elif default_category_id == 7 %}background:#f5f3ff;border:1.5px solid #c4b5fd;color:#6d28d9;
+        {% else %}background:#eff6ff;border:1.5px solid #bfdbfe;color:#0369a1;{% endif %}">
+        ✓ Đang chọn: 
+        <strong>
+          {% if default_category_id == 6 %}⚡ MỤC 2: Thiết Kế Tủ Điện & Mạch Điều Khiển
+          {% elif default_category_id == 7 %}🤖 MỤC 3: Mô hình & Đồ án Tự động hóa
+          {% else %}📐 MỤC 1: Thư Viện AutoCAD
+          {% endif %}
+        </strong>
       </div>
     </div>
 
@@ -208,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const nameInput = document.getElementById('product-name-input');
   const notice = document.getElementById('smart-category-notice');
   const radios = document.querySelectorAll('input[name="category_id"]');
-  let userManuallyPicked = false;
+  let userManuallyPicked = {% if default_category_id %}true{% else %}false{% endif %};
 
   function stripVietnamese(str) {
     if (!str) return '';
@@ -259,17 +268,17 @@ document.addEventListener('DOMContentLoaded', function() {
         notice.style.background = '#f5f3ff';
         notice.style.borderColor = '#c4b5fd';
         notice.style.color = '#6d28d9';
-        notice.innerHTML = (isAuto ? '💡 Hệ thống tự động nhận diện & chọn ' : '✓ ') + '<strong>MỤC 3: Mô hình & Đồ án Tự động hóa</strong> (PLC, SolidWorks 3D, Robot...)';
+        notice.innerHTML = (isAuto ? '💡 Hệ thống tự động gợi ý chọn ' : '✓ ') + '<strong>MỤC 3: Mô hình & Đồ án Tự động hóa</strong> (PLC, SolidWorks 3D, Robot...)';
       } else if (targetSlug === 'thiet-ke-tu-dien') {
         notice.style.background = '#f0f9ff';
         notice.style.borderColor = '#bae6fd';
         notice.style.color = '#0284c7';
-        notice.innerHTML = (isAuto ? '💡 Hệ thống tự động nhận diện & chọn ' : '✓ ') + '<strong>MỤC 2: Thiết Kế Tủ Điện & Mạch Điều Khiển</strong> (MSB, DB, ATS, Bù...)';
+        notice.innerHTML = (isAuto ? '💡 Hệ thống tự động gợi ý chọn ' : '✓ ') + '<strong>MỤC 2: Thiết Kế Tủ Điện & Mạch Điều Khiển</strong> (MSB, DB, ATS, Bù...)';
       } else {
-        notice.style.background = '#fff7ed';
-        notice.style.borderColor = '#fed7aa';
-        notice.style.color = '#ea580c';
-        notice.innerHTML = (isAuto ? '💡 Hệ thống tự động nhận diện & chọn ' : '✓ ') + '<strong>MỤC 1: Thư Viện AutoCAD</strong> (Bán lẻ từng file .DWG)';
+        notice.style.background = '#eff6ff';
+        notice.style.borderColor = '#bfdbfe';
+        notice.style.color = '#0369a1';
+        notice.innerHTML = (isAuto ? '💡 Hệ thống tự động gợi ý chọn ' : '✓ ') + '<strong>MỤC 1: Thư Viện AutoCAD</strong> (Bán lẻ từng file .DWG)';
       }
     }
   }
@@ -297,28 +306,32 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Tự động nhận diện danh mục thông minh theo từ khóa hoặc tiền tố nhập vào tiêu đề
+  // Tự động nhận diện danh mục thông minh theo từ khóa hoặc tiền tố nhập vào tiêu đề NẾU người dùng chưa tự bấm chọn
   if (nameInput) {
     nameInput.addEventListener('input', function() {
+      if (userManuallyPicked) return; // Tuyệt đối không tự nhảy mục nếu người dùng đã chủ động chọn
+
       const rawVal = nameInput.value.trim().toLowerCase();
       const cleanVal = stripVietnamese(rawVal);
       if (!rawVal) return;
 
-      // Ưu tiên cực mạnh: Nhận diện tiền tố số hoặc từ "Mục 3 / Mục 2 / Mục 1"
+      // Ưu tiên: Nhận diện tiền tố số hoặc từ "Mục 3 / Mục 2 / Mục 1"
       const isM3Prefix = /^(3[\.\s\-]|#3|muc\s*3|mục\s*3)/i.test(cleanVal);
       const isM2Prefix = /^(2[\.\s\-]|#2|muc\s*2|mục\s*2)/i.test(cleanVal);
       const isM1Prefix = /^(1[\.\s\-]|#1|muc\s*1|mục\s*1)/i.test(cleanVal);
 
       const m3Keywords = [
-        'mo hinh', 'mô hình', 'do an', 'đồ án', 'plc', 's7-1200', 's7 1200', 's7-1500',
+        'mo hinh', 'mô hình', 'do an', 'đồ án', 's7-1200', 's7 1200', 's7-1500',
         'solidworks', 'stm32', 'arduino', 'bang tai', 'băng tải', 'robot', 'scada',
         'tia portal', 'kho luu kho', 'kho lưu kho', 'phan loai', 'phân loại',
         'camera', 'trai cay', 'trái cây', 'bai gui xe', 'bãi gửi xe'
       ];
       const m2Keywords = [
-        'layout tu', 'layout tủ', 'tu msb', 'tủ msb', 'tu ats', 'tủ ats',
+        'tu dien', 'tủ điện', 'layout tu', 'layout tủ', 'tu msb', 'tủ msb', 'tu ats', 'tủ ats',
         'tu bu', 'tủ bù', 'tu pccc', 'tủ pccc', 'tu db', 'tủ db', 'form tu', 'form vỏ tủ',
-        'mach dieu khien', 'mạch điều khiển'
+        'mach dieu khien', 'mạch điều khiển', 'bien tan', 'biến tần', 'tram bien ap', 'trạm biến áp',
+        'tu dong co', 'tủ động cơ', 'tu chieu sang', 'tủ chiếu sáng', 'khoi dong mem', 'khởi động mềm',
+        'solar', 'tu bom', 'tủ bơm', 'rmu', 'cong to', 'công tơ'
       ];
       const m1Keywords = [
         'thu vien cad', 'thu vien autocad', 'thư viện cad', 'thư viện autocad',
